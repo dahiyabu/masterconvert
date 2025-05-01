@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvertMaster - Secure Offline File Conversion</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #34d399;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        /* Style for the container inside the header */
+header .container {
+  max-width: 1200px; /* Adjust as per your design */
+  margin: 0 auto;
+  padding: 0 15px;
+}
+/* Optional: Make the header's content align nicely */
+header nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+header .nav-links a {
+  margin: 0 15px;
+  text-decoration: none;
+}
+
+header .btn {
+  margin-left: 15px;
+}
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            margin-left: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #10b981;
+        }
+        
+        .hero {
+            padding: 10rem 0 5rem;
+            background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+        }
+        
+        .hero-content {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+        
+        .hero-text {
+            flex: 1;
+        }
+        
+        .hero-image {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+            color: #4b5563;
+        }
+        
+        .features {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #e0f2fe;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .formats {
+            padding: 5rem 0;
+            background-color: #f8fafc;
+        }
+        
+        .formats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .format-category {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .formats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .format-item {
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .format-item:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .how-it-works {
+            padding: 5rem 0;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .step-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .testimonials {
+            background-color: #f0f9ff;
+            padding: 5rem 0;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .testimonial-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .download {
+            padding: 5rem 0;
+            text-align: center;
+        }
+        
+        .platforms {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .platform-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background-color: var(--dark);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        
+        .platform-btn:hover {
+            background-color: rgb(0, 0, 0);
+        }
+        
+        .try-free-banner {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            margin: 5rem 0;
+        }
+        
+        .try-free-banner h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .try-free-banner p {
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+        
+        .btn-white {
+            background-color: white;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .btn-white:hover {
+            background-color: #f3f4f6;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .footer-links h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+            color: var(--gray);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2.25rem;
+            }
+            
+            h2 {
+                font-size: 1.875rem;
+            }
+            
+            .platforms {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="landing-page">
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Convert Any File Format Securely & Offline</h1>
+                    <p>ConvertMaster is your all-in-one file conversion solution. Convert between documents, images, video, audio and more - all on your own device with complete privacy.</p>
+                    <div class="hero-buttons">
+                        <a href="#download" class="btn">Download Free</a>
+                        <a href="#try-free" class="btn btn-outline" id ="try-free-btn">Try It Free Online</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="/api/placeholder/600/400" alt="ConvertMaster application interface">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose ConvertMaster?</h2>
+                <p>Experience the perfect combination of simplicity, security, and versatility</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                        </svg>
+                    </div>
+                    <h3>100% Secure</h3>
+                    <p>All conversions happen locally on your device. Your files never leave your computer, ensuring complete privacy and security.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2z"/>
+                        </svg>
+                    </div>
+                    <h3>40+ Formats Supported</h3>
+                    <p>Convert between documents, images, videos, audio files and more with our comprehensive format support.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                            <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                        </svg>
+                    </div>
+                    <h3>Works Offline</h3>
+                    <p>No internet connection required. Convert files anytime, anywhere, even when you're completely offline.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                        </svg>
+                    </div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized conversion algorithms ensure quick processing even for large files. Save time with batch conversions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                    </div>
+                    <h3>Customizable Settings</h3>
+                    <p>Fine-tune your conversions with advanced settings for resolution, quality, compression, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                            <path d="M6 11.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </div>
+                    <h3>User-Friendly Interface</h3>
+                    <p>Intuitive drag-and-drop interface makes converting files simple, even for beginners. No technical knowledge required.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="try-free-banner" id="try-free">
+        <div class="container">
+            <h2>Try ConvertMaster Online For Free</h2>
+            <p>Experience the power of ConvertMaster without downloading anything. Our online converter gives you a taste of what our full desktop application can do.</p>
+            <a href="#" class="btn btn-white" id="try-free-btn">Try It Free Now</a>
+        </div>
+    </section>
+
+    <section class="formats" id="formats">
+        <div class="container">
+            <div class="section-title">
+                <h2>Supported File Formats</h2>
+                <p>Convert between any of these formats with just a few clicks</p>
+            </div>
+            <div class="formats-container">
+                <div class="format-category">
+                    <h3>Document Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">PDF</div>
+                        <div class="format-item">DOCX</div>
+                        <div class="format-item">TXT</div>
+                        <div class="format-item">RTF</div>
+                        <div class="format-item">ODT</div>
+                    </div>
+                </div>
+                <div class="format-category">
+                    <h3>Image Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">JPG/JPEG</div>
+                        <div class="format-item">PNG</div>
+                        <div class="format-item">SVG</div>
+                        <div class="format-item">WEBP</div>
+                        <div class="format-item">GIF</div>
+                    </div>
+                </div>
+                <div class="format-category">
+                    <h3>Video Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">MP4</div>
+                        <div class="format-item">MOV</div>
+                        <div class="format-item">AVI</div>
+                        <div class="format-item">WEBM</div>
+                        <div class="format-item">MKV</div>
+                    </div>
+                </div>
+                <div class="format-category">
+                    <h3>Audio Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">MP3</div>
+                        <div class="format-item">WAV</div>
+                        <div class="format-item">OGG</div>
+                        <div class="format-item">FLAC</div>
+                        <div class="format-item">AAC</div>
+                    </div>
+                </div>
+                <div class="format-category">
+                    <h3>Archive Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">ZIP</div>
+                        <div class="format-item">RAR</div>
+                        <div class="format-item">TAR</div>
+                        <div class="format-item">7Z</div>
+                        <div class="format-item">ISO</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Converting files has never been easier</p>
+            </div>
+            <div class="steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Select Files</h3>
+                    <p>Drag and drop your files into the application or use the file browser to select them.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Choose Format</h3>
+                    <p>Select your desired output format from our extensive list of supported formats.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Customize Settings</h3>
+                    <p>Adjust quality, resolution, and other settings to meet your specific needs.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Convert & Save</h3>
+                    <p>Click convert and save your new files to your preferred location. That's it!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>What Our Users Say</h2>
+                <p>Join thousands of satisfied users worldwide</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p>"I needed a quick way to convert my presentations from PDF to DOCX without uploading them to the cloud. ConvertMaster was the perfect solution - fast, offline, and super easy to use!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">SM</div>
+                        <div>
+                            <strong>Sarah M.</strong>
+                            <p>Marketing Manager</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"As a photographer, I'm constantly converting between image formats. This tool has become essential to my workflow. The batch processing feature saves me hours of work every week."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JT</div>
+                        <div>
+                            <strong>James T.</strong>
+                            <p>Professional Photographer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Working with sensitive client documents, security is my top priority. The offline conversion feature means I never have to worry about data breaches. Highly recommended for anyone handling confidential files."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">AL</div>
+                        <div>
+                            <strong>Amelia L.</strong>
+                            <p>Legal Consultant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="download" id="download">
+      <div class="container">
+        <h2>Download ConvertMaster Today</h2>
+        <p>Available for all major platforms. Free for personal use.</p>
+        <div class="platforms">
+          <!-- Windows Button -->
+          <a href="downloads/ConvertMaster-Windows.exe" class="platform-btn" download>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M1 3.5l9.5-1.4v8.9H1V3.5zm10.5-1.5L23 0v11h-11.5V2zM1 12h9.5v8.9L1 19.5V12zm10.5 0H23v11l-11.5-2.1V12z"/>
+            </svg>
+            <span>Download for Windows</span>
+          </a>
+    
+          <!-- macOS Button -->
+          <a href="downloads/ConvertMaster-macOS.dmg" class="platform-btn" download>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16.365 1.43c0 1.14-.474 2.283-1.306 3.136-.87.88-2.018 1.39-3.11 1.32-.06-1.09.42-2.28 1.28-3.14.83-.84 2.14-1.42 3.14-1.32zm5.058 16.07c-.42.97-.88 1.87-1.47 2.72-.78 1.14-1.59 2.26-2.82 2.28-1.12.02-1.48-.73-2.98-.72s-1.9.73-2.96.74c-1.24.01-2.19-1.21-2.97-2.34-2.03-3-3.58-8.47-1.5-12.17.87-1.53 2.45-2.5 4.15-2.53 1.06-.02 2.07.74 2.97.74.87 0 2.26-.91 3.8-.77.65.03 2.47.27 3.63 2.05-3.2 1.75-2.67 6.31.05 7.97z"/>
+            </svg>
+            <span>Download for macOS</span>
+          </a>
+    
+          <!-- Linux Button -->
+          <a href="downloads/ConvertMaster-Linux.AppImage" class="platform-btn" download>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0a12 12 0 1012 12A12.013 12.013 0 0012 0zm0 22.093a10.093 10.093 0 1110.093-10.093A10.105 10.105 0 0112 22.093zm0-13.343a3.25 3.25 0 103.25 3.25 3.254 3.254 0 00-3.25-3.25z"/>
+            </svg>
+            <span>Download for Linux</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/static/js/main.[hash].js"></script>
+</body>
