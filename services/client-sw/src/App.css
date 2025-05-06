@@ -1,0 +1,68 @@
+/* App container */
+.App {
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Logo styling */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Add smooth spin for those who like motion */
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+/* Hide header when the file convert app is active */
+.hide-header {
+  display: none !important;
+}
+
+/* Header styling */
+/*.App-header {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: #fff;
+  padding: 2rem;
+  box-shadow: inset 0 -1px 4px rgba(0, 0, 0, 0.1);
+}
+*/
+/* Link styling */
+.App-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.App-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Spin animation */
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+input[type="file"] {
+  display: none !important;
+}
