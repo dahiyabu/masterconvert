@@ -1,0 +1,93 @@
+name: Build Python App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use ubuntu-latest for Linux, macos-latest for macOS, and windows-latest for Windows
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libreoffice tesseract-ocr ffmpeg
+          pip install -r ./services/converter-sw/requirements.txt
+
+      - name: Build app (Linux)
+        run: |
+          pyinstaller --onefile \
+            --add-data "/usr/bin/libreoffice:dependencies" \
+            --add-data "/usr/bin/tesseract:dependencies" \
+            --add-data "/usr/bin/ffmpeg:dependencies" \
+            --distpath ./output/linux ./services/converter-sw/fileConverter.py
+
+      - name: Upload Linux build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-build
+          path: ./output/linux/*  # The path to the generated file (adjust according to your build output folder)
+
+      - name: Build app (macOS)
+        runs-on: macos-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
+          - name: Set up Python
+            uses: actions/setup-python@v2
+            with:
+              python-version: '3.9'
+          - name: Install dependencies
+            run: |
+              brew install libreoffice tesseract ffmpeg
+              pip install -r ./services/converter-sw/requirements.txt
+          - name: Build app (macOS)
+            run: |
+              pyinstaller --onefile \
+                --add-data "/Applications/LibreOffice.app/Contents/MacOS/soffice:dependencies" \
+                --add-data "/usr/local/bin/tesseract:dependencies" \
+                --add-data "/usr/local/bin/ffmpeg:dependencies" \
+                --distpath ./output/mac ./services/converter-sw/fileConverter.py
+
+          - name: Upload macOS build artifact
+            uses: actions/upload-artifact@v2
+            with:
+              name: macos-build
+              path: ./output/mac/*  # The path to the generated file (adjust accordingly)
+
+      - name: Build app (Windows)
+        runs-on: windows-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
+          - name: Set up Python
+            uses: actions/setup-python@v2
+            with:
+              python-version: '3.9'
+          - name: Install dependencies
+            run: |
+              choco install libreoffice tesseract ffmpeg
+              pip install -r ./services/converter-sw/requirements.txt
+          - name: Build app (Windows)
+            run: |
+              pyinstaller --onefile \
+                --add-data "C:/Program Files/LibreOffice/program/soffice.exe:dependencies" \
+                --add-data "C:/Program Files/Tesseract-OCR/tesseract.exe:dependencies" \
+                --add-data "C:/Program Files/ffmpeg/bin/ffmpeg.exe:dependencies" \
+                --distpath ./output/windows ./services/converter-sw/fileConverter.py
+
+          - name: Upload Windows build artifact
+            uses: actions/upload-artifact@v2
+            with:
+              name: windows-build
+              path: ./output/windows/*  # The path to the generated file (adjust accordingly)
