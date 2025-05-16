@@ -1,9 +1,11 @@
-name: Build Python App
+name: Build Software for all OS Platforms
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+    paths:
+      services/converter-sw/**
+  workflow_dispatch:
 
 jobs:
   build:
