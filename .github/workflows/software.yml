@@ -30,7 +30,7 @@ jobs:
       - name: Build app (Linux)
         run: |
           pyinstaller --onefile \
-            --add-data "./services/converter-sw/build/*;./build" \
+            --add-data "./services/converter-sw/build:./build" \
             --add-data "/usr/bin/libreoffice:dependencies" \
             --add-data "/usr/bin/tesseract:dependencies" \
             --add-data "/usr/bin/ffmpeg:dependencies" \
@@ -59,7 +59,7 @@ jobs:
       - name: Build app (macOS)
         run: |
           pyinstaller --onefile \
-            --add-data "./services/converter-sw/build/*;./build" \
+            --add-data "./services/converter-sw/build:./build" \
             --add-data "/Applications/LibreOffice.app/Contents/MacOS/soffice:dependencies" \
             --add-data "/opt/homebrew/bin/tesseract:dependencies" \
             --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
@@ -90,7 +90,7 @@ jobs:
       - name: Build app (Windows)
         run: |
           pyinstaller --onefile `
-            --add-data "./services/converter-sw/build/*;./build" `
+            --add-data "./services/converter-sw/build;./build" `
             --add-data "C:/Program Files/LibreOffice/program/soffice.exe:dependencies" `
             --add-data "C:/Program Files/Tesseract-OCR/tesseract.exe:dependencies" `
             --add-data "C:/ProgramData/chocolatey/bin/ffmpeg.exe:dependencies" `
