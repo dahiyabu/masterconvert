@@ -14,7 +14,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -36,7 +36,7 @@ jobs:
             --distpath ./output/linux ./services/converter-sw/fileConverter.py
 
       - name: Upload Linux build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: ./output/linux/*  # The path to the generated file (adjust according to your build output folder)
@@ -46,7 +46,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -63,7 +63,7 @@ jobs:
             --add-data "/usr/local/bin/ffmpeg:dependencies" \
             --distpath ./output/mac ./services/converter-sw/fileConverter.py
       - name: Upload macOS build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: ./output/mac/*
@@ -73,7 +73,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -90,7 +90,7 @@ jobs:
             --add-data "C:/Program Files/ffmpeg/bin/ffmpeg.exe:dependencies" \
             --distpath ./output/windows ./services/converter-sw/fileConverter.py
       - name: Upload Windows build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: ./output/windows/*
