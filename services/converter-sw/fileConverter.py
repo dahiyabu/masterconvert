@@ -1,5 +1,6 @@
 import os
 import io
+import sys
 import uuid
 import json
 from datetime import datetime
@@ -1037,16 +1038,24 @@ def get_formats():
         'file_categories': FILE_CATEGORIES
     }), 200
 
+def get_build_folder():
+    if getattr(sys, 'frozen', False):
+        # If running as a PyInstaller executable, use the temp folder path
+        return os.path.join(sys._MEIPASS, 'build')
+    else:
+        # If running as a script, the build folder is at the root
+        return os.path.join(app.root_path, 'build')
+    
 @app.route('/')
 def serve_react_app():
     # This will serve index.html for the root URL
-    return send_from_directory(os.path.join(app.root_path, 'build'), 'index.html')
+    return send_from_directory(get_build_folder(), 'index.html')
 
 @app.route('/static/<path:path>')
 def serve_static(path):
     dirpath=os.path.join(app.root_path, 'build', 'static')
     logger.info(f"sending file from {dirpath} {path}")
-    return send_from_directory(os.path.join(app.root_path, 'build', 'static'), path)
+    return send_from_directory(os.path.join(get_build_folder(), 'static'), path)
 
 # Error handlers
 @app.errorhandler(404)
