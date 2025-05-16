@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-ubuntu:
     runs-on: ubuntu-latest  # Use ubuntu-latest for Linux, macos-latest for macOS, and windows-latest for Windows
     
     steps:
@@ -59,8 +59,8 @@ jobs:
         run: |
           pyinstaller --onefile \
             --add-data "/Applications/LibreOffice.app/Contents/MacOS/soffice:dependencies" \
-            --add-data "/usr/local/bin/tesseract:dependencies" \
-            --add-data "/usr/local/bin/ffmpeg:dependencies" \
+            --add-data "/opt/homebrew/bin/tesseract:dependencies" \
+            --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
             --distpath ./output/mac ./services/converter-sw/fileConverter.py
       - name: Upload macOS build artifact
         uses: actions/upload-artifact@v4
@@ -87,7 +87,7 @@ jobs:
           pyinstaller --onefile `
             --add-data "C:/Program Files/LibreOffice/program/soffice.exe:dependencies" `
             --add-data "C:/Program Files/Tesseract-OCR/tesseract.exe:dependencies" `
-            --add-data "C:/Program Files/ffmpeg/bin/ffmpeg.exe:dependencies" `
+            --add-data "C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg.exe:dependencies" `
             --distpath ./output/windows ./services/converter-sw/fileConverter.py
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
