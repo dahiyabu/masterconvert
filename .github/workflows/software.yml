@@ -82,12 +82,15 @@ jobs:
         run: |
           choco install libreoffice tesseract ffmpeg
           pip install -r ./services/converter-sw/requirements.txt
+      - name: Find FFmpeg executable
+        run: |
+          where ffmpeg
       - name: Build app (Windows)
         run: |
           pyinstaller --onefile `
             --add-data "C:/Program Files/LibreOffice/program/soffice.exe:dependencies" `
             --add-data "C:/Program Files/Tesseract-OCR/tesseract.exe:dependencies" `
-            --add-data "C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg.exe:dependencies" `
+            --add-data "C:/ProgramData/chocolatey/bin/ffmpeg.exe:dependencies" `
             --distpath ./output/windows ./services/converter-sw/fileConverter.py
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
