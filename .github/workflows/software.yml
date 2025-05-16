@@ -36,7 +36,7 @@ jobs:
             --distpath ./output/linux ./services/converter-sw/fileConverter.py
 
       - name: Upload Linux build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: linux-build
           path: ./output/linux/*  # The path to the generated file (adjust according to your build output folder)
@@ -63,7 +63,7 @@ jobs:
             --add-data "/usr/local/bin/ffmpeg:dependencies" \
             --distpath ./output/mac ./services/converter-sw/fileConverter.py
       - name: Upload macOS build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: macos-build
           path: ./output/mac/*
@@ -90,7 +90,7 @@ jobs:
             --add-data "C:/Program Files/ffmpeg/bin/ffmpeg.exe:dependencies" \
             --distpath ./output/windows ./services/converter-sw/fileConverter.py
       - name: Upload Windows build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: windows-build
           path: ./output/windows/*
