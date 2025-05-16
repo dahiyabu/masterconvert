@@ -1053,8 +1053,8 @@ def serve_react_app():
 
 @app.route('/static/<path:path>')
 def serve_static(path):
-    dirpath=os.path.join(app.root_path, 'build', 'static')
-    logger.info(f"sending file from {dirpath} {path}")
+    dirpath=os.path.join(get_build_folder(), 'static')
+    print(f"sending file from {dirpath} {path}")
     return send_from_directory(os.path.join(get_build_folder(), 'static'), path)
 
 # Error handlers
