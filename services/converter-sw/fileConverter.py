@@ -147,6 +147,14 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
+def get_curr_folder():
+    if getattr(sys, 'frozen', False):
+        # If running as a PyInstaller executable, use the temp folder path
+        return sys._MEIPASS
+    else:
+        # If running as a script, the folder is at the root
+        return app.root_pat
+    
 def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -1039,16 +1047,12 @@ def get_formats():
     }), 200
 
 def get_build_folder():
-    if getattr(sys, 'frozen', False):
-        # If running as a PyInstaller executable, use the temp folder path
-        return os.path.join(sys._MEIPASS, 'build')
-    else:
-        # If running as a script, the build folder is at the root
-        return os.path.join(app.root_path, 'build')
-    
+    return (get_curr_folder(),'build')
+
 @app.route('/')
 def serve_react_app():
     # This will serve index.html for the root URL
+    print((f"sending file from {get_build_folder()}/index.html"))
     return send_from_directory(get_build_folder(), 'index.html')
 
 @app.route('/static/<path:path>')
