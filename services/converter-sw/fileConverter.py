@@ -153,7 +153,7 @@ def get_curr_folder():
         return sys._MEIPASS
     else:
         # If running as a script, the folder is at the root
-        return app.root_pat
+        return app.root_path
     
 def allowed_file(filename):
     """Check if file has an allowed extension"""
@@ -1047,14 +1047,14 @@ def get_formats():
     }), 200
 
 def get_build_folder():
-    return (get_curr_folder(),'build')
+    return os.path.join(get_curr_folder(),'build')
 
 @app.route('/')
 def serve_react_app():
     # This will serve index.html for the root URL
-    print((f"sending file from {get_build_folder()}/index.html"))
+    print((f"sending file from {get_build_folder()} index.html"))
     return send_from_directory(get_build_folder(), 'index.html')
-
+    
 @app.route('/static/<path:path>')
 def serve_static(path):
     dirpath=os.path.join(get_build_folder(), 'static')
