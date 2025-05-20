@@ -17,6 +17,8 @@ import tarfile
 import pytesseract
 import py7zr
 import rarfile
+import atexit
+import signal
 import mimetypes
 import ffmpeg
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
@@ -43,13 +45,21 @@ def get_curr_folder():
         # If running as a script, the folder is at the root
         return os.path.dirname(os.path.abspath(__file__))#app.root_path
 
+def get_base_folder():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(sys.argv[0]))
+    
 # Initialize Flask app
 app = Flask(__name__, static_folder=os.path.join(get_curr_folder(), 'build', 'static'))
 CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, filename='app.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.basicConfig(level=logging.INFO, filename=os.path.join(get_base_folder(),'app.log'), filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Configuration
@@ -155,9 +165,36 @@ ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
 def setup():
     # Create necessary folders
-    os.makedirs(os.path.join(get_curr_folder(), UPLOAD_FOLDER), exist_ok=True)
-    os.makedirs(os.path.join(get_curr_folder(),CONVERTED_FOLDER), exist_ok=True)
-    
+    os.makedirs(os.path.join(get_base_folder(), UPLOAD_FOLDER), exist_ok=True)
+    os.makedirs(os.path.join(get_base_folder(),CONVERTED_FOLDER), exist_ok=True)
+
+def cleanup_files():
+    temp_path=os.path.join(get_base_folder(),UPLOAD_FOLDER)
+    if os.path.exists(temp_path):
+        try:
+            shutil.rmtree(temp_path)
+            logger.info(f"Deleted upload folder and all contents: {temp_path}")
+        except Exception as e:
+            logger.error(f"Failed to delete upload folder: {e}")
+    temp_path=os.path.join(get_base_folder(),CONVERTED_FOLDER)
+    if os.path.exists(temp_path):
+        try:
+            shutil.rmtree(temp_path)
+            logger.info(f"Deleted upload folder and all contents: {temp_path}")
+        except Exception as e:
+            logger.error(f"Failed to delete upload folder: {e}")
+            
+# Register cleanup on normal interpreter exit
+atexit.register(cleanup_files)
+
+def signal_handler(sig, frame):
+    logger.info(f"Received signal {sig}. Cleaning up and exiting.")
+    cleanup_files()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
+
 def allowed_file(filename):
     """Check if file has an allowed extension"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
