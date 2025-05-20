@@ -54,9 +54,6 @@ ALLOWED_EXTENSIONS = {
     'zip', 'rar', 'tar', '7z', 'iso'  # Archives
 }
 
-# Create necessary folders
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(CONVERTED_FOLDER, exist_ok=True)
 
 # Generate a key for file encryption (in a production app, store this securely)
 #ENCRYPTION_KEY = Fernet.generate_key()
@@ -154,6 +151,11 @@ def get_curr_folder():
     else:
         # If running as a script, the folder is at the root
         return app.root_path
+
+def setup():
+    # Create necessary folders
+    os.makedirs(os.path.join(get_curr_folder(), UPLOAD_FOLDER), exist_ok=True)
+    os.makedirs(os.path.join(get_curr_folder(),CONVERTED_FOLDER), exist_ok=True)
     
 def allowed_file(filename):
     """Check if file has an allowed extension"""
@@ -1071,4 +1073,5 @@ def server_error(e):
     return jsonify({'error': 'Server error occurred'}), 500
 
 if __name__ == '__main__':
+    setup()
     app.run(debug=True, host='0.0.0.0', port=5000)
