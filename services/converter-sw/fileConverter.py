@@ -34,8 +34,17 @@ import config
 from docx import Document
 from archive import merge_files_to_archive
 from compress import compress_file
+
+def get_curr_folder():
+    if getattr(sys, 'frozen', False):
+        # If running as a PyInstaller executable, use the temp folder path
+        return sys._MEIPASS
+    else:
+        # If running as a script, the folder is at the root
+        return os.path.dirname(os.path.abspath(__file__))#app.root_path
+
 # Initialize Flask app
-app = Flask(__name__, static_folder=os.path.join(os.getcwd(), 'build', 'static'))
+app = Flask(__name__, static_folder=os.path.join(get_curr_folder(), 'build', 'static'))
 CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
@@ -143,14 +152,6 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 'Archive':['None','1','5','9']}
 ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
-
-def get_curr_folder():
-    if getattr(sys, 'frozen', False):
-        # If running as a PyInstaller executable, use the temp folder path
-        return sys._MEIPASS
-    else:
-        # If running as a script, the folder is at the root
-        return app.root_path
 
 def setup():
     # Create necessary folders
