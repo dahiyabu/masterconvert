@@ -159,13 +159,13 @@ jobs:
       - name: Copy Ghostscript binary (bash)
         shell: bash
         run: |
-          mkdir -p ghostscript-bin
+          mkdir -p ghostscript
           cp -r "/c/Program Files/gs"/* ghostscript/
       - name: Copy 7-Zip binary (Windows)
         shell: bash
         run: |
-          mkdir -p 7zip-bin
-          cp -r "/c/Program Files/7-Zip/*" 7zip/
+          mkdir -p 7zip
+          cp -r "/c/Program Files/7-Zip"/* 7zip/
       - name: Clone PyInstaller and patch bootloader with progress print
         shell: bash
         run: |
