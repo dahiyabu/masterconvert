@@ -15,7 +15,7 @@ else:
 
 # Set paths for external binaries based on platform
 if SYSTEM_PLATFORM == 'windows':
-    LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'soffice.exe')
+    LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'soffice_program','soffice.exe')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract.exe')
     FFMPEG_PATH = os.path.join(BASE_PATH, 'dependencies', 'ffmpeg.exe')
 elif SYSTEM_PLATFORM == 'darwin':  # macOS

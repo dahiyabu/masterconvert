@@ -163,20 +163,24 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
+def get_upload_folder():
+    return os.path.join(get_base_folder(), UPLOAD_FOLDER)
+def get_converted_folder():
+    return os.path.join(get_base_folder(), CONVERTED_FOLDER)
 def setup():
     # Create necessary folders
-    os.makedirs(os.path.join(get_base_folder(), UPLOAD_FOLDER), exist_ok=True)
-    os.makedirs(os.path.join(get_base_folder(),CONVERTED_FOLDER), exist_ok=True)
+    os.makedirs(get_upload_folder(), exist_ok=True)
+    os.makedirs(get_converted_folder(), exist_ok=True)
 
 def cleanup_files():
-    temp_path=os.path.join(get_base_folder(),UPLOAD_FOLDER)
+    temp_path=get_upload_folder()
     if os.path.exists(temp_path):
         try:
             shutil.rmtree(temp_path)
             logger.info(f"Deleted upload folder and all contents: {temp_path}")
         except Exception as e:
             logger.error(f"Failed to delete upload folder: {e}")
-    temp_path=os.path.join(get_base_folder(),CONVERTED_FOLDER)
+    temp_path=get_converted_folder()
     if os.path.exists(temp_path):
         try:
             shutil.rmtree(temp_path)
@@ -861,8 +865,8 @@ def merge_files():
     password = request.form.get('password',None)
     # Save uploaded files
     uploaded_file_paths = []
-    upload_merge_path = os.path.join(UPLOAD_FOLDER,"temp-merge")
-    temp_merge_path = os.path.join(CONVERTED_FOLDER,"temp-merge")
+    upload_merge_path = os.path.join(get_upload_folder(),"temp-merge")
+    temp_merge_path = os.path.join(get_converted_folder(),"temp-merge")
     os.makedirs(upload_merge_path, exist_ok=True)
     os.makedirs(temp_merge_path, exist_ok=True)
     for file in files:
@@ -878,13 +882,13 @@ def merge_files():
     try:
         # Create a temporary output file path for the merged result
         merged_output_filename = f"{uuid.uuid4().hex}.{merge_type}"
-        merged_output_path = os.path.join(CONVERTED_FOLDER, merged_output_filename)
+        merged_output_path = os.path.join(get_converted_folder(), merged_output_filename)
         if merge_type == 'pdf':
             merge_pdfs(merged_output_path,temp_merge_path, *uploaded_file_paths)
             # Apply password protection if requested
             if password:
                 encrypted_filename = f"{uuid.uuid4().hex}.{merge_type}"
-                encrypted_path = os.path.join(CONVERTED_FOLDER, encrypted_filename)
+                encrypted_path = os.path.join(get_converted_folder(), encrypted_filename)
                 
                 if encrypt_file(merged_output_path, encrypted_path, password):
                     # Remove the unencrypted file
@@ -932,7 +936,7 @@ def upload_file():
         original_filename = secure_filename(file.filename)
         file_extension = get_file_extension(original_filename)
         unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+        file_path = os.path.join(get_upload_folder(), unique_filename)
         
         # Save the file
         file.save(file_path)
@@ -985,7 +989,7 @@ def convert_file():
         options = data.get('options', {})
         
         # Validate file exists
-        input_path = os.path.join(UPLOAD_FOLDER, file_id)
+        input_path = os.path.join(get_upload_folder(), file_id)
         if not os.path.exists(input_path):
             return jsonify({'error': 'File not found'}), 404
         
@@ -998,7 +1002,7 @@ def convert_file():
         
         # Generate output filename
         output_filename = f"{uuid.uuid4().hex}.{target_format}"
-        output_path = os.path.join(CONVERTED_FOLDER, output_filename)
+        output_path = os.path.join(get_converted_folder(), output_filename)
         
         # Log conversion start
         logger.info(f"Starting conversion: {source_format} to {target_format}")
@@ -1021,7 +1025,7 @@ def convert_file():
                 os.remove(input_path)
             input_path=output_path
             output_filename=f"{uuid.uuid4().hex}.{target_format}"
-            output_path = os.path.join(CONVERTED_FOLDER,output_filename)
+            output_path = os.path.join(get_converted_folder(),output_filename)
             compress_file(input_file=input_path,output_file=output_path,quality_level=compress_rate)
             if os.path.exists(input_path):
                 os.remove(input_path)   
@@ -1029,7 +1033,7 @@ def convert_file():
         # Apply password protection if requested
         if password:
             encrypted_filename = f"{uuid.uuid4().hex}.{target_format}"
-            encrypted_path = os.path.join(CONVERTED_FOLDER, encrypted_filename)
+            encrypted_path = os.path.join(get_converted_folder(), encrypted_filename)
             
             if encrypt_file(output_path, encrypted_path, password):
                 # Remove the unencrypted file
@@ -1059,7 +1063,7 @@ def convert_file():
 def download_file(conversion_id):
     """Download a converted file"""
     try:
-        file_path = os.path.join(CONVERTED_FOLDER, conversion_id)
+        file_path = os.path.join(get_converted_folder(), conversion_id)
         
         if not os.path.exists(file_path):
             return jsonify({'error': 'File not found'}), 404
