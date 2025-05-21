@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y libreoffice tesseract-ocr ffmpeg
+          sudo apt install -y libreoffice tesseract-ocr ffmpeg ghostscript
           pip install -r ./services/converter-sw/requirements.txt
       
       - name: Debug Tesseract installation
@@ -57,6 +57,7 @@ jobs:
             --add-data "/usr/bin/tesseract:dependencies" \
             --add-data "/usr/bin/ffmpeg:dependencies" \
             --add-data "/usr/share/tesseract-ocr/5/tessdata:dependencies" \
+            --add-data "/usr/bin/gs:dependencies" \
             --distpath ./output/linux ./services/converter-sw/fileConverter.py
 
       - name: Upload Linux build artifact
@@ -81,7 +82,7 @@ jobs:
         run: |
           brew update
           brew install --cask libreoffice
-          brew install tesseract ffmpeg
+          brew install tesseract ffmpeg ghostscript
           pip install -r ./services/converter-sw/requirements.txt
       
       - name: Clone PyInstaller and patch bootloader
@@ -107,6 +108,7 @@ jobs:
             --add-data "/opt/homebrew/bin/tesseract:dependencies" \
             --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
             --add-data "/opt/homebrew/share/tessdata:dependencies" \
+            --add-data "/opt/homebrew/bin/gs:dependencies" \
             --distpath ./output/mac ./services/converter-sw/fileConverter.py
 
       - name: Upload macOS build artifact
@@ -129,7 +131,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          choco install libreoffice tesseract
+          choco install libreoffice tesseract ghostscript
           pip install -r ./services/converter-sw/requirements.txt
 
       - name: Download FFmpeg static build
@@ -152,6 +154,12 @@ jobs:
           mkdir -p tesseract-bin
           cp -r "/c/Program Files/Tesseract-OCR"/* tesseract-bin/
       
+      - name: Copy Ghostscript binary (bash)
+        shell: bash
+        run: |
+          mkdir -p ghostscript-bin
+          cp "/c/Program Files/gs/"*/bin/gswin64c.exe ghostscript-bin/
+  
       - name: Clone PyInstaller and patch bootloader with progress print
         shell: bash
         run: |
@@ -179,6 +187,7 @@ jobs:
             --add-data "libreoffice;dependencies/libreoffice" ^
             --add-data "tesseract-bin;dependencies/tesseract-ocr" ^
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
+            --add-data "ghostscript-bin\\gswin64c.exe;dependencies" ^
             --distpath output\\windows services\\converter-sw\\fileConverter.py
         shell: cmd
       
