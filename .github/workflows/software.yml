@@ -103,12 +103,12 @@ jobs:
       - name: Copy LibreOffice program directory
         run: |
           mkdir libreoffice-program
-          cmd /c "copy \"C:\Program Files\LibreOffice\program\*.*\" libreoffice-program\ /Y"
+          robocopy "C:\Program Files\LibreOffice\program" libreoffice-program /E /NFL /NDL /NJH /NJS
 
       - name: Copy Tesseract executable
         run: |
           mkdir tesseract-bin
-          cmd /c "copy \"C:\Program Files\Tesseract-OCR\tesseract.exe\" tesseract-bin\ /Y"
+          robocopy "C:\Program Files\Tesseract-OCR" tesseract-bin /E /NFL /NDL /NJH /NJS
 
       - name: Build app (Windows)
         run: |
