@@ -7,7 +7,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-import logging
 from pathlib import Path
 import shutil
 import subprocess
@@ -24,6 +23,7 @@ import ffmpeg
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from pdf2docx import Converter
 from docx2pdf import convert
+from logger import logger,get_base_folder
 import docx2txt
 import fitz
 from PIL import Image
@@ -45,22 +45,11 @@ def get_curr_folder():
         # If running as a script, the folder is at the root
         return os.path.dirname(os.path.abspath(__file__))#app.root_path
 
-def get_base_folder():
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(os.path.abspath(sys.argv[0]))
-    
+   
 # Initialize Flask app
-app = Flask(__name__, static_folder=os.path.join(get_curr_folder(), 'build', 'static'))
+app = Flask("Master Convert", static_folder=os.path.join(get_curr_folder(), 'build', 'static'))
 CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
-
-# Configure logging
-for handler in logging.root.handlers[:]:
-    logging.root.removeHandler(handler)
-logging.basicConfig(level=logging.INFO, filename=os.path.join(get_base_folder(),'app.log'), filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
@@ -1116,4 +1105,5 @@ def server_error(e):
 
 if __name__ == '__main__':
     setup()
+    print("Enjoy Master Convert at http://127.0.0.1:5000 in your browser")
     app.run(debug=True, host='0.0.0.0', port=5000)
