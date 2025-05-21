@@ -94,27 +94,24 @@ jobs:
           pip install -r ./services/converter-sw/requirements.txt
 
       - name: Download FFmpeg static build
+        shell: bash
         run: |
           curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-          tar -xf ffmpeg.zip
-          mkdir ffmpeg-bin
-          copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin\
-        shell: cmd
-
-      - name: Copy LibreOffice program directory
+          unzip ffmpeg.zip
+          mkdir -p ffmpeg-bin
+          cp ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin/
+                
+      - name: Copy LibreOffice program directory (bash)
+        shell: bash
         run: |
-          mkdir libreoffice-program
-          robocopy "C:\Program Files\LibreOffice\program" libreoffice-program /E /NFL /NDL /NJH /NJS
-          IF %ERRORLEVEL% LEQ 1 exit 0 ELSE exit %ERRORLEVEL%
-        shell: cmd
+          mkdir -p libreoffice-program
+          cp -r "/c/Program Files/LibreOffice/program"/* libreoffice-program/
 
-      - name: Copy Tesseract executable
+      - name: Copy Tesseract executable (bash)
+        shell: bash
         run: |
-          mkdir tesseract-bin
-          robocopy "C:\Program Files\Tesseract-OCR" tesseract-bin /E /NFL /NDL /NJH /NJS
-          IF %ERRORLEVEL% LEQ 1 exit 0 ELSE exit %ERRORLEVEL%
-        shell: cmd
-
+          mkdir -p tesseract-bin
+          cp -r "/c/Program Files/Tesseract-OCR"/* tesseract-bin/
       - name: Build app (Windows)
         run: |
           pyinstaller --onefile ^
