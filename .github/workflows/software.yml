@@ -131,6 +131,28 @@ jobs:
         with:
           python-version: '3.13.2'
 
+      - name: Clone PyInstaller and patch bootloader with progress print
+        shell: bash
+        run: |
+          git clone https://github.com/pyinstaller/pyinstaller.git
+          cd pyinstaller
+          git submodule update --init --recursive
+          ls bootloader
+          # Insert progress print line into pyi_archive.c
+          sed -i.bak '/TOC iterating/a printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
+          grep 'Extracting:' bootloader/src/pyi_archive.c
+          # Build the bootloader
+          cd bootloader
+          python3 ./waf clean
+          python3 ./waf all
+      
+      - name: Install patched PyInstaller from local source
+        shell: bash
+        run: |
+          pip uninstall pyinstaller -y
+          cd pyinstaller
+          pip install .
+      
       - name: Install dependencies
         run: |
           choco install libreoffice tesseract ghostscript 7zip -y
@@ -166,29 +188,8 @@ jobs:
         run: |
           mkdir -p 7zip
           cp -r "/c/Program Files/7-Zip"/* 7zip/
-      - name: Clone PyInstaller and patch bootloader with progress print
-        shell: bash
-        run: |
-          git clone https://github.com/pyinstaller/pyinstaller.git
-          cd pyinstaller
-          git submodule update --init --recursive
-          ls bootloader
-          # Insert progress print line into pyi_archive.c
-          sed -i.bak '/TOC iterating/a\
-          printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
-          grep 'Extracting:' bootloader/src/pyi_archive.c
-          # Build the bootloader
-          cd bootloader
-          python3 ./waf clean
-          python3 ./waf all
-
-      - name: Install patched PyInstaller from local source
-        shell: bash
-        run: |
-          pip uninstall pyinstaller -y
-          cd pyinstaller
-          pip install .
-
+      
+      
       - name: Build app (Windows)
         run: |
           pyinstaller ^
