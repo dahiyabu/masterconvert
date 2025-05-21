@@ -160,12 +160,12 @@ jobs:
         shell: bash
         run: |
           mkdir -p ghostscript-bin
-          cp "/c/Program Files/gs/"*/bin/gswin64c.exe ghostscript-bin/
+          cp -r "/c/Program Files/gs"/* ghostscript/
       - name: Copy 7-Zip binary (Windows)
         shell: bash
         run: |
           mkdir -p 7zip-bin
-          cp "/c/Program Files/7-Zip/7z.exe" 7zip-bin/
+          cp -r "/c/Program Files/7-Zip/*" 7zip/
       - name: Clone PyInstaller and patch bootloader with progress print
         shell: bash
         run: |
@@ -173,28 +173,31 @@ jobs:
           cd pyinstaller
 
           # Inject progress log into archive extraction code
-          sed -i '/TOC iterating/a \ \ \ \ printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
-
+          sed -i.bak '/TOC iterating/a\
+          printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
+          grep 'Extracting:' pyinstaller/bootloader/src/pyi_archive.c
           # Build the bootloader
           cd bootloader
+          python3 ./waf clean
           python3 ./waf all
 
       - name: Install patched PyInstaller from local source
         shell: bash
         run: |
+          pip uninstall pyinstaller -y
           cd pyinstaller
           pip install .
 
       - name: Build app (Windows)
         run: |
           pyinstaller ^
-            --onefile ^
+            --onefile --log-level DEBUG ^
             --add-data "services\\converter-sw\\build;build" ^
             --add-data "libreoffice;dependencies/libreoffice" ^
             --add-data "tesseract-bin;dependencies/tesseract-ocr" ^
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
-            --add-data "ghostscript-bin\\gswin64c.exe;dependencies" ^
-            --add-data "7zip-bin\\7z.exe;dependencies" ^
+            --add-data "ghostscript;dependencies" ^
+            --add-data "7zip;dependencies" ^
             --distpath output\\windows services\\converter-sw\\fileConverter.py
         shell: cmd
       
