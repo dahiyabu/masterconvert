@@ -99,16 +99,21 @@ jobs:
           tar -xf ffmpeg.zip
           mkdir ffmpeg-bin
           copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin\
+        shell: cmd
 
       - name: Copy LibreOffice program directory
         run: |
           mkdir libreoffice-program
           robocopy "C:\Program Files\LibreOffice\program" libreoffice-program /E /NFL /NDL /NJH /NJS
+          IF %ERRORLEVEL% LEQ 1 exit 0 ELSE exit %ERRORLEVEL%
+        shell: cmd
 
       - name: Copy Tesseract executable
         run: |
           mkdir tesseract-bin
           robocopy "C:\Program Files\Tesseract-OCR" tesseract-bin /E /NFL /NDL /NJH /NJS
+          IF %ERRORLEVEL% LEQ 1 exit 0 ELSE exit %ERRORLEVEL%
+        shell: cmd
 
       - name: Build app (Windows)
         run: |
@@ -118,7 +123,8 @@ jobs:
             --add-data "tesseract-bin\\tesseract.exe;dependencies" ^
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
             --distpath output\\windows services\\converter-sw\\fileConverter.py
-
+        shell: cmd
+      
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
         with:
