@@ -27,6 +27,10 @@ jobs:
           sudo apt install -y libreoffice tesseract-ocr ffmpeg
           pip install -r ./services/converter-sw/requirements.txt
       
+      - name: Debug Tesseract installation
+        run: |
+          find /usr -type d -name tessdata
+            
       - name: Clone PyInstaller and patch bootloader with progress print
         run: |
           git clone https://github.com/pyinstaller/pyinstaller.git
@@ -52,7 +56,7 @@ jobs:
             --add-data "/usr/bin/libreoffice:dependencies" \
             --add-data "/usr/bin/tesseract:dependencies" \
             --add-data "/usr/bin/ffmpeg:dependencies" \
-            --add-data "/usr/share/tesseract-ocr/4.00/tessdata:dependencies" \
+            --add-data "/usr/share/tesseract-ocr/tessdata:dependencies" \
             --distpath ./output/linux ./services/converter-sw/fileConverter.py
 
       - name: Upload Linux build artifact
