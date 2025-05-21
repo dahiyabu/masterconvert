@@ -20,8 +20,8 @@ if SYSTEM_PLATFORM == 'windows':
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract-ocr','tesseract.exe')
     FFMPEG_PATH = os.path.join(BASE_PATH, 'dependencies', 'ffmpeg.exe')
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract-ocr')
-    GS_PATH = os.path.join(BASE_PATH,'dependencies','gswin64c.exe')
-    SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z.exe')
+    GS_PATH = os.path.join(BASE_PATH,'dependencies','ghostscript','bin','gswin64c.exe')
+    SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7zip','7z.exe')
 elif SYSTEM_PLATFORM == 'darwin':  # macOS
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'LibreOffice.app', 'Contents', 'MacOS', 'soffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
