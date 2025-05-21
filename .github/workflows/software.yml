@@ -51,7 +51,6 @@ jobs:
       - name: Build app (Linux)
         run: |
           pyinstaller \
-            --bootloader-path ./pyinstaller/bootloader/build/linux64 \
             --onefile \
             --add-data "./services/converter-sw/build:build" \
             --add-data "/usr/bin/libreoffice:dependencies" \
@@ -101,7 +100,7 @@ jobs:
           pip install .
       - name: Build app (macOS)
         run: |
-          pyinstaller --bootloader-path ./pyinstaller/bootloader/build/darwin \
+          pyinstaller \
             --onefile \
             --add-data "./services/converter-sw/build:build" \
             --add-data "/Applications/LibreOffice.app/Contents/MacOS/soffice:dependencies" \
@@ -174,7 +173,7 @@ jobs:
 
       - name: Build app (Windows)
         run: |
-          pyinstaller --bootloader-path ./pyinstaller/bootloader/build/windows ^
+          pyinstaller ^
             --onefile ^
             --add-data "services\\converter-sw\\build;build" ^
             --add-data "libreoffice;dependencies/libreoffice" ^
