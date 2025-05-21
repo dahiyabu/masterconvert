@@ -77,51 +77,51 @@ jobs:
           name: macos-build
           path: ./output/mac/*
 
-  # Build for Windows
- build-windows:
-  runs-on: windows-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.13.2'
-
-    - name: Install dependencies
-      run: |
-        choco install libreoffice tesseract
-        pip install -r ./services/converter-sw/requirements.txt
-
-    - name: Download FFmpeg static build
-      run: |
-        curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-        tar -xf ffmpeg.zip
-        mkdir ffmpeg-bin
-        copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin/
-
-    - name: Copy full LibreOffice program directory
-      run: |
-        mkdir libreoffice-program
-        copy "C:\Program Files\LibreOffice\program\*" libreoffice-program\ /Y
-
-    - name: Copy Tesseract executable
-      run: |
-        mkdir tesseract-bin
-        copy "C:\Program Files\Tesseract-OCR\tesseract.exe" tesseract-bin\ /Y
-
-    - name: Build app (Windows)
-      run: |
-        pyinstaller --onefile ^
-          --add-data "./services/converter-sw/build;./build" ^
-          --add-data "libreoffice-program;dependencies/soffice_program" ^
-          --add-data "tesseract-bin/tesseract.exe;dependencies" ^
-          --add-data "ffmpeg-bin/ffmpeg.exe;dependencies" ^
-          --distpath ./output/windows ./services/converter-sw/fileConverter.py
-
-    - name: Upload Windows build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-build
-        path: ./output/windows/*
+ # Build for Windows
+    build-windows:
+      runs-on: windows-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+    
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.13.2'
+    
+        - name: Install dependencies
+          run: |
+            choco install libreoffice tesseract
+            pip install -r ./services/converter-sw/requirements.txt
+    
+        - name: Download FFmpeg static build
+          run: |
+            curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+            tar -xf ffmpeg.zip
+            mkdir ffmpeg-bin
+            copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin/
+    
+        - name: Copy full LibreOffice program directory
+          run: |
+            mkdir libreoffice-program
+            copy "C:\Program Files\LibreOffice\program\*" libreoffice-program\ /Y
+    
+        - name: Copy Tesseract executable
+          run: |
+            mkdir tesseract-bin
+            copy "C:\Program Files\Tesseract-OCR\tesseract.exe" tesseract-bin\ /Y
+    
+        - name: Build app (Windows)
+          run: |
+            pyinstaller --onefile ^
+              --add-data "./services/converter-sw/build;./build" ^
+              --add-data "libreoffice-program;dependencies/soffice_program" ^
+              --add-data "tesseract-bin/tesseract.exe;dependencies" ^
+              --add-data "ffmpeg-bin/ffmpeg.exe;dependencies" ^
+              --distpath ./output/windows ./services/converter-sw/fileConverter.py
+    
+        - name: Upload Windows build artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: windows-build
+            path: ./output/windows/*
