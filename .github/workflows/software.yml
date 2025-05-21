@@ -171,8 +171,9 @@ jobs:
         run: |
           git clone https://github.com/pyinstaller/pyinstaller.git
           cd pyinstaller
-
-          # Inject progress log into archive extraction code
+          git submodule update --init --recursive
+          ls bootloader
+          # Insert progress print line into pyi_archive.c
           sed -i.bak '/TOC iterating/a\
           printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
           grep 'Extracting:' bootloader/src/pyi_archive.c
