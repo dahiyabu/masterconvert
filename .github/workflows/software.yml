@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y libreoffice tesseract-ocr ffmpeg ghostscript
+          sudo apt install -y libreoffice tesseract-ocr ffmpeg ghostscript p7zip-full
           pip install -r ./services/converter-sw/requirements.txt
       
       - name: Debug Tesseract installation
@@ -58,6 +58,7 @@ jobs:
             --add-data "/usr/bin/ffmpeg:dependencies" \
             --add-data "/usr/share/tesseract-ocr/5/tessdata:dependencies" \
             --add-data "/usr/bin/gs:dependencies" \
+            --add-data "/usr/bin/7z:dependencies" \
             --distpath ./output/linux ./services/converter-sw/fileConverter.py
 
       - name: Upload Linux build artifact
@@ -82,7 +83,7 @@ jobs:
         run: |
           brew update
           brew install --cask libreoffice
-          brew install tesseract ffmpeg ghostscript
+          brew install tesseract ffmpeg ghostscript p7zip
           pip install -r ./services/converter-sw/requirements.txt
       
       - name: Clone PyInstaller and patch bootloader
@@ -109,6 +110,7 @@ jobs:
             --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
             --add-data "/opt/homebrew/share/tessdata:dependencies" \
             --add-data "/opt/homebrew/bin/gs:dependencies" \
+            --add-data "/opt/homebrew/bin/7z:dependencies" \
             --distpath ./output/mac ./services/converter-sw/fileConverter.py
 
       - name: Upload macOS build artifact
@@ -131,7 +133,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          choco install libreoffice tesseract ghostscript
+          choco install libreoffice tesseract ghostscript 7zip -y
           pip install -r ./services/converter-sw/requirements.txt
 
       - name: Download FFmpeg static build
@@ -159,7 +161,11 @@ jobs:
         run: |
           mkdir -p ghostscript-bin
           cp "/c/Program Files/gs/"*/bin/gswin64c.exe ghostscript-bin/
-  
+      - name: Copy 7-Zip binary (Windows)
+        shell: bash
+        run: |
+          mkdir -p 7zip-bin
+          cp "/c/Program Files/7-Zip/7z.exe" 7zip-bin/
       - name: Clone PyInstaller and patch bootloader with progress print
         shell: bash
         run: |
@@ -188,6 +194,7 @@ jobs:
             --add-data "tesseract-bin;dependencies/tesseract-ocr" ^
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
             --add-data "ghostscript-bin\\gswin64c.exe;dependencies" ^
+            --add-data "7zip-bin\\7z.exe;dependencies" ^
             --distpath output\\windows services\\converter-sw\\fileConverter.py
         shell: cmd
       
