@@ -175,7 +175,7 @@ jobs:
           # Inject progress log into archive extraction code
           sed -i.bak '/TOC iterating/a\
           printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
-          grep 'Extracting:' pyinstaller/bootloader/src/pyi_archive.c
+          grep 'Extracting:' bootloader/src/pyi_archive.c
           # Build the bootloader
           cd bootloader
           python3 ./waf clean
