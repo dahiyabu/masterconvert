@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-ubuntu:
-    runs-on: ubuntu-latest  # Use ubuntu-latest for Linux, macos-latest for macOS, and windows-latest for Windows
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
@@ -30,7 +30,7 @@ jobs:
       - name: Build app (Linux)
         run: |
           pyinstaller --onefile \
-            --add-data "./services/converter-sw/build:./build" \
+            --add-data "./services/converter-sw/build:build" \
             --add-data "/usr/bin/libreoffice:dependencies" \
             --add-data "/usr/bin/tesseract:dependencies" \
             --add-data "/usr/bin/ffmpeg:dependencies" \
@@ -40,12 +40,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: ./output/linux/*  # The path to the generated file (adjust according to your build output folder)
+          path: ./output/linux/*
 
-  # Build for macOS
   build-macos:
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,7 +64,7 @@ jobs:
       - name: Build app (macOS)
         run: |
           pyinstaller --onefile \
-            --add-data "./services/converter-sw/build:./build" \
+            --add-data "./services/converter-sw/build:build" \
             --add-data "/Applications/LibreOffice.app/Contents/MacOS/soffice:dependencies" \
             --add-data "/opt/homebrew/bin/tesseract:dependencies" \
             --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
@@ -77,49 +76,49 @@ jobs:
           name: macos-build
           path: ./output/mac/*
 
- # Build for Windows
   build-windows:
     runs-on: windows-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-    
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.13.2'
-    
+
       - name: Install dependencies
         run: |
           choco install libreoffice tesseract
           pip install -r ./services/converter-sw/requirements.txt
-    
+
       - name: Download FFmpeg static build
         run: |
           curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
           tar -xf ffmpeg.zip
           mkdir ffmpeg-bin
-          copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin/
-    
-      - name: Copy full LibreOffice program directory
+          copy ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin\
+
+      - name: Copy LibreOffice program directory
         run: |
           mkdir libreoffice-program
-          copy "C:\Program Files\LibreOffice\program\*" libreoffice-program\ /Y
-    
+          copy "C:\Program Files\LibreOffice\program\*.*" libreoffice-program\ /Y
+
       - name: Copy Tesseract executable
         run: |
           mkdir tesseract-bin
           copy "C:\Program Files\Tesseract-OCR\tesseract.exe" tesseract-bin\ /Y
-    
+
       - name: Build app (Windows)
         run: |
           pyinstaller --onefile ^
-            --add-data "./services/converter-sw/build;./build" ^
+            --add-data "services\\converter-sw\\build;build" ^
             --add-data "libreoffice-program;dependencies/soffice_program" ^
-            --add-data "tesseract-bin/tesseract.exe;dependencies" ^
-            --add-data "ffmpeg-bin/ffmpeg.exe;dependencies" ^
-            --distpath ./output/windows ./services/converter-sw/fileConverter.py
-    
+            --add-data "tesseract-bin\\tesseract.exe;dependencies" ^
+            --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
+            --distpath output\\windows services\\converter-sw\\fileConverter.py
+
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
         with:
