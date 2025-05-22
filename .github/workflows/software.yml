@@ -140,18 +140,34 @@ jobs:
 
       - name: Patch bootloader (Windows only)
         run: |
-          $file = "pyinstaller/bootloader/src/pyi_main.c"
-          (Get-Content $file) -replace '#ifdef _WIN32', '#ifdef _WIN32`n#include <windows.h>' |
-            ForEach-Object {
-              if ($_ -match 'int main\(int argc, char \*argv\[\]\)') {
-                $_
-                '    #ifdef _WIN32'
-                '    MessageBoxA(NULL, "Booting FileConverterApp... Please wait.", "Starting", MB_OK | MB_ICONINFORMATION);'
-                '    #endif'
-              } else {
-                $_
-              }
-            } | Set-Content $file
+          $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
+          
+          # Inject Windows header
+          (Get-Content $mainFile) | ForEach-Object {
+            if ($_ -match "^#ifdef _WIN32") {
+              "#ifdef _WIN32"
+              "#include <windows.h>"
+            } else {
+              $_
+            }
+          } | Set-Content $mainFile
+
+          # Inject MessageBox call inside main()
+          (Get-Content $mainFile) | ForEach-Object {
+            if ($_ -match "^int main\(int argc, char \*argv\[\]\)") {
+              $_
+              "{"
+              "    #ifdef _WIN32"
+              "    MessageBoxA(NULL, `"Booting FileConverterApp... Please wait.`", `"Starting`", MB_OK | MB_ICONINFORMATION);"
+              "    #endif"
+            } elseif ($_ -match "^\}") {
+              "    return pyi_main(argc, argv);"
+              "}"
+            } else {
+              $_
+            }
+          } | Set-Content $mainFile
+
 
       - name: Build patched bootloader
         shell: pwsh
