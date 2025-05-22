@@ -4,8 +4,8 @@ import subprocess
 import config
 from logger import logger
 import fitz  # PyMuPDF
-from pdf2image import convert_from_path
 import pytesseract
+from PIL import Image
 from docx import Document
 
 
@@ -21,13 +21,27 @@ def is_scanned_pdf(pdf_path):
 def convert_scanned_pdf_to_docx(input_path, output_path):
     try:
         pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_PATH
-        images = convert_from_path(input_path)
         doc = Document()
+        pdf_doc = fitz.open(input_path)
 
-        for i, image in enumerate(images):
-            text = pytesseract.image_to_string(image, config="--psm 6")
-            doc.add_paragraph(f"--- Page {i + 1} ---")
-            doc.add_paragraph(text.strip())
+        for page_index in range(len(pdf_doc)):
+            page = pdf_doc.load_page(page_index)
+            pix = page.get_pixmap(dpi=300)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+            # Use image_to_data to get structured text
+            data = pytesseract.image_to_data(img, config="--psm 6", output_type=pytesseract.Output.DATAFRAME)
+            data = data.dropna(subset=["text"])
+            if data.empty:
+                continue
+
+            #doc.add_paragraph(f"--- Page {page_index + 1} ---")
+
+            # Group by line and sort left-to-right
+            for _, line in data.groupby("line_num"):
+                line_text = " ".join(line.sort_values("left")["text"])
+                if line_text.strip():
+                    doc.add_paragraph(line_text.strip())
 
         doc.save(output_path)
         logger.info(f"✅ OCR-based DOCX saved at {output_path}")
