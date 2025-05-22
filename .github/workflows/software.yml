@@ -131,38 +131,31 @@ jobs:
         with:
           python-version: '3.13.2'
 
-      - name: Clone PyInstaller and patch bootloader with progress print
+      - name: Clone PyInstaller
         shell: pwsh
         run: |
           git clone https://github.com/pyinstaller/pyinstaller.git
-          cd pyinstaller
+          cd pyinstaller/bootloader
           git submodule update --init --recursive
 
-          $file = 'bootloader/src/pyi_archive.c'
-          $lines = Get-Content $file
-          $newLines = @()
-          foreach ($line in $lines) {
-              $newLines += $line
-              if ($line -match 'for \(entry = toc->next; entry != NULL; entry = entry->next\)') {
-                  $newLines += '    printf("Extracting: %s\\n", entry->name);'
-                  $newLines += '    fflush(stdout);'
-              }
-          }
-          $newLines | Set-Content $file
+      - name: Patch bootloader
+        shell: bash
+        run: |
+          cd pyinstaller/bootloader/src
+          # Simple patch to show MessageBoxA
+          echo "#include <windows.h>" >> pyi_main.c
+          echo "int main(int argc, char *argv[]) {" > temp.c
+          echo "  MessageBoxA(NULL, \"Booting FileConverterApp... Please wait.\", \"Startup\", MB_OK | MB_ICONINFORMATION);" >> temp.c
+          tail -n +2 pyi_main.c >> temp.c
+          mv temp.c pyi_main.c
 
-          # Confirm change
-          if (Select-String -Path $file -Pattern 'Extracting:') {
-              Write-Output "Patch applied successfully."
-          } else {
-              Write-Output "Patch not applied. Pattern not found."
-          }
-
-          # Build the bootloader (with proper configuration step)
-          cd bootloader
+      - name: Build patched bootloader
+        shell: pwsh
+        run: |
+          cd pyinstaller/bootloader
           python3 ./waf distclean
           python3 ./waf configure
           python3 ./waf all
-
 
       - name: Install patched PyInstaller from local source
         shell: bash
