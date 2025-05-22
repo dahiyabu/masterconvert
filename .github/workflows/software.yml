@@ -143,36 +143,38 @@ jobs:
         run: |
           $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
 
-          # Inject windows.h header after first #ifdef _WIN32
-          (Get-Content $mainFile) | ForEach-Object {
-            if ($_ -match '#ifdef _WIN32') {
-              "#ifdef _WIN32"
-              "#include <windows.h>"
-            } else {
-              $_
-            }
-          } | Set-Content $mainFile
-
           # Inject MessageBoxA inside main function (look for PYI_MAIN macro block)
           $patched = @()
           $insideMain = $false
           foreach ($line in Get-Content $mainFile) {
-            $patched += $line
-
+            
             # Locate main function block (starts with PYI_MAIN)
             if ($line -match 'PYI_MAIN') {
               $insideMain = $true
             }
 
-            if ($insideMain -and $line -match 'pyi_launch_initialize') {
-              # Inject MessageBox just after pyi_launch_initialize(ctx);
-              $patched += '    #ifdef _WIN32'
-              $patched += '    MessageBoxA(NULL, "Booting FileConverterApp... Please wait.", "Starting", MB_OK | MB_ICONINFORMATION);'
-              $patched += '    #endif'
-              $insideMain = $false  # only inject once
+             # Before pyi_launch_initialize
+            if ($insideMain -and $line -match 'pyi_launch_initialize\(pyi_ctx\);') {
+                $patched += '    printf("Initializing... please wait\n");'
+                $patched += $line
+                $patched += '    printf("Booting FileConverterApp... Please wait.\n");'
+                continue
             }
-          }
-          $patched | Set-Content $mainFile
+
+              # After pyi_launch_execute
+              if ($insideMain -and $line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
+                $patched += $line
+                $patched += '    printf("Launching now...\n");'
+                continue
+              }
+
+              $patched += $line
+
+              if ($insideMain -and $line -match '^\}') {
+                $insideMain = $false
+              }
+            }
+            $patched | Set-Content $mainFile
 
       - name: Build patched bootloader
         shell: pwsh
