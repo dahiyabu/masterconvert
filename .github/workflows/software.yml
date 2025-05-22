@@ -139,7 +139,7 @@ jobs:
           git submodule update --init --recursive
           ls bootloader
           # Insert progress print line into pyi_archive.c
-          sed -i.bak '/TOC iterating/a printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c
+          sed '/TOC iterating/a printf("Extracting: %s\\n", entry->name);' bootloader/src/pyi_archive.c > tmp.c && mv tmp.c bootloader/src/pyi_archive.c
           grep 'Extracting:' bootloader/src/pyi_archive.c
           # Build the bootloader
           cd bootloader
