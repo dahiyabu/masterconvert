@@ -141,8 +141,8 @@ jobs:
       - name: Patch bootloader (Windows only)
         run: |
           $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
-          
-          # Inject Windows header
+
+          # Step 1: Inject Windows header if _WIN32 is present
           (Get-Content $mainFile) | ForEach-Object {
             if ($_ -match "^#ifdef _WIN32") {
               "#ifdef _WIN32"
@@ -152,7 +152,15 @@ jobs:
             }
           } | Set-Content $mainFile
 
-          # Inject MessageBox call inside main()
+          # Step 2: Replace incorrect pyi_main(argc, argv) calls with pyi_main(ctx)
+          (Get-Content $mainFile) -replace 'pyi_main\s*\(\s*argc\s*,\s*argv\s*\)', 'pyi_main(ctx)' |
+            Set-Content $mainFile
+
+          # Step 3: Remove all undeclared `argc` and `argv` tokens
+          (Get-Content $mainFile) -replace '\b(argc|argv)\b', '/* removed $1 */' |
+            Set-Content $mainFile
+
+          # Step 4: Inject MessageBox call inside main()
           (Get-Content $mainFile) | ForEach-Object {
             if ($_ -match "^int main\(int argc, char \*argv\[\]\)") {
               $_
@@ -161,12 +169,15 @@ jobs:
               "    MessageBoxA(NULL, `"Booting FileConverterApp... Please wait.`", `"Starting`", MB_OK | MB_ICONINFORMATION);"
               "    #endif"
             } elseif ($_ -match "^\}") {
-              "    return pyi_main(argc, argv);"
-              "}"
+              # Avoid inserting bad return statement — already fixed earlier
+              $_
             } else {
               $_
             }
           } | Set-Content $mainFile
+
+          Write-Output "✅ Bootloader patch complete."
+
 
 
       - name: Build patched bootloader
