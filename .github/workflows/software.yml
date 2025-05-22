@@ -148,7 +148,7 @@ jobs:
                   f.write(line)
                   if 'TOC iterating' in line:
                       f.write('    printf("Extracting: %s\\\\n", entry->name);\n')
-EOF
+          EOF
           grep 'Extracting:' bootloader/src/pyi_archive.c
           # Build the bootloader
           cd bootloader
