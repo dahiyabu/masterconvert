@@ -151,20 +151,23 @@ jobs:
             # Locate main function block (starts with PYI_MAIN)
             if ($line -match 'PYI_MAIN') {
               $insideMain = $true
+              $patched += $line
+              $patched += '    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout'
+              continue
             }
 
              # Before pyi_launch_initialize
             if ($insideMain -and $line -match 'pyi_launch_initialize\(pyi_ctx\);') {
                 $patched += '    printf("Initializing... please wait\n");'
                 $patched += $line
-                $patched += '    printf("Booting FileConverterApp... Please wait.\n");'
+                $patched += '    printf("Booting Master Convert App... Please wait.\n");'
                 continue
             }
 
               # After pyi_launch_execute
               if ($insideMain -and $line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
-                $patched += $line
                 $patched += '    printf("Launching now...\n");'
+                $patched += $line
                 continue
               }
 
