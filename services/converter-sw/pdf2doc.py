@@ -38,7 +38,7 @@ def convert_scanned_pdf_to_docx(input_path, output_path):
         return False
 
 # ✅ Main function to convert PDF to DOCX (smart fallback)
-def convert_from_pdf_(input_path, output_path, dest_format):
+def convert_from_pdf(input_path, output_path, dest_format):
     try:
         output_dir = os.path.dirname(output_path)
         base_name = os.path.splitext(os.path.basename(input_path))[0]
