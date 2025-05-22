@@ -143,41 +143,50 @@ jobs:
         run: |
           $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
 
-          # Inject MessageBoxA inside main function (look for PYI_MAIN macro block)
+          # Read the original file
+          $content = Get-Content $mainFile
           $patched = @()
           $insideMain = $false
-          foreach ($line in Get-Content $mainFile) {
-            
-            # Locate main function block (starts with PYI_MAIN)
+          $addedStdIO = $false
+
+          foreach ($line in $content) {
+            # Inject stdio.h at the top if missing
+            if (-not $addedStdIO -and $line -match '^#include') {
+              if ($line -notmatch '^#include <stdio.h>') {
+                $patched += '#include <stdio.h>'
+              }
+              $addedStdIO = $true
+            }
+
+            $patched += $line
+
+            # Locate main function block
             if ($line -match 'PYI_MAIN') {
               $insideMain = $true
-              $patched += $line
               $patched += '    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout'
               continue
             }
 
-             # Before pyi_launch_initialize
             if ($insideMain -and $line -match 'pyi_launch_initialize\(pyi_ctx\);') {
-                $patched += '    printf("Initializing... please wait\n");'
-                $patched += $line
-                $patched += '    printf("Booting Master Convert App... Please wait.\n");'
-                continue
-            }
-
-              # After pyi_launch_execute
-              if ($insideMain -and $line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
-                $patched += '    printf("Launching now...\n");'
-                $patched += $line
-                continue
-              }
-
+              $patched += '    printf("Initializing... please wait\\n");'
               $patched += $line
-
-              if ($insideMain -and $line -match '^\}') {
-                $insideMain = $false
-              }
+              $patched += '    printf("Booting Master Convert App... Please wait.\\n");'
+              continue
             }
-            $patched | Set-Content $mainFile
+
+            if ($insideMain -and $line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
+              $patched += $line
+              $patched += '    printf("Launching now...\\n");'
+              continue
+            }
+
+            if ($insideMain -and $line -match '^\}') {
+              $insideMain = $false
+            }
+          }
+
+          # Overwrite the original file
+          $patched | Set-Content $mainFile
 
       - name: Build patched bootloader
         shell: pwsh
