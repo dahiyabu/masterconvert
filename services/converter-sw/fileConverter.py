@@ -36,6 +36,8 @@ import config
 from docx import Document
 from archive import merge_files_to_archive
 from compress import compress_file
+from pdf2xl import convert_pdf_to_xl
+from pdf2doc import convert_from_pdf
 
 def get_curr_folder():
     if getattr(sys, 'frozen', False):
@@ -273,19 +275,6 @@ def encrypt_file(input_path, output_path, password):
         logger.error(f"Encryption error: {str(e)}")
         return False
 
-def convert_pdf_to_docx(input_path, output_path):
-    try:
-        # Create a PDF converter object
-        cv = Converter(input_path)
-        # Convert the PDF to DOCX
-        cv.convert(output_path, start=0, end=None)  # You can specify the page range (start, end)
-        cv.close()
-        logger.info(f"PDF converted to DOCX and saved at {output_path}")
-        return True
-    except Exception as e:
-        logger.error(f"Error converting PDF to DOCX: {e}")
-        return False
-
 def convert_pdf_to_image(input_path, output_path, target_format):
     try:
         # Open the PDF file
@@ -356,36 +345,6 @@ def convert_doc_to_pdf(input_path, output_path, source_format):
         logger.error(f"Error during conversion to PDF: {e}")
         return False
 
-def convert_from_pdf(input_path, output_path, dest_format):
-    try:
-     #   libreoffice_path = r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"
-        output_dir = os.path.dirname(output_path)
-        base_name = os.path.splitext(os.path.basename(input_path))[0]
-        generated_doc = os.path.join(output_dir, f"{base_name}.{dest_format}")
-        try:
-            subprocess.run([
-                config.LIBREOFFICE_PATH,
-                '--headless',
-                '--convert-to', dest_format,
-                '--outdir', output_dir,
-                input_path
-            ], check=True)
-
-            logger.info(f"Geenerated doc at {generated_doc}")
-            if os.path.exists(generated_doc):
-                shutil.move(generated_doc, output_path)
-            logger.info(f"✅ Converted to PDF: {output_path}")
-            logger.info(f"PDF conversion successful! Saved at {output_path}")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"❌ Error: {e}")
-        return True
-        #else:
-         #   raise Exception("Conversion failed during the process.")
-    
-    except Exception as e:
-        logger.error(f"Error during conversion to PDF: {e}")
-        return False
-
 def convert_docx_to_txt(input_path,output_path):
     try:
         with open(input_path, 'rb') as infile:
@@ -441,7 +400,7 @@ def convert_document(input_path, output_path, source_format, target_format, opti
     """Convert document files"""
     try:
         # Example PDF to DOCX conversion (would use libraries like python-docx in production)
-        if source_format == 'pdf' and target_format == 'docx':
+        if source_format == 'pdf' and target_format == 'docx-local':
             # In a real app, use python-docx or LibreOffice CLI
             conversion_success = convert_pdf_to_docx(input_path, output_path)
             if conversion_success:
@@ -482,8 +441,16 @@ def convert_document(input_path, output_path, source_format, target_format, opti
                 return False
             shutil.copy(input_path, output_path)  # Dummy conversion
             return True
-        elif source_format == 'pdf' and target_format in ['xlsx','xls']:
+        elif source_format == 'pdf' and target_format in ['docx']:
             conversion_success = convert_from_pdf(input_path,output_path,target_format)
+            if conversion_success:
+                logger.info(f"Conversion successful! The File is saved at {output_path}")
+                return True
+            else:
+                logger.error("Conversion failed.")
+                return False
+        elif source_format == 'pdf' and target_format in ['xlsx','xls']:
+            conversion_success = convert_pdf_to_xl(input_path,output_path)
             if conversion_success:
                 logger.info(f"Conversion successful! The File is saved at {output_path}")
                 return True

@@ -181,7 +181,7 @@ def compress_file(input_file,output_file, quality_level):
             compress_image(input_file, output_file, quality_level)
         else:
             # Attempt generic compression (may not be very effective)
-            #compress_generic(input_file, output_file, quality_level)
+            compress_generic(input_file, output_file, quality_level)
             logger.info("format not supported for compression")
             return
 
