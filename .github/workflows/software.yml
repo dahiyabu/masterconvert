@@ -139,12 +139,13 @@ jobs:
           git submodule update --init --recursive
 
       - name: Patch bootloader (Windows only)
+        shell: pwsh
         run: |
           $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
 
-          # Step 1: Inject Windows header if _WIN32 is present
+          # Inject windows.h header after first #ifdef _WIN32
           (Get-Content $mainFile) | ForEach-Object {
-            if ($_ -match "^#ifdef _WIN32") {
+            if ($_ -match '#ifdef _WIN32') {
               "#ifdef _WIN32"
               "#include <windows.h>"
             } else {
@@ -152,33 +153,26 @@ jobs:
             }
           } | Set-Content $mainFile
 
-          # Step 2: Replace incorrect pyi_main(argc, argv) calls with pyi_main(ctx)
-          (Get-Content $mainFile) -replace 'pyi_main\s*\(\s*argc\s*,\s*argv\s*\)', 'pyi_main(ctx)' |
-            Set-Content $mainFile
+          # Inject MessageBoxA inside main function (look for PYI_MAIN macro block)
+          $patched = @()
+          $insideMain = $false
+          foreach ($line in Get-Content $mainFile) {
+            $patched += $line
 
-          # Step 3: Remove all undeclared `argc` and `argv` tokens
-          (Get-Content $mainFile) -replace '\b(argc|argv)\b', '/* removed $1 */' |
-            Set-Content $mainFile
-
-          # Step 4: Inject MessageBox call inside main()
-          (Get-Content $mainFile) | ForEach-Object {
-            if ($_ -match "^int main\(int argc, char \*argv\[\]\)") {
-              $_
-              "{"
-              "    #ifdef _WIN32"
-              "    MessageBoxA(NULL, `"Booting FileConverterApp... Please wait.`", `"Starting`", MB_OK | MB_ICONINFORMATION);"
-              "    #endif"
-            } elseif ($_ -match "^\}") {
-              # Avoid inserting bad return statement — already fixed earlier
-              $_
-            } else {
-              $_
+            # Locate main function block (starts with PYI_MAIN)
+            if ($line -match 'PYI_MAIN') {
+              $insideMain = $true
             }
-          } | Set-Content $mainFile
 
-          Write-Output "✅ Bootloader patch complete."
-
-
+            if ($insideMain -and $line -match 'pyi_launch_initialize') {
+              # Inject MessageBox just after pyi_launch_initialize(ctx);
+              $patched += '    #ifdef _WIN32'
+              $patched += '    MessageBoxA(NULL, "Booting FileConverterApp... Please wait.", "Starting", MB_OK | MB_ICONINFORMATION);'
+              $patched += '    #endif'
+              $insideMain = $false  # only inject once
+            }
+          }
+          $patched | Set-Content $mainFile
 
       - name: Build patched bootloader
         shell: pwsh
