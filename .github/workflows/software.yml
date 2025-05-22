@@ -231,6 +231,7 @@ jobs:
       - name: Build app (Windows)
         run: |
           pyinstaller ^
+            --noconfirm --clean --console ^
             --onefile --log-level DEBUG ^
             --add-data "services\\converter-sw\\build;build" ^
             --add-data "libreoffice;dependencies/libreoffice" ^
