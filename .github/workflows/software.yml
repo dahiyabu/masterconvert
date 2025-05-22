@@ -150,42 +150,46 @@ jobs:
           $addedStdIO = $false
 
           foreach ($line in $content) {
-            # Inject stdio.h at the top if missing
-            if (-not $addedStdIO -and $line -match '^#include') {
-              if ($line -notmatch '^#include <stdio.h>') {
-                $patched += '#include <stdio.h>'
+              # Inject stdio.h at the top if missing (once, right before first #include)
+              if (-not $addedStdIO -and $line -match '^#include') {
+                  if (-not ($content -join "`n" | Select-String -Pattern '#include <stdio.h>')) {
+                      $patched += '#include <stdio.h>'
+                  }
+                  $addedStdIO = $true
               }
-              $addedStdIO = $true
-            }
 
-            $patched += $line
-
-            # Locate main function block
-            if ($line -match 'PYI_MAIN') {
-              $insideMain = $true
-              $patched += '    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout'
-              continue
-            }
-
-            if ($insideMain -and $line -match 'pyi_launch_initialize\(pyi_ctx\);') {
-              $patched += '    printf("Initializing... please wait\\n");'
               $patched += $line
-              $patched += '    printf("Booting Master Convert App... Please wait.\\n");'
-              continue
-            }
 
-            if ($insideMain -and $line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
-              $patched += $line
-              $patched += '    printf("Launching now...\\n");'
-              continue
-            }
+              # Locate main function block by matching 'PYI_MAIN'
+              if ($line -match 'PYI_MAIN') {
+                  $insideMain = $true
+                  # Add setvbuf right after the PYI_MAIN line
+                  $patched += '    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout'
+                  continue
+              }
 
-            if ($insideMain -and $line -match '^\}') {
-              $insideMain = $false
-            }
+              if ($insideMain) {
+                  if ($line -match 'pyi_launch_initialize\(pyi_ctx\);') {
+                      # Add printf statements around initialization
+                      $patched += '    printf("Initializing... please wait\\n");'
+                      $patched += '    printf("Booting Master Convert App... Please wait.\\n");'
+                      continue
+                  }
+
+                  if ($line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
+                      # Add printf after launching
+                      $patched += '    printf("Launching now...\\n");'
+                      continue
+                  }
+
+                  # Detect end of main function block (a closing brace alone on the line)
+                  if ($line -match '^\}') {
+                      $insideMain = $false
+                  }
+              }
           }
 
-          # Overwrite the original file
+          # Overwrite the original file with patched content
           $patched | Set-Content $mainFile
 
       - name: Build patched bootloader
