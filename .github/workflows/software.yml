@@ -131,7 +131,7 @@ jobs:
         with:
           python-version: '3.13.2'
 
-      - name: Clone PyInstaller and patch bootloader with progress print (PowerShell)
+      - name: Clone PyInstaller and patch bootloader with progress print
         shell: pwsh
         run: |
           git clone https://github.com/pyinstaller/pyinstaller.git
@@ -144,12 +144,16 @@ jobs:
           $newLines = @()
           foreach ($line in $lines) {
               $newLines += $line
-              if ($line -match 'TOC iterating') {
+              if ($line.Contains('TOC iterating')) {
                   $newLines += '    printf("Extracting: %s\\n", entry->name);'
+                  $newLines += '    fflush(stdout);'
               }
           }
           $newLines | Set-Content $file
+
+          Write-Host "Verifying patch:"
           Select-String -Path $file -Pattern 'Extracting:'
+
           # Build the bootloader
           cd bootloader
           python3 ./waf clean
@@ -191,7 +195,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ghostscript
-          cp -r "/c/Program Files/gs"/* ghostscript/
+          cp -r "/c/Program Files/gs/gs"*/* ghostscript/
       - name: Copy 7-Zip binary (Windows)
         shell: bash
         run: |
@@ -207,8 +211,8 @@ jobs:
             --add-data "libreoffice;dependencies/libreoffice" ^
             --add-data "tesseract-bin;dependencies/tesseract-ocr" ^
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
-            --add-data "ghostscript;dependencies" ^
-            --add-data "7zip;dependencies" ^
+            --add-data "ghostscript;dependencies/ghostscript" ^
+            --add-data "7zip;dependencies/7zip" ^
             --distpath output\\windows services\\converter-sw\\fileConverter.py
         shell: cmd
       
