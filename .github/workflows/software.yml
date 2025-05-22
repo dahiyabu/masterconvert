@@ -138,16 +138,20 @@ jobs:
           cd pyinstaller/bootloader
           git submodule update --init --recursive
 
-      - name: Patch bootloader
-        shell: bash
+      - name: Patch bootloader (Windows only)
         run: |
-          cd pyinstaller/bootloader/src
-          # Simple patch to show MessageBoxA
-          echo "#include <windows.h>" >> pyi_main.c
-          echo "int main(int argc, char *argv[]) {" > temp.c
-          echo "  MessageBoxA(NULL, \"Booting FileConverterApp... Please wait.\", \"Startup\", MB_OK | MB_ICONINFORMATION);" >> temp.c
-          tail -n +2 pyi_main.c >> temp.c
-          mv temp.c pyi_main.c
+          $file = "pyinstaller/bootloader/src/pyi_main.c"
+          (Get-Content $file) -replace '#ifdef _WIN32', '#ifdef _WIN32`n#include <windows.h>' |
+            ForEach-Object {
+              if ($_ -match 'int main\(int argc, char \*argv\[\]\)') {
+                $_
+                '    #ifdef _WIN32'
+                '    MessageBoxA(NULL, "Booting FileConverterApp... Please wait.", "Starting", MB_OK | MB_ICONINFORMATION);'
+                '    #endif'
+              } else {
+                $_
+              }
+            } | Set-Content $file
 
       - name: Build patched bootloader
         shell: pwsh
