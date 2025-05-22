@@ -131,25 +131,25 @@ jobs:
         with:
           python-version: '3.13.2'
 
-      - name: Clone PyInstaller and patch bootloader with progress print
-        shell: bash
+      - name: Clone PyInstaller and patch bootloader with progress print (PowerShell)
+        shell: pwsh
         run: |
           git clone https://github.com/pyinstaller/pyinstaller.git
           cd pyinstaller
           git submodule update --init --recursive
           ls bootloader
-          echo "Patching bootloader/src/pyi_archive.c using Python..."
-          python3 - <<EOF
-          filepath = 'bootloader/src/pyi_archive.c'
-          with open(filepath, 'r') as f:
-              lines = f.readlines()
-          with open(filepath, 'w') as f:
-              for line in lines:
-                  f.write(line)
-                  if 'TOC iterating' in line:
-                      f.write('    printf("Extracting: %s\\\\n", entry->name);\n')
-          EOF
-          grep 'Extracting:' bootloader/src/pyi_archive.c
+          Write-Host "Patching bootloader/src/pyi_archive.c using PowerShell..."
+          $file = 'bootloader/src/pyi_archive.c'
+          $lines = Get-Content $file
+          $newLines = @()
+          foreach ($line in $lines) {
+              $newLines += $line
+              if ($line -match 'TOC iterating') {
+                  $newLines += '    printf("Extracting: %s\\n", entry->name);'
+              }
+          }
+          $newLines | Set-Content $file
+          Select-String -Path $file -Pattern 'Extracting:'
           # Build the bootloader
           cd bootloader
           python3 ./waf clean
