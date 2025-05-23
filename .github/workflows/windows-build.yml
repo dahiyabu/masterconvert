@@ -27,7 +27,9 @@ jobs:
 
       - name: Build launcher exe
         run: |
-          pyinstaller --onefile --windowed  --name launcher --distpath output/windows services/converter-sw/launcher.py
+          pyinstaller --onefile --windowed  --name launcher ^
+          --add-data "services/converter-sw/logo.jpg;logo.jpg" ^
+          --distpath output/windows services/converter-sw/launcher.py
 
       - name: Build app (Windows)
         run: |
