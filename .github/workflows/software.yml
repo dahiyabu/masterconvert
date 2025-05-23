@@ -139,10 +139,10 @@ jobs:
           git submodule update --init --recursive
 
       - name: Patch bootloader (Windows only)
-        shell: pwsh
+        shell: bash
         run: |
-          $mainFile="pyinstaller/bootloader/src/pyi_main.c"
-          $patched=$(mktemp)
+          mainFile="pyinstaller/bootloader/src/pyi_main.c"
+          patched=$(mktemp)
 
           awk '
           BEGIN {
@@ -191,10 +191,10 @@ jobs:
           mv "$patched" "$mainFile"
 
       - name: Patch pyi_launch.c
-        shell: pwsh
+        shell: bash
         run: |
-          $launchFile="pyinstaller/bootloader/src/pyi_launch.c"
-          $patched=$(mktemp)
+          launchFile="pyinstaller/bootloader/src/pyi_launch.c"
+          patched=$(mktemp)
 
           awk '
           BEGIN {
