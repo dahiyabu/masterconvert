@@ -3,6 +3,15 @@ import os
 import sys
 import shutil
 
+def get_lib_path():
+    # Base path for extracting bundled files if running from a packaged EXE
+    if getattr(sys, 'frozen', False):
+        # If the app is packaged, dependencies will be extracted to a temporary folder
+        return sys._MEIPASS
+    else:
+        # If running from source code, use the current working directory
+        return os.getcwd()
+
 def get_base_folder():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)

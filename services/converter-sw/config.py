@@ -1,19 +1,11 @@
 import sys
 import os
 import platform
-from init import logger
+from init import logger,get_lib_path
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()
 
-# Base path for extracting bundled files if running from a packaged EXE
-if getattr(sys, 'frozen', False):
-    # If the app is packaged, dependencies will be extracted to a temporary folder
-    BASE_PATH = sys._MEIPASS
-else:
-    # If running from source code, use the current working directory
-    BASE_PATH = os.getcwd()
-
-
+BASE_PATH = get_lib_path()
 # Set paths for external binaries based on platform
 if SYSTEM_PLATFORM == 'windows':
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'libreoffice','program','soffice.exe')

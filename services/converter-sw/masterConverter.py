@@ -18,7 +18,7 @@ import rarfile
 import atexit
 import signal
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from init import logger,get_upload_folder,get_converted_folder,cleanup_files
+from init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path
 import docx2txt
 import fitz
 from PIL import Image
@@ -40,7 +40,7 @@ def get_curr_folder():
 
    
 # Initialize Flask app
-app = Flask("Master Convert", static_folder=os.path.join(get_curr_folder(), 'build', 'static'))
+app = Flask("Master Convert", static_folder=os.path.join(get_lib_path(), 'build', 'static'))
 CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
@@ -1014,7 +1014,7 @@ def get_formats():
     }), 200
 
 def get_build_folder():
-    return os.path.join(get_curr_folder(),'build')
+    return os.path.join(get_lib_path(),'build')
 
 @app.route('/')
 def serve_react_app():
@@ -1040,7 +1040,8 @@ def server_error(e):
 if __name__ == '__main__':
     cleanup_files()
     set_console_title("MasterConverter")
-    with open("app_ready.tmp", "w") as f:
+    ready_file=os.path.join(get_base_folder(),'app_ready.tmp')
+    with open(ready_file, "w") as f:
         f.write("ready")
     setup()
     print("Enjoy Master Convert at http://127.0.0.1:5000 in your browser")

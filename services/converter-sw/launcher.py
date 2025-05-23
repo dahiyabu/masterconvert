@@ -5,12 +5,12 @@ from PIL import Image, ImageTk
 from time import sleep
 import os
 import psutil
-from init import cleanup_files,get_base_folder
+from init import cleanup_files,get_base_folder,get_lib_path
 
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 
-READY_FILE = "app_ready.tmp"
+READY_FILE = os.path.join(get_base_folder(),"app_ready.tmp")
 CHECK_INTERVAL_MS = 1500
 TIMEOUT_SECONDS = 300
 MAX_ATTEMPTS = TIMEOUT_SECONDS * 1000 // CHECK_INTERVAL_MS
@@ -25,14 +25,14 @@ def is_main_process_running(proc):
     return proc.poll() is None
 
 
-LOGO=os.path.join(get_base_folder(),'logo.jpg')
+LOGO=os.path.join(get_lib_path(),'logo.jpg')
 def launch_main_app():
     global main_process
     sleep(1.5)  # splash delay
 
     if os.name == 'nt':
         # Windows: start in new console with title
-        MASTER_CONVERTER=os.path.join(get_base_folder(),'masterConverter.exe')
+        MASTER_CONVERTER=os.path.join(get_lib_path(),'masterConverter.exe')
         main_process = subprocess.Popen(
             [MASTER_CONVERTER],
             shell=True,
@@ -40,7 +40,7 @@ def launch_main_app():
         )
     else:
         # macOS/Linux
-        MASTER_CONVERTER=os.path.join(get_base_folder(),'masterConverter')
+        MASTER_CONVERTER=os.path.join(get_lib_path(),'masterConverter')
         main_process = subprocess.Popen(
             ['x-terminal-emulator', '-e', MASTER_CONVERTER]
             if shutil.which('x-terminal-emulator') else
