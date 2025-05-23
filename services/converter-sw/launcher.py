@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from time import sleep
 import os
 import psutil
-from init import cleanup_files
+from init import cleanup_files,get_base_folder
 
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
@@ -25,25 +25,28 @@ def is_main_process_running(proc):
     return proc.poll() is None
 
 
+LOGO=os.path.join(get_base_folder(),'logo.jpg')
 def launch_main_app():
     global main_process
     sleep(1.5)  # splash delay
 
     if os.name == 'nt':
         # Windows: start in new console with title
+        MASTER_CONVERTER=os.path.join(get_base_folder(),'masterConverter.exe')
         main_process = subprocess.Popen(
-            ['python','masterConverter.py'],
+            [MASTER_CONVERTER],
             shell=True,
             creationflags=DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
         )
     else:
         # macOS/Linux
+        MASTER_CONVERTER=os.path.join(get_base_folder(),'masterConverter')
         main_process = subprocess.Popen(
-            ['x-terminal-emulator', '-e', 'python3 masterConverter.py']
+            ['x-terminal-emulator', '-e', MASTER_CONVERTER]
             if shutil.which('x-terminal-emulator') else
-            ['gnome-terminal', '--', 'python3', 'masterConverter.py']
+            ['gnome-terminal', '--', MASTER_CONVERTER]
             if shutil.which('gnome-terminal') else
-            ['python3', 'masterConverter.py']  # fallback: same terminal
+            [MASTER_CONVERTER]  # fallback: same terminal
         )
     # Start monitoring the ready file on the main thread (Tkinter)
     check_ready_file()
