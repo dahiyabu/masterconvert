@@ -141,54 +141,79 @@ jobs:
       - name: Patch bootloader (Windows only)
         shell: pwsh
         run: |
-          $mainFile = "pyinstaller/bootloader/src/pyi_main.c"
-          $content = Get-Content $mainFile
-          $patched = @()
-          $addedStdIO = $false
-          $insideMainFunction = $false
-          $insertedSetvbuf = $false
+          mainFile="pyinstaller/bootloader/src/pyi_main.c"
+          patched=$(mktemp)
 
-          foreach ($line in $content) {
-
-              # Insert #include <stdio.h> once near top
-              if (-not $addedStdIO -and $line -match '^#include') {
-                  if (-not ($content -join "`n" | Select-String '#include <stdio.h>')) {
-                      $patched += '#include <stdio.h>'
-                  }
-                  $addedStdIO = $true
-              }
-
-              $patched += $line
-
-              # Detect start of PYI_MAIN function by matching function signature or macro and opening brace
-              if ($line -match 'int\s+PYI_MAIN\s*\(.*\)\s*{') {
-                  $insideMainFunction = $true
-                  # Insert setvbuf immediately after opening brace line
-                  $patched += '    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout'
-                  continue
-              }
-
-              if ($insideMainFunction) {
-                  # Insert printf statements after function calls inside main
-
-                  if ($line -match 'pyi_launch_initialize\(pyi_ctx\);') {
-                      $patched += '    printf("Initializing... please wait\\n");'
-                      continue
-                  }
-
-                  if ($line -match 'ret = pyi_launch_execute\(pyi_ctx\);') {
-                      $patched += '    printf("Launching now...\\n");'
-                      continue
-                  }
-
-                  # Detect end of PYI_MAIN function
-                  if ($line -match '^\}') {
-                      $insideMainFunction = $false
-                  }
-              }
+          awk '
+          BEGIN {
+            addedStdIO = 0;
+            addedWindows = 0;
+            insideMain = 0;
           }
+          {
+            if (!addedStdIO && $0 ~ /^#include/) {
+              print "#include <stdio.h>";
+              addedStdIO = 1;
+            }
+            if (!addedWindows && $0 ~ /^#include/) {
+              print "#include <windows.h>";
+              print "#include <io.h>";
+              addedWindows = 1;
+            }
+            print;
+            if ($0 ~ /int[[:space:]]+PYI_MAIN[[:space:]]*\(.*\)[[:space:]]*{/) {
+              insideMain = 1;
+              print "    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout";
+              print "    printf(\"[BOOT] PyInstaller bootloader started\\n\");";
+              print "    char cwd[MAX_PATH];";
+              print "    GetCurrentDirectory(MAX_PATH, cwd);";
+              print "    printf(\"[BOOT] Current working dir: %s\\n\", cwd);";
+              print "    WIN32_FIND_DATA findFileData;";
+              print "    HANDLE hFind = FindFirstFile(\"*\", &findFileData);";
+              print "    if (hFind != INVALID_HANDLE_VALUE) {";
+              print "        do {";
+              print "            printf(\"[BOOT] Found file: %s\\n\", findFileData.cFileName);";
+              print "        } while (FindNextFile(hFind, &findFileData));";
+              print "        FindClose(hFind);";
+              print "    }";
+            }
+            if (insideMain && $0 ~ /pyi_launch_initialize\(pyi_ctx\);/) {
+              print "    printf(\"[BOOT] Initializing... please wait\\n\");";
+            }
+            if (insideMain && $0 ~ /ret = pyi_launch_execute\(pyi_ctx\);/) {
+              print "    printf(\"[BOOT] Launching now...\\n\");";
+            }
+            if (insideMain && $0 ~ /^}/) {
+              insideMain = 0;
+            }
+          }' "$mainFile" > "$patched"
 
-          $patched | Set-Content $mainFile
+          mv "$patched" "$mainFile"
+
+      - name: Patch pyi_launch.c
+        shell: pwsh
+        run: |
+          launchFile="pyinstaller/bootloader/src/pyi_launch.c"
+          patched=$(mktemp)
+
+          awk '
+          BEGIN {
+            injectedSetvbuf = 0;
+          }
+          {
+            if (!injectedSetvbuf && $0 ~ /\{/) {
+              print;
+              print "    setvbuf(stdout, NULL, _IONBF, 0);  // Unbuffer stdout";
+              injectedSetvbuf = 1;
+              next;
+            }
+            print;
+            if ($0 ~ /fwrite\(.*\);/) {
+              print "    printf(\"[BOOT] Extracting: %s\\n\", target_path);";
+            }
+          }' "$launchFile" > "$patched"
+
+          mv "$patched" "$launchFile"
 
       - name: Build patched bootloader
         shell: pwsh
@@ -253,7 +278,7 @@ jobs:
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
             --add-data "ghostscript;dependencies/ghostscript" ^
             --add-data "7zip;dependencies/7zip" ^
-            --distpath output\\windows services\\converter-sw\\fileConverter.py
+            --distpath output\\windows services\\converter-sw\\convertMaster.py
         shell: cmd
       
       - name: Upload Windows build artifact
