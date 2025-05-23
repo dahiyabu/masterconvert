@@ -3,6 +3,7 @@ import shutil
 import os
 import signal
 from init import logger,get_upload_folder,get_converted_folder
+from fileConverter import app
 
 def setup():
     # Create necessary folders
