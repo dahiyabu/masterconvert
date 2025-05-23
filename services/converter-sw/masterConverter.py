@@ -18,7 +18,7 @@ import rarfile
 import atexit
 import signal
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from init import logger,get_upload_folder,get_converted_folder
+from init import logger,get_upload_folder,get_converted_folder,cleanup_files
 import docx2txt
 import fitz
 from PIL import Image
@@ -143,26 +143,18 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
+def set_console_title(title: str):
+    if os.name == 'nt':
+        # Windows
+        os.system(f'title {title}')
+    elif os.name == 'posix':
+        # Linux/macOS — use ANSI escape sequence
+        sys.stdout.write(f"\33]0;{title}\a")
+        sys.stdout.flush()
 def setup():
     # Create necessary folders
     os.makedirs(get_upload_folder(), exist_ok=True)
     os.makedirs(get_converted_folder(), exist_ok=True)
-
-def cleanup_files():
-    temp_path=get_upload_folder()
-    if os.path.exists(temp_path):
-        try:
-            shutil.rmtree(temp_path)
-            logger.info(f"Deleted upload folder and all contents: {temp_path}")
-        except Exception as e:
-            logger.error(f"Failed to delete upload folder: {e}")
-    temp_path=get_converted_folder()
-    if os.path.exists(temp_path):
-        try:
-            shutil.rmtree(temp_path)
-            logger.info(f"Deleted upload folder and all contents: {temp_path}")
-        except Exception as e:
-            logger.error(f"Failed to delete upload folder: {e}")
             
 # Register cleanup on normal interpreter exit
 atexit.register(cleanup_files)
@@ -1046,6 +1038,10 @@ def server_error(e):
     return jsonify({'error': 'Server error occurred'}), 500
 
 if __name__ == '__main__':
+    cleanup_files()
+    set_console_title("MasterConverter")
+    with open("app_ready.tmp", "w") as f:
+        f.write("ready")
     setup()
     print("Enjoy Master Convert at http://127.0.0.1:5000 in your browser")
     print("To Close,\n Press Ctrl+C")
