@@ -141,8 +141,8 @@ jobs:
       - name: Patch bootloader (Windows only)
         shell: pwsh
         run: |
-          mainFile="pyinstaller/bootloader/src/pyi_main.c"
-          patched=$(mktemp)
+          $mainFile="pyinstaller/bootloader/src/pyi_main.c"
+          $patched=$(mktemp)
 
           awk '
           BEGIN {
@@ -193,8 +193,8 @@ jobs:
       - name: Patch pyi_launch.c
         shell: pwsh
         run: |
-          launchFile="pyinstaller/bootloader/src/pyi_launch.c"
-          patched=$(mktemp)
+          $launchFile="pyinstaller/bootloader/src/pyi_launch.c"
+          $patched=$(mktemp)
 
           awk '
           BEGIN {
