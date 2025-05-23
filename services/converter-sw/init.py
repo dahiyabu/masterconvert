@@ -6,7 +6,11 @@ def get_base_folder():
         return os.path.dirname(sys.executable)
     else:
         return os.path.dirname(os.path.abspath(sys.argv[0]))
-    
+def get_upload_folder():
+    return os.path.join(get_base_folder(), 'uploads')
+def get_converted_folder():
+    return os.path.join(get_base_folder(), 'converted')
+
 # Initialize Flask app
 # Configure logging
 for handler in logging.root.handlers[:]:

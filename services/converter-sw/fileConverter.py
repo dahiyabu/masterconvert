@@ -2,7 +2,6 @@ import os
 import io
 import sys
 import uuid
-import json
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
@@ -18,22 +17,14 @@ import py7zr
 import rarfile
 import atexit
 import signal
-import mimetypes
-import ffmpeg
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from pdf2docx import Converter
-from docx2pdf import convert
-from logger import logger,get_base_folder
+from init import logger,get_upload_folder,get_converted_folder
 import docx2txt
 import fitz
 from PIL import Image
 #from cryptography.fernet import Fernet
 import time
-import pdfplumber
-import pypandoc
 import config
-#from weasyprint import HTML
-from docx import Document
 from archive import merge_files_to_archive
 from compress import compress_file
 from pdf2xl import convert_pdf_to_xl
@@ -54,8 +45,6 @@ CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
 # Configuration
-UPLOAD_FOLDER = 'uploads'
-CONVERTED_FOLDER = 'converted'
 ALLOWED_EXTENSIONS = {
     'pdf', 'docx', 'txt', 'rtf', 'odt','xlsx','xls','csv',  # Documents
     'jpg', 'jpeg', 'png', 'svg', 'webp', 'gif',  # Images
@@ -154,10 +143,6 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
-def get_upload_folder():
-    return os.path.join(get_base_folder(), UPLOAD_FOLDER)
-def get_converted_folder():
-    return os.path.join(get_base_folder(), CONVERTED_FOLDER)
 def setup():
     # Create necessary folders
     os.makedirs(get_upload_folder(), exist_ok=True)
@@ -399,18 +384,8 @@ def convert_pdf_to_txt(input_path, output_path):
 def convert_document(input_path, output_path, source_format, target_format, options=None):
     """Convert document files"""
     try:
-        # Example PDF to DOCX conversion (would use libraries like python-docx in production)
-        if source_format == 'pdf' and target_format == 'docx-local':
-            # In a real app, use python-docx or LibreOffice CLI
-            conversion_success = convert_pdf_to_docx(input_path, output_path)
-            if conversion_success:
-                logger.info(f"Conversion successful! The file is saved at {output_path}")
-            else:
-                logger.info("Conversion failed.")
-            return True
-            
         # PDF to image conversion
-        elif source_format == 'pdf' and target_format in ['png', 'jpg']:
+        if source_format == 'pdf' and target_format in ['png', 'jpg']:
             # In a real app, use pdf2image
             conversion_success = convert_pdf_to_image(input_path, output_path, target_format)
             if conversion_success:
@@ -441,7 +416,7 @@ def convert_document(input_path, output_path, source_format, target_format, opti
                 return False
             shutil.copy(input_path, output_path)  # Dummy conversion
             return True
-        elif source_format == 'pdf' and target_format in ['docx']:
+        elif source_format == 'pdf' and target_format in ['docx','odt']:
             conversion_success = convert_from_pdf(input_path,output_path,target_format)
             if conversion_success:
                 logger.info(f"Conversion successful! The File is saved at {output_path}")
@@ -1073,4 +1048,5 @@ def server_error(e):
 if __name__ == '__main__':
     setup()
     print("Enjoy Master Convert at http://127.0.0.1:5000 in your browser")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("To Close,\n Press Ctrl+C")
+    app.run(debug=True,use_reloader=False, host='0.0.0.0', port=5000)

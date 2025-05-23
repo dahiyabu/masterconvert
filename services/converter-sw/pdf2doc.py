@@ -2,11 +2,13 @@ import os
 import shutil
 import subprocess
 import config
-from logger import logger
+from init import logger
 import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 from docx import Document
+from pdf2docx import Converter
+from docx2pdf import convert
 
 
 # ✅ Detect if PDF is scanned
@@ -21,6 +23,8 @@ def is_scanned_pdf(pdf_path):
 def convert_scanned_pdf_to_docx(input_path, output_path):
     try:
         pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_PATH
+        #pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Update this path
+        #os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'+os.sep
         doc = Document()
         pdf_doc = fitz.open(input_path)
 
@@ -51,35 +55,44 @@ def convert_scanned_pdf_to_docx(input_path, output_path):
         logger.error(f"❌ OCR conversion failed: {e}")
         return False
 
-# ✅ Main function to convert PDF to DOCX (smart fallback)
 def convert_from_pdf(input_path, output_path, dest_format):
-    try:
-        output_dir = os.path.dirname(output_path)
-        base_name = os.path.splitext(os.path.basename(input_path))[0]
-        generated_doc = os.path.join(output_dir, f"{base_name}.{dest_format}")
+    if dest_format == 'docx':
+        return convert_pdf_to_docx(input_path,output_path)
+    elif dest_format == 'odt':
+        temp_docx = output_path.replace(".odt", ".docx")
+        if convert_pdf_to_docx(input_path,temp_docx):
+            return convert_docx_to_odt(temp_docx,output_path)
+    return False
 
+# ✅ Main function to convert PDF to DOCX (smart fallback)
+def convert_pdf_to_docx(input_path,output_path):
+    try:
         if is_scanned_pdf(input_path):
             logger.info("📄 Detected scanned PDF – using OCR method for DOCX.")
             return convert_scanned_pdf_to_docx(input_path, output_path)
 
-        # Use LibreOffice for digital PDFs
+        cv = Converter(input_path)
+        cv.convert(output_path, start=0, end=None)
+        cv.close()
+        logger.info(f"✅ PDF converted to DOCX at: {output_path}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error: {e}")
+        return False
+    
+def convert_docx_to_odt(docx_path, odt_path):
+    try:
+        output_dir = os.path.dirname(odt_path)
         subprocess.run([
+            #r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
             config.LIBREOFFICE_PATH,
             '--headless',
-            '--convert-to', dest_format,
+            '--convert-to', 'odt',
             '--outdir', output_dir,
-            input_path
+            docx_path
         ], check=True)
-
-        if os.path.exists(generated_doc):
-            shutil.move(generated_doc, output_path)
-            logger.info(f"✅ Converted (digital) to DOCX: {output_path}")
-            return True
-        else:
-            raise Exception("LibreOffice conversion failed.")
-
+        print(f"✅ DOCX converted to ODT at {odt_path}")
+        return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"❌ LibreOffice error: {e}")
-    except Exception as e:
-        logger.error(f"❌ Conversion failed: {e}")
-    return False
+        print(f"❌ LibreOffice error: {e}")
+        return False

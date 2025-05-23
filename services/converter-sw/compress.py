@@ -1,9 +1,8 @@
 import os
 import subprocess
 import mimetypes
-import logging
 import config
-from logger import logger
+from init import logger
 
 def is_audio(file_path):
     mime_type, _ = mimetypes.guess_type(file_path)

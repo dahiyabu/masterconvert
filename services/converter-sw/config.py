@@ -1,7 +1,7 @@
 import sys
 import os
 import platform
-from logger import logger
+from init import logger
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()
 
@@ -40,7 +40,7 @@ else:
     raise Exception(f"Unsupported platform: {SYSTEM_PLATFORM}")
 
 # Set the TESSDATA_PREFIX environment variable to point to tessdata directory
-os.environ['TESSDATA_PREFIX'] = TESSDATA_DIR
+os.environ['TESSDATA_PREFIX'] = TESSDATA_DIR + os.sep
 
 # Ensure dependencies exist
 def check_dependencies():
