@@ -99,7 +99,7 @@ text_width = text_widget.winfo_width()
 text_widget.destroy()
 
 # Load image
-img = Image.open("logo.jpg")
+img = Image.open(LOGO)
 
 # Pad image if it's narrower than text
 if text_width > img.width:
