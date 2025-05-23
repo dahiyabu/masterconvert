@@ -1,11 +1,11 @@
 name: Build Software for all OS Platforms
 
 on:
-  push:
-    branches: 
-      - "main"
-    paths:
-      - services/converter-sw/**
+  #push:
+   # branches: 
+#      - "main"
+    #paths:
+    #  - services/converter-sw/**
   workflow_dispatch:
 
 jobs:
@@ -278,7 +278,7 @@ jobs:
             --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
             --add-data "ghostscript;dependencies/ghostscript" ^
             --add-data "7zip;dependencies/7zip" ^
-            --distpath output\\windows services\\converter-sw\\convertMaster.py
+            --distpath output\\windows services\\converter-sw\\masterConverter.py
         shell: cmd
       
       - name: Upload Windows build artifact

@@ -1,0 +1,45 @@
+name: Build Software for all OS Platforms
+
+on:
+  push:
+    branches: 
+      - "main"
+    paths:
+      - services/converter-sw/**
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.13.2'
+
+      - name: Install dependencies
+        run: |
+          pip install -r ./services/converter-sw/requirements.txt
+
+      - name: Build launcher exe
+        run: |
+          pyinstaller --onefile --windowed  --name launcher --distpath output/windows services/converter-sw/launcher.py
+
+      - name: Build app (Windows)
+        run: |
+          pyinstaller ^
+            --noconfirm --clean --console ^
+            --onefile --log-level DEBUG ^
+            --add-data "services/converter-sw/build;build" ^
+            --distpath output/windows services/converter-sw/masterConverter.py
+        shell: cmd
+      
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: ./output/windows/*
