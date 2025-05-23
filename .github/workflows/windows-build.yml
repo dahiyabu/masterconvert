@@ -26,6 +26,7 @@ jobs:
           pip install -r ./services/converter-sw/requirements.txt
 
       - name: Build launcher exe
+        shell: cmd
         run: |
           pyinstaller --onefile --windowed  --name launcher ^
           --add-data "services/converter-sw/logo.jpg;logo.jpg" ^
