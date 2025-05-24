@@ -5,12 +5,12 @@ from PIL import Image, ImageTk
 from time import sleep
 import os
 import psutil
-from init import cleanup_files,get_base_folder,get_lib_path
+from init import cleanup_files,get_lib_path,get_base_folder
 
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 
-READY_FILE = os.path.join(get_base_folder(),"app_ready.tmp")
+READY_FILE = os.path.join(get_lib_path(),"app_ready.tmp")
 CHECK_INTERVAL_MS = 1500
 TIMEOUT_SECONDS = 300
 MAX_ATTEMPTS = TIMEOUT_SECONDS * 1000 // CHECK_INTERVAL_MS
@@ -35,8 +35,9 @@ def launch_main_app():
         MASTER_CONVERTER=os.path.join(get_lib_path(),'masterConverter.exe')
         main_process = subprocess.Popen(
             [MASTER_CONVERTER],
-            shell=True,
-            creationflags=DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
+            #[MASTER_CONVERTER],
+            #shell=True,
+            creationflags=subprocess.CREATE_NEW_CONSOLE#DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
         )
     else:
         # macOS/Linux
@@ -49,8 +50,7 @@ def launch_main_app():
             [MASTER_CONVERTER]  # fallback: same terminal
         )
     # Start monitoring the ready file on the main thread (Tkinter)
-    check_ready_file()
-
+    root.after(0, check_ready_file)#check_ready_file()
 
 def check_ready_file(attempt=0):
     if os.path.exists(READY_FILE):
@@ -76,7 +76,7 @@ def monitor_main_app():
         pass  # Process already ended
 
     print("Main app closed.")
-    cleanup_files()
+    cleanup_files(get_lib_path())
     # Close splash window and exit
     root.after(0, root.destroy)
     root.after(100, lambda: os._exit(0))

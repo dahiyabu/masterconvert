@@ -17,26 +17,27 @@ def get_base_folder():
         return os.path.dirname(sys.executable)
     else:
         return os.path.dirname(os.path.abspath(sys.argv[0]))
+    
 def get_upload_folder():
     return os.path.join(get_base_folder(), 'uploads')
 def get_converted_folder():
     return os.path.join(get_base_folder(), 'converted')
 
-def cleanup_files():
-    temp_path=get_upload_folder()
+def cleanup_files(parent_folder=get_base_folder()):
+    temp_path=os.path.join(parent_folder,'uploads')
     if os.path.exists(temp_path):
         try:
             shutil.rmtree(temp_path)
             logger.info(f"Deleted upload folder and all contents: {temp_path}")
         except Exception as e:
             logger.error(f"Failed to delete upload folder: {e}")
-    temp_path=get_converted_folder()
+    temp_path=os.path.join(parent_folder,'converted')
     if os.path.exists(temp_path):
         try:
             shutil.rmtree(temp_path)
-            logger.info(f"Deleted upload folder and all contents: {temp_path}")
+            logger.info(f"Deleted converted folder and all contents: {temp_path}")
         except Exception as e:
-            logger.error(f"Failed to delete upload folder: {e}")
+            logger.error(f"Failed to delete converted folder: {e}")
 
 # Initialize Flask app
 # Configure logging

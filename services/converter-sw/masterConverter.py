@@ -161,7 +161,7 @@ atexit.register(cleanup_files)
 
 def signal_handler(sig, frame):
     logger.info(f"Received signal {sig}. Cleaning up and exiting.")
-    cleanup_files()
+    cleanup_files(get_base_folder())
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
@@ -1038,9 +1038,10 @@ def server_error(e):
     return jsonify({'error': 'Server error occurred'}), 500
 
 if __name__ == '__main__':
-    cleanup_files()
+    cleanup_files(get_base_folder())
     set_console_title("MasterConverter")
     ready_file=os.path.join(get_base_folder(),'app_ready.tmp')
+    print(ready_file)
     with open(ready_file, "w") as f:
         f.write("ready")
     setup()
