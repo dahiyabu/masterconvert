@@ -23,14 +23,51 @@ jobs:
 
       - name: Install dependencies
         run: |
+          choco install libreoffice tesseract ghostscript 7zip -y
           pip install -r ./services/converter-sw/requirements.txt
+      
+      - name: Download FFmpeg static build
+        shell: bash
+        run: |
+          curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+          unzip ffmpeg.zip
+          mkdir -p ffmpeg-bin
+          cp ffmpeg-*/bin/ffmpeg.exe ffmpeg-bin/
+                
+      - name: Copy LibreOffice program directory (bash)
+        shell: bash
+        run: |
+          mkdir -p libreoffice
+          cp -r "/c/Program Files/LibreOffice/"/* libreoffice/
 
+      - name: Copy Tesseract executable (bash)
+        shell: bash
+        run: |
+          mkdir -p tesseract-bin
+          cp -r "/c/Program Files/Tesseract-OCR"/* tesseract-bin/
+      
+      - name: Copy Ghostscript binary (bash)
+        shell: bash
+        run: |
+          mkdir -p ghostscript
+          cp -r "/c/Program Files/gs/gs"*/* ghostscript/
+      - name: Copy 7-Zip binary (Windows)
+        shell: bash
+        run: |
+          mkdir -p 7zip
+          cp -r "/c/Program Files/7-Zip"/* 7zip/
+      
       - name: Build app (Windows)
         run: |
           pyinstaller ^
             --noconfirm --clean --console ^
             --onefile --log-level DEBUG ^
             --add-data "services/converter-sw/build;build" ^
+            --add-data "libreoffice;dependencies/libreoffice" ^
+            --add-data "tesseract-bin;dependencies/tesseract-ocr" ^
+            --add-data "ffmpeg-bin\\ffmpeg.exe;dependencies" ^
+            --add-data "ghostscript;dependencies/ghostscript" ^
+            --add-data "7zip;dependencies/7zip" ^
             --distpath proc services/converter-sw/masterConverter.py
         shell: cmd
       
