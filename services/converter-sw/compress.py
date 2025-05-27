@@ -3,6 +3,7 @@ import subprocess
 import mimetypes
 import config
 from init import logger
+from scour import scour
 
 def is_audio(file_path):
     mime_type, _ = mimetypes.guess_type(file_path)
@@ -176,8 +177,25 @@ def compress_file(input_file,output_file, quality_level):
             compress_audio(input_file, output_file, quality_level)
         elif input_file.lower().endswith(('.pdf')):
             compress_pdf(input_file, output_file, quality_level)
-        elif input_file.lower().endswith(('.jpg', '.jpeg', '.png', '.svg', '.webp', '.gif')):
+        elif input_file.lower().endswith(('.jpg', '.jpeg', '.png', 'svg','.webp', '.gif')):
             compress_image(input_file, output_file, quality_level)
+        elif input_file.lower().endswith(('svg')):
+            options = scour.sanitizeOptions()
+
+            # Set compression and preservation flags
+            options.strip_comments = True
+            options.remove_metadata = True
+            options.remove_descriptive_elements = True
+            options.keep_editor_data = True
+            options.keep_defs = True
+            options.enable_viewboxing = True
+            options.renderer_workaround = True
+            options.keep_style_elements = True   # ✅ keeps <style> blocks
+            options.keep_ids = True              #
+
+            with open(input_file, 'r', encoding='utf-8') as infile:
+                with open(output_file, 'w', encoding='utf-8') as outfile:
+                    scour.start(infile, outfile, options)
         else:
             # Attempt generic compression (may not be very effective)
             compress_generic(input_file, output_file, quality_level)

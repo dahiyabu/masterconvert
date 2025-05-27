@@ -1,38 +1,53 @@
 import sys
 import os
 import platform
+import ctypes
 from init import logger,get_lib_path
+from utils.paths import get_resource_path
+
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()
 
+
 BASE_PATH = get_lib_path()
+
 # Set paths for external binaries based on platform
 if SYSTEM_PLATFORM == 'windows':
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'libreoffice','program','soffice.exe')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract-ocr','tesseract.exe')
     FFMPEG_PATH = os.path.join(BASE_PATH, 'dependencies', 'ffmpeg.exe')
-    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract-ocr')
+    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract-ocr','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','ghostscript','bin','gswin64c.exe')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7zip','7z.exe')
+    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','cairo.dll')
 elif SYSTEM_PLATFORM == 'darwin':  # macOS
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'LibreOffice.app', 'Contents', 'MacOS', 'soffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
     FFMPEG_PATH = os.path.join(BASE_PATH, 'dependencies', 'ffmpeg')
-    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies')
+    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
+    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','cairo.dll')
 elif SYSTEM_PLATFORM == 'linux':
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'libreoffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
     FFMPEG_PATH = os.path.join(BASE_PATH, 'dependencies', 'ffmpeg')
-    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies')
+    TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
+    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','cairo.dll')
 else:
     raise Exception(f"Unsupported platform: {SYSTEM_PLATFORM}")
 
 # Set the TESSDATA_PREFIX environment variable to point to tessdata directory
 os.environ['TESSDATA_PREFIX'] = TESSDATA_DIR + os.sep
+#CAIRO_PATH = r'C:\\Program Files\\GTK3-Runtime Win64\\bin\\lib-cairo2.dll'
+try:
+    cairo_path = get_resource_path(CAIRO_PATH)
+    ctypes.CDLL(cairo_path)
+    logger.info("successfully load dll")
+except:
+    logger.error("error in loading dll")
 
 # Ensure dependencies exist
 def check_dependencies():

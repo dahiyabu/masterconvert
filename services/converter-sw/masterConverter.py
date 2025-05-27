@@ -17,6 +17,9 @@ import py7zr
 import rarfile
 import atexit
 import signal
+import cv2
+import threading
+from img2svg import raster_image_to_svg,convert_svg_to_jpg
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path
 import docx2txt
@@ -73,7 +76,7 @@ FORMAT_COMPATIBILITY = {
     'jpg': ['png', 'webp', 'gif', 'svg', 'pdf','jpg'],
     'jpeg': ['png', 'webp', 'gif', 'svg', 'pdf','jpeg'],
     'png': ['jpg', 'webp', 'gif', 'svg', 'pdf','png'],
-    'svg': ['png', 'jpg', 'webp','svg'],
+    'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp','svg'],
     'webp': ['png', 'jpg', 'gif','webp'],
     'gif': ['png', 'jpg', 'webp', 'mp4','gif'],
     
@@ -140,7 +143,8 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 'Video':['None','50','23','18'],
 'Audio':['None','64k','128k','192k'],
 'Archive':['None','1','5','9']}
-ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
+#removed svg as converted after using raster is already a compressed enough
+ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
 def set_console_title(title: str):
@@ -507,13 +511,17 @@ def convert_image(input_path, output_path, source_format, target_format, options
             except Exception as e:
                 logger.error(f"Image to PDF conversion error: {str(e)}")
                 return False
-                
+        elif source_format == 'svg':
+            if convert_svg_to_jpg(input_path,output_path,target_format=target_format):
+                logger.info(f"Converted image to {output_path}")
+                return True
         # SVG conversions would require additional libraries
-        elif source_format == 'svg' or target_format == 'svg':
-            # In a real app, use cairosvg or other SVG libraries
-            shutil.copy(input_path, output_path)  # Dummy conversion
-            return True
-            
+        elif target_format == 'svg':
+            if raster_image_to_svg(input_path, output_path):
+                logger.info(f"Converted image to {output_path}")
+                return True
+            return False
+
         # Default fallback
         else:
             shutil.copy(input_path, output_path)  # Dummy conversion
