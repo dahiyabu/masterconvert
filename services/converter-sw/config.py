@@ -3,7 +3,6 @@ import os
 import platform
 import ctypes
 from init import logger,get_lib_path
-from utils.paths import get_resource_path
 
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()
@@ -27,7 +26,7 @@ elif SYSTEM_PLATFORM == 'darwin':  # macOS
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
-    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','cairo.dll')
+    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','libcairo.2.dylib')
 elif SYSTEM_PLATFORM == 'linux':
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'libreoffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
@@ -35,7 +34,7 @@ elif SYSTEM_PLATFORM == 'linux':
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
-    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','cairo.dll')
+    CAIRO_PATH = os.path.join(BASE_PATH,'dependencies','cariosvg','libcairo.so.2')
 else:
     raise Exception(f"Unsupported platform: {SYSTEM_PLATFORM}")
 
@@ -43,8 +42,7 @@ else:
 os.environ['TESSDATA_PREFIX'] = TESSDATA_DIR + os.sep
 #CAIRO_PATH = r'C:\\Program Files\\GTK3-Runtime Win64\\bin\\lib-cairo2.dll'
 try:
-    cairo_path = get_resource_path(CAIRO_PATH)
-    ctypes.CDLL(cairo_path)
+    ctypes.CDLL(CAIRO_PATH)
     logger.info("successfully load dll")
 except:
     logger.error("error in loading dll")
