@@ -1,6 +1,7 @@
 import os
 import io
 import sys
+import tempfile
 import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file, send_from_directory
@@ -674,10 +675,18 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                     # If source is already tar, just copy it (dummy conversion)
                     shutil.copy(input_path, output_path)
                 elif source_format == '7z':
+                    temp_dir = os.path.join(get_lib_path(),"temp_extract")
+                    os.makedirs(temp_dir, exist_ok=True)        
                     # Extract from 7z and add to tar
                     with py7zr.SevenZipFile(input_path, mode='r') as archive:
-                        for file in archive.getnames():
-                            tarf.add(file, arcname=os.path.basename(file))
+                        archive.extractall(path=temp_dir)
+                    with tarfile.open(output_path, "w") as tarf:
+                        for root, dirs, files in os.walk(temp_dir):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                arcname = os.path.relpath(file_path, temp_dir)  # Preserve structure
+                                tarf.add(file_path, arcname=arcname)
+                    shutil.rmtree(temp_dir)
                 elif source_format == 'rar':
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
@@ -707,7 +716,12 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                         zipf.extractall(temp_dir)
                 elif source_format == 'tar':
                     with tarfile.open(input_path, 'r') as tarf:
-                        tarf.extractall(temp_dir)
+                        for member in tarf.getmembers():
+                            logger.info(f"Extracting {member.name}")
+                            try:
+                                tarf.extract(member, path=temp_dir)
+                            except Exception as e:
+                                logger.error(f"Failed to extract {member.name}: {e}")
                 elif source_format == 'rar':
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
@@ -722,7 +736,10 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
             logger.info(f"Conversion successful: {input_path} to {output_path}")
             return True
         elif target_format == 'rar':
-            temp_dir = os.path.join(get_lib_path(),"temp_extract")
+
+            parent_temp_dir = tempfile.gettempdir()
+            temp_dir = os.path.join(parent_temp_dir, "temp_extract")
+            #temp_dir = os.path.join(get_lib_path(),"temp_extract")
             os.makedirs(temp_dir, exist_ok=True)
 
             try:
@@ -731,8 +748,13 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                     with zipfile.ZipFile(input_path, 'r') as zipf:
                         zipf.extractall(temp_dir)
                 elif source_format == 'tar':
-                    with tarfile.open(input_path, 'r') as tarf:
-                        tarf.extractall(temp_dir)
+                    with tarfile.open(input_path, 'r:*') as tarf:
+                        for member in tarf.getmembers():
+                            logger.info(f"Extracting {member.name}")
+                            try:
+                                tarf.extract(member, path=temp_dir)
+                            except Exception as e:
+                                logger.error(f"Failed to extract {member.name}: {e}")
                 elif source_format == '7z':
                     with py7zr.SevenZipFile(input_path, mode='r') as archive:
                         archive.extractall(path=temp_dir)
