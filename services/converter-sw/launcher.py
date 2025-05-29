@@ -77,6 +77,7 @@ def monitor_main_app():
 
     print("Main app closed.")
     cleanup_files(get_lib_path())
+    os.remove('converter.log')
     # Close splash window and exit
     root.after(0, root.destroy)
     root.after(100, lambda: os._exit(0))

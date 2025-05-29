@@ -43,5 +43,5 @@ def cleanup_files(parent_folder=get_base_folder()):
 # Configure logging
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
-logging.basicConfig(level=logging.INFO, filename=os.path.join(get_base_folder(),'app.log'), filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, filename=os.path.join(get_base_folder(),'converter.log'), filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

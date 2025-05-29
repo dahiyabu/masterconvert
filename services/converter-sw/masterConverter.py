@@ -19,7 +19,7 @@ import atexit
 import signal
 import cv2
 import threading
-from img2svg import raster_image_to_svg,convert_svg_to_jpg
+from img2svg import raster_image_to_svg,convert_svg_to_jpg,convert_image_to_webp
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path
 import docx2txt
@@ -213,21 +213,19 @@ def encrypt_pdf(input_path, output_path, password):
         # Delete the temporary file
         #os.remove(pdf_path)
     except Exception as e:
-        print(f"Error encrypting PDF: {e}")
+        logger.error(f"Error encrypting PDF: {e}")
         return False
     
 def create_password_protected_zip(input_file, output_zip, password):
     """Create a password-protected zip file."""
     try:
-        with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add the file to the ZIP archive with password
+        with pyzipper.AESZipFile(output_zip, 'w', compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zipf:
             zipf.setpassword(password.encode())
-            zipf.setencryption(pyzipper.WZ_AES)
-            zipf.write(input_file, arcname=input_file.split("/")[-1])
+            zipf.write(input_file, arcname=os.path.basename(input_file))
         logger.info(f"Password-protected ZIP created: {output_zip}")
         return True
     except Exception as e:
-        print(f"Error creating password-protected ZIP: {e}")
+        logger.error(f"Error creating password-protected ZIP: {e}")
         return False
 
 def is_pdf(file_path):
@@ -239,7 +237,7 @@ def is_pdf(file_path):
             # PDF files start with "%PDF"
             return header == b'%PDF'
     except Exception as e:
-        print(f"Error checking file: {e}")
+        logger.error(f"Error checking file: {e}")
         return False
            
 def encrypt_file(input_path, output_path, password):
@@ -331,7 +329,6 @@ def convert_docx_to_txt(input_path,output_path):
         with open(input_path, 'rb') as infile:
             with open(output_path, 'w', encoding='utf-8') as outfile:
                 doc = docx2txt.process(infile)
-                print(doc)
                 outfile.write(doc)
         logger.info(f"docx converted to TXT and saved at {output_path}")
         return True
@@ -450,7 +447,7 @@ def convert_image(input_path, output_path, source_format, target_format, options
                         'tiff': 'TIFF'
                     }
         # Use PIL for image conversions
-        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'gif']:
             try:
                 image = Image.open(input_path)
                 
@@ -513,6 +510,10 @@ def convert_image(input_path, output_path, source_format, target_format, options
                 return False
         elif source_format == 'svg':
             if convert_svg_to_jpg(input_path,output_path,target_format=target_format):
+                logger.info(f"Converted image to {output_path}")
+                return True
+        elif target_format == 'webp':
+            if convert_image_to_webp(input_path,output_path):
                 logger.info(f"Converted image to {output_path}")
                 return True
         # SVG conversions would require additional libraries
@@ -1027,13 +1028,13 @@ def get_build_folder():
 @app.route('/')
 def serve_react_app():
     # This will serve index.html for the root URL
-    print((f"sending file from {get_build_folder()} index.html"))
+    logger.info((f"sending file from {get_build_folder()} index.html"))
     return send_from_directory(get_build_folder(), 'index.html')
     
 @app.route('/static/<path:path>')
 def serve_static(path):
     dirpath=os.path.join(get_build_folder(), 'static')
-    print(f"sending file from {dirpath} {path}")
+    logger.info(f"sending file from {dirpath} {path}")
     return send_from_directory(os.path.join(get_build_folder(), 'static'), path)
 
 # Error handlers
@@ -1053,5 +1054,5 @@ if __name__ == '__main__':
         f.write("ready")
     setup()
     print("Enjoy Master Convert at http://127.0.0.1:5000 in your browser")
-    print("To Close, Close the window")
+    print("To Exit, Close the window")
     app.run(debug=True,use_reloader=False, host='0.0.0.0', port=5000)

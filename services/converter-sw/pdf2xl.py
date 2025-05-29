@@ -80,10 +80,10 @@ def convert_scanned_pdf_to_excel(input_path, output_path):
         normalized_rows = [row + [''] * (max_cols - len(row)) for row in all_rows]
         df = pd.DataFrame(normalized_rows)
         df.to_excel(output_path, index=False, header=False)
-        print(f"✅ OCR-based Excel saved to {output_path}")
+        logger.info(f"✅ OCR-based Excel saved to {output_path}")
         return True
     else:
-        print("❌ No usable OCR data found.")
+        logger.error("❌ No usable OCR data found.")
         return False
     
 # ✅ Main smart dispatcher

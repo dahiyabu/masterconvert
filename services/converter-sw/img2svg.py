@@ -48,3 +48,20 @@ def convert_svg_to_jpg(svg_path, output_path, target_format,quality=95):
     except Exception as e:
         logger.error(f"❌ Error converting {svg_path} → {output_path}: {e}")
         return False
+    
+def resize_if_needed(img, max_size=16383):
+    width, height = img.size
+    if width > max_size or height > max_size:
+        scaling_factor = min(max_size / width, max_size / height)
+        new_size = (int(width * scaling_factor), int(height * scaling_factor))
+        img = img.resize(new_size,Image.Resampling.LANCZOS)
+    return img
+
+def convert_image_to_webp(input_path, output_path):
+    try:
+        with Image.open(input_path) as img:
+            img = resize_if_needed(img)
+            img.save(output_path, format="WEBP")
+        logger.info(f"Converted to WebP: {output_path}")
+    except Exception as e:
+        logger.error(f"Image conversion error: {e}")
