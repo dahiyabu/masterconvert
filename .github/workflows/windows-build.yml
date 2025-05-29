@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          choco install libreoffice tesseract ghostscript 7zip gtk-runtime rar -y
+          choco install libreoffice tesseract ghostscript 7zip gtk-runtime winrar -y
           pip install -r ./services/converter-sw/requirements.txt
       
       - name: Copy CairoSVG DLLs from gtk-runtime
