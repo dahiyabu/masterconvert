@@ -23,7 +23,7 @@ def get_upload_folder():
 def get_converted_folder():
     return os.path.join(get_base_folder(), 'converted')
 
-def cleanup_files(parent_folder=get_base_folder()):
+def cleanup_files(parent_folder=get_base_folder(),del_log=False):
     temp_path=os.path.join(parent_folder,'uploads')
     if os.path.exists(temp_path):
         try:
@@ -38,6 +38,18 @@ def cleanup_files(parent_folder=get_base_folder()):
             logger.info(f"Deleted converted folder and all contents: {temp_path}")
         except Exception as e:
             logger.error(f"Failed to delete converted folder: {e}")
+    if del_log and os.path.exists('converter.log'):
+        for handler in logging.root.handlers[:]:
+            handler.close()
+            logging.root.removeHandler(handler)
+            try:
+                os.remove('converter.log')
+                print("Deleted log file: converter.log")
+            except Exception as e:
+                print(f"Failed to delete log file: {e}")
+    READY_FILE = os.path.join(get_lib_path(),"app_ready.tmp")
+    if os.path.exists(READY_FILE):
+        os.remove(READY_FILE)
 
 # Initialize Flask app
 # Configure logging

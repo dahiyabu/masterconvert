@@ -165,7 +165,7 @@ atexit.register(cleanup_files)
 
 def signal_handler(sig, frame):
     logger.info(f"Received signal {sig}. Cleaning up and exiting.")
-    cleanup_files(get_base_folder())
+    cleanup_files(get_base_folder(),del_log=True)
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
@@ -607,6 +607,10 @@ def convert_audio(input_path, output_path, source_format, target_format, options
 def convert_archive(input_path, output_path, source_format, target_format, options=None):
     """Convert archive files"""
     try:
+        #rarfile.UNRAR_TOOL = r"C:\Program Files\WinRAR\UnRAR.exe"
+        #rar_exe = r"C:\Program Files\WinRAR\rar.exe"  # Adjust if needed
+        rarfile.UNRAR_TOOL = config.UNRAR_PATH
+        rar_exe = config.RAR_PATH
         # If the target format is a zip archive
         if target_format == 'zip':
             if source_format == 'zip':
@@ -640,9 +644,10 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                                 zipf.writestr(file, extracted_file_content)
                     elif source_format == 'rar':
                         # Extract from rar and add to zip
-                        logger.info("File Format=",input_path)
                         with rarfile.RarFile(input_path) as rar:
                             for file in rar.namelist():
+                                if file.endswith('/'):  # Skip directories
+                                    continue
                                 content = rar.read(file)
                                 zipf.writestr(file, content)
 
@@ -677,13 +682,23 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
                         for file in rar.namelist():
-                            tarf.add(file, arcname=os.path.basename(file))
+                            logger.info(f"adding {file}")
+                            if file.endswith('/'):  # Skip directories
+                                continue
+                            logger.info(f"Adding {file} to tar")
+
+                            file_data = rar.read(file)
+                            file_info = tarfile.TarInfo(name=os.path.basename(file))
+                            file_info.size = len(file_data)
+
+                            tarf.addfile(file_info, io.BytesIO(file_data))
+#                            tarf.add(file, arcname=os.path.basename(file))
 
             logger.info(f"Conversion successful: {input_path} to {output_path}")
             return True
         elif target_format == '7z':
             with py7zr.SevenZipFile(output_path, 'a') as archive:
-                temp_dir = "temp_extract"
+                temp_dir = os.path.join(get_lib_path(),"temp_extract")
                 os.makedirs(temp_dir, exist_ok=True)        
                 if source_format == 'zip':
                     # Extract from zip and add to tar
@@ -696,17 +711,45 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                 elif source_format == 'rar':
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
-                        rar.extract_all(temp_dir)
+                        rar.extractall(temp_dir)
                 archive.writeall(temp_dir, arcname='')
                 for root, dirs, files in os.walk(temp_dir, topdown=False):
                     for name in files:
                         os.remove(os.path.join(root, name))
                     for name in dirs:
                         os.rmdir(os.path.join(root, name))
-                os.rmdir(temp_dir)  # Remove the base temp
+                shutil.rmtree(temp_dir)  # Remove the base temp
             logger.info(f"Conversion successful: {input_path} to {output_path}")
             return True
+        elif target_format == 'rar':
+            temp_dir = os.path.join(get_lib_path(),"temp_extract")
+            os.makedirs(temp_dir, exist_ok=True)
 
+            try:
+                # Extract based on source format
+                if source_format == 'zip':
+                    with zipfile.ZipFile(input_path, 'r') as zipf:
+                        zipf.extractall(temp_dir)
+                elif source_format == 'tar':
+                    with tarfile.open(input_path, 'r') as tarf:
+                        tarf.extractall(temp_dir)
+                elif source_format == '7z':
+                    with py7zr.SevenZipFile(input_path, mode='r') as archive:
+                        archive.extractall(path=temp_dir)
+                elif source_format == 'rar':
+                    with rarfile.RarFile(input_path) as rar:
+                        rar.extractall(temp_dir)
+                #output_dir = os.path.dirname(output_path)
+                #output_basename = os.path.splitext(os.path.basename(output_path))[0]
+                cmd = [rar_exe, 'a', '-r', output_path, '.']
+
+                subprocess.run(cmd, cwd=temp_dir, check=True)
+                logger.info(f"Conversion successful: {input_path} to {output_path}")
+                shutil.rmtree(temp_dir)
+                return True
+            except Exception as e:
+                logger.error(f"Error Converting to RAR format {e}")
+                return False
         else:
             # For unsupported formats, just copy the file (dummy conversion)
             shutil.copy(input_path, output_path)

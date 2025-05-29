@@ -76,8 +76,7 @@ def monitor_main_app():
         pass  # Process already ended
 
     print("Main app closed.")
-    cleanup_files(get_lib_path())
-    os.remove('converter.log')
+    cleanup_files(get_lib_path(),del_log=True)
     # Close splash window and exit
     root.after(0, root.destroy)
     root.after(100, lambda: os._exit(0))

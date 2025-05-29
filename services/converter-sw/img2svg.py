@@ -63,5 +63,7 @@ def convert_image_to_webp(input_path, output_path):
             img = resize_if_needed(img)
             img.save(output_path, format="WEBP")
         logger.info(f"Converted to WebP: {output_path}")
+        return True
     except Exception as e:
         logger.error(f"Image conversion error: {e}")
+        return False

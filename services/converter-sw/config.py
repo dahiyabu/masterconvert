@@ -17,6 +17,8 @@ if SYSTEM_PLATFORM == 'windows':
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract-ocr','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','ghostscript','bin','gswin64c.exe')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7zip','7z.exe')
+    RAR_PATH = os.path.join(BASE_PATH,'dependencies','rar','rar.exe')
+    UNRAR_PATH = os.path.join(BASE_PATH,'dependencies','rar','UnRAR.exe')
 elif SYSTEM_PLATFORM == 'darwin':  # macOS
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'LibreOffice.app', 'Contents', 'MacOS', 'soffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
@@ -24,6 +26,8 @@ elif SYSTEM_PLATFORM == 'darwin':  # macOS
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
+    RAR_PATH = os.path.join(BASE_PATH, 'dependencies', 'rar', 'rar')
+    UNRAR_PATH = os.path.join(BASE_PATH, 'dependencies', 'rar', 'unrar')
 elif SYSTEM_PLATFORM == 'linux':
     LIBREOFFICE_PATH = os.path.join(BASE_PATH, 'dependencies', 'libreoffice')
     TESSERACT_PATH = os.path.join(BASE_PATH, 'dependencies', 'tesseract')
@@ -31,6 +35,8 @@ elif SYSTEM_PLATFORM == 'linux':
     TESSDATA_DIR = os.path.join(BASE_PATH,'dependencies','tesseract','tessdata')
     GS_PATH = os.path.join(BASE_PATH,'dependencies','gs')
     SEVENZ_PATH = os.path.join(BASE_PATH,'dependencies','7z')
+    RAR_PATH = os.path.join(BASE_PATH, 'dependencies', 'rar', 'rar')
+    UNRAR_PATH = os.path.join(BASE_PATH, 'dependencies', 'rar', 'unrar')
 else:
     raise Exception(f"Unsupported platform: {SYSTEM_PLATFORM}")
 

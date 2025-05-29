@@ -75,14 +75,12 @@ def convert_smart_scanned_pdf_to_docx(input_path, output_path, min_text_length=2
 
         # Use image_to_data for detailed OCR info
         data = pytesseract.image_to_data(img, config="--psm 6", output_type=pytesseract.Output.DATAFRAME)
-        logger.info('data=%s',data)
         data = data.dropna(subset=["text", "conf"])
 
         avg_conf = data["conf"].astype(float).mean() if not data.empty else 0
         total_text = " ".join(data["text"].astype(str)).strip() if not data.empty else ""
 
         #doc.add_paragraph(f"--- Page {i+1} ---")
-        logger.info("data=%s,total_text=%s",data,total_text)
         if len(total_text) >= min_text_length and avg_conf >= min_avg_conf:
             # Add extracted text
             for _, line in data.groupby("line_num"):
