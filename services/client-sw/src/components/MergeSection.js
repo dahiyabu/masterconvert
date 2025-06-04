@@ -5,6 +5,8 @@ import {
 } from '@mui/material';
 import { Upload, ArrowRight, RotateCcw, Delete, Download } from 'lucide-react';
 import { Check } from '@mui/icons-material';
+import UploadFileButton from './UploadFileButton';
+import Box from '@mui/material/Box';
 
 export default function MergeSection({ API_URL }) {
   const [files, setFiles] = useState([]);
@@ -127,19 +129,8 @@ export default function MergeSection({ API_URL }) {
   return (
     <div>
       {!showDownloadContainer && (
-        <>
-          <label htmlFor="merge-upload">
-            <Button component="span" startIcon={<Upload />}>
-              {files.length > 0 ? 'Add More Files' : 'Upload Files'}
-            </Button>
-            <input
-              type="file"
-              multiple
-              hidden
-              id="merge-upload"
-              onChange={handleFileChange}
-            />
-          </label>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <UploadFileButton handleFileChange={handleFileChange} />
 
           {files.length > 0 && (
             <>
@@ -162,15 +153,67 @@ export default function MergeSection({ API_URL }) {
             </>
           )}
 
-          <FormControl component="fieldset" margin="normal">
-            <FormLabel component="legend">Merge as</FormLabel>
+        <FormControl component="fieldset" margin="normal" sx={{ mt: 4, width: '100%' }}>
+            <FormLabel 
+              component="legend" 
+              sx={{ 
+                mb: 2,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                color: 'text.primary',
+                textAlign: 'center',
+                width: '100%',
+                '&.Mui-focused': {
+                  color: 'primary.main'
+                }
+              }}
+            >
+              Merge as
+            </FormLabel>
             <RadioGroup
               value={mergeType}
               onChange={(e) => setMergeType(e.target.value)}
               row
+              sx={{ gap: 2,
+                justifyContent: 'center',
+                flexWrap: 'wrap' }}
             >
               {availableMergeTypes.map((type) => (
-                <FormControlLabel key={type} value={type} control={<Radio />} label={type.toUpperCase()} />
+                <FormControlLabel 
+                  key={type} 
+                  value={type} 
+                  control={
+                    <Radio 
+                      sx={{
+                        '&.Mui-checked': {
+                          color: 'primary.main'
+                        },
+                        '&:hover': {
+                          backgroundColor: 'primary.50'
+                        }
+                      }}
+                    />
+                  } 
+                  label={type.toUpperCase()}
+                  sx={{
+                    backgroundColor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    margin: 0,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      backgroundColor: 'primary.50'
+                    },
+                    '&.Mui-checked': {
+                      borderColor: 'primary.main',
+                      backgroundColor: 'primary.100'
+                    }
+                  }}
+                />
               ))}
             </RadioGroup>
           </FormControl>
@@ -199,7 +242,7 @@ export default function MergeSection({ API_URL }) {
           <Button onClick={handleReset} startIcon={<RotateCcw />} sx={{ mt: 2 }}>
             Reset
           </Button>
-        </>
+        </Box>
       )}
 
       {/* ✅ Success Result */}
