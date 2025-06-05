@@ -1,9 +1,0 @@
-[VersionInfo]
-CompanyName=ConvertMaster
-FileDescription=File Format Converter Tool
-ProductName=ConvertMaster
-InternalName=convertMaster.exe
-OriginalFilename=convertMaster.exe
-ProductVersion=1.0.0
-FileVersion=1.0.0
-LegalCopyright=(c) 2025 ConvertMaster
