@@ -6,4 +6,4 @@ InternalName=convertMaster.exe
 OriginalFilename=convertMaster.exe
 ProductVersion=1.0.0
 FileVersion=1.0.0
-LegalCopyright=© 2025 ConvertMaster
+LegalCopyright=(c) 2025 ConvertMaster
