@@ -4,6 +4,10 @@ import {
   RadioGroup, FormControlLabel, Radio, FormLabel, FormControl
 } from '@mui/material';
 import { Upload, ArrowRight, RotateCcw, Download, Check } from 'lucide-react';
+import UploadFileButton from './UploadFileButton';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+
 
 export default function ConvertSection({ API_URL }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -129,12 +133,8 @@ export default function ConvertSection({ API_URL }) {
         <>
           {/* Upload Section */}
           {!selectedFile && !showDownloadContainer && (
-            <label htmlFor="upload">
-              <Button component="span" startIcon={<Upload />}>
-                Upload File
-              </Button>
-              <input type="file" hidden id="upload" onChange={handleFileChange} />
-            </label>
+            <UploadFileButton handleFileChange={handleFileChange} />
+
           )}
 
           {/* Uploading State */}
@@ -142,32 +142,85 @@ export default function ConvertSection({ API_URL }) {
 
           {/* File Format Selection Section */}
           {selectedFile && fileData && availableFormats.length > 0 && !showDownloadContainer && (
-            <>
-              <Typography variant="h6" mt={2}>Choose Format</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, mt: 2 }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontSize: '1.25rem',
+                fontWeight: 600,
+                color: 'text.primary',
+                textAlign: 'center'
+              }}
+            >
+              Choose Format
+            </Typography>
 
               {/* Display the uploaded file name and its extension */}
-              <Typography variant="body1" mt={2}>
-                <strong>Uploaded File:</strong> {selectedFile.name} 
-                <span style={{ marginLeft: 10, fontStyle: 'italic', color: '#888' }}>
-                  ({selectedFile.name.split('.').pop().toUpperCase()})
-                </span>
-              </Typography>
+  <Box sx={{ textAlign: 'center', maxWidth: '500px' }}>
+    <Typography variant="body1" sx={{ mb: 1 }}>
+      <strong>Uploaded File:</strong> {selectedFile.name}
+    </Typography>
+    <Chip 
+      label={selectedFile.name.split('.').pop().toUpperCase()}
+      variant="outlined"
+      size="small"
+      sx={{ 
+        backgroundColor: 'grey.100',
+        color: 'text.secondary',
+        fontStyle: 'italic'
+      }}
+    />
+  </Box>
 
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0' }}>
-                {availableFormats.map((fmt) => (
-                  <Button
-                    key={fmt}
-                    variant={targetFormat === fmt ? 'contained' : 'outlined'}
-                    onClick={() => {
-                      setTargetFormat(fmt);
-                      setShowPasswordField(encryptFormats.includes(fmt));
-                      setCompressionQuality(''); // Reset compression quality
-                    }}
-                  >
-                    {fmt}
-                  </Button>
-                ))}
-              </div>
+              {/* Format Selection */}
+  <Box sx={{ width: '100%', maxWidth: '600px' }}>
+    <Typography 
+      variant="body2" 
+      color="text.secondary" 
+      sx={{ textAlign: 'center', mb: 2 }}
+    >
+      Select your desired output format
+    </Typography>
+    
+    <Box sx={{ 
+      display: 'flex', 
+      gap: 1.5, 
+      flexWrap: 'wrap', 
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      {availableFormats.map((fmt) => (
+        <Button
+          key={fmt}
+          variant={targetFormat === fmt ? 'contained' : 'outlined'}
+          onClick={() => {
+            setTargetFormat(fmt);
+            setShowPasswordField(encryptFormats.includes(fmt));
+            setCompressionQuality(''); // Reset compression quality
+          }}
+          sx={{
+            minWidth: '80px',
+            borderRadius: 2,
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            transition: 'all 0.2s ease-in-out',
+            ...(targetFormat === fmt && {
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+            }),
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: targetFormat === fmt 
+                ? '0 6px 16px rgba(25, 118, 210, 0.4)' 
+                : '0 4px 12px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          {fmt}
+        </Button>
+      ))}
+    </Box>
+  </Box>
 
               {/* Compression Explanation */}
               {compressionQualityOptions[targetFormat] && compressionQualityOptions[targetFormat].length > 0 && (
@@ -180,25 +233,87 @@ export default function ConvertSection({ API_URL }) {
               )}
 
               {/* Compression section */}
-              <div style={{ marginTop: 20 }}>
+              <Box sx={{ mt: 3 }}>
                 {/* Show compression options only if compression is supported for selected format */}
                 {compressionQualityOptions[targetFormat] && compressionQualityOptions[targetFormat].length > 0 && (
-                  <FormControl>
-                    <FormLabel>Compression</FormLabel>
-                    <RadioGroup row value={compressionQuality} onChange={e => setCompressionQuality(e.target.value)}>
+                  <FormControl component="fieldset" margin="normal" sx={{ mt: 4, width: '100%' }}>
+                    <FormLabel 
+                      component="legend" 
+                      sx={{ 
+                        mb: 2,
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        color: 'text.primary',
+                        textAlign: 'center',
+                        width: '100%',
+                        '&.Mui-focused': {
+                          color: 'primary.main'
+                        }
+                      }}
+                    >
+                      Compression
+                    </FormLabel>
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 2 }}>
+                      Choose your preferred compression level
+                    </Typography>
+                    
+                    <RadioGroup
+                      value={compressionQuality}
+                      onChange={(e) => setCompressionQuality(e.target.value)}
+                      sx={{ 
+                        gap: 2,
+                        justifyContent: 'center',
+                        flexWrap: 'wrap'
+                      }}
+                    >
                       {compressionQualityOptions[targetFormat].map((opt) => (
-                        <FormControlLabel
-                          key={opt}
-                          value={opt}
-                          control={<Radio />}
-                          label={`compress (${opt === 'None' ? 'no compression' : `compress at ${opt}%`})`} // Adjust label here
+                        <FormControlLabel 
+                          key={opt} 
+                          value={opt} 
+                          control={
+                            <Radio 
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: 'primary.main'
+                                },
+                                '&:hover': {
+                                  backgroundColor: 'primary.50'
+                                }
+                              }}
+                            />
+                          } 
+                          label={opt === 'None' ? 'No compression' : `Compress at ${opt}%`}
+                          sx={{
+                            backgroundColor: 'background.paper',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2,
+                            px: 2,
+                            py: 1,
+                            margin: 0,
+                            transition: 'all 0.2s ease-in-out',
+                            position: 'relative',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              backgroundColor: 'primary.50'
+                            },
+                            '& .MuiFormControlLabel-root': {
+                              '&.Mui-checked': {
+                                borderColor: 'primary.main',
+                                backgroundColor: 'primary.100'
+                              }
+                            },
+                            ...(compressionQuality === opt && {
+                              borderColor: 'primary.main',
+                              backgroundColor: 'primary.100'
+                            })
+                          }}
                         />
                       ))}
                     </RadioGroup>
                   </FormControl>
                 )}
-              </div>
-
+              </Box>
               <div style={{ width: '100%' }}>
                 {showPasswordField && (
                   <TextField
@@ -214,14 +329,14 @@ export default function ConvertSection({ API_URL }) {
 
               {/* Reset button shown after file is uploaded */}
               <div style={{ marginTop: 20 }}>
-                <Button
+                <button
                   onClick={handleReset}
-                  startIcon={<RotateCcw />}
+                  className="inline-flex items-center px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
+                  <RotateCcw className="w-4 h-4 mr-2" />
                   Reset
-                </Button>
+                </button>
               </div>
-
               <div style={{ marginTop: 20 }}>
                 <Button
                   onClick={handleConvert}
@@ -233,64 +348,141 @@ export default function ConvertSection({ API_URL }) {
                   {conversionStatus === 'converting' ? 'Converting...' : 'Convert'}
                 </Button>
               </div>
-            </>
+            </Box>
           )}
 
           {/* Success Result */}
           {showDownloadContainer && conversionStatus === 'success' && conversionResult && (
             <Paper
-              elevation={2}
+              elevation={0}
               style={{
-                marginTop: '2rem',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                backgroundColor: '#ecfdf5',
+                margin: '2rem auto',
+                padding: '2rem',
+                borderRadius: '24px',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                border: '1px solid rgba(34, 197, 94, 0.1)',
                 width: '100%',
                 maxWidth: '500px',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'block',
               }}
             >
+              {/* Subtle background pattern */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 50%)',
+                  pointerEvents: 'none',
+                }}
+              />
+              
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: '1rem',
+                  marginBottom: '1.5rem',
                   color: '#22c55e',
+                  position: 'relative',
                 }}
               >
-                <Check size={20} style={{ marginRight: 8 }} />
-                <Typography fontWeight={600}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    marginRight: '12px',
+                    animation: 'pulse 2s infinite',
+                  }}
+                >
+                  <Check size={24} />
+                </div>
+                <Typography 
+                  fontWeight={700}
+                  fontSize="1.25rem"
+                  style={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
                   Conversion Complete!
                 </Typography>
               </div>
 
               <Button
                 variant="contained"
-                color="primary"
                 onClick={handleDownload}
                 fullWidth
-                style={{ marginBottom: '1rem' }}
-                startIcon={<Download size={18} />}
+                style={{ 
+                  marginBottom: '1rem',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: '16px',
+                  padding: '14px 24px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)',
+                  border: 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 35px rgba(59, 130, 246, 0.4)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                  }
+                }}
+                startIcon={<Download size={20} />}
               >
                 Download File
               </Button>
 
               <Button
                 variant="outlined"
-                color="primary"
                 onClick={handleReset}
                 fullWidth
                 startIcon={<RotateCcw size={18} />}
                 style={{
-                  borderRadius: 999,
-                  fontSize: '0.875rem',
+                  borderRadius: '16px',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
                   textTransform: 'none',
+                  padding: '12px 24px',
+                  border: '2px solid rgba(59, 130, 246, 0.2)',
+                  color: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    border: '2px solid rgba(59, 130, 246, 0.4)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    transform: 'translateY(-1px)',
+                  }
                 }}
               >
                 Upload Another File
               </Button>
+
+              <style jsx>{`
+                @keyframes pulse {
+                  0%, 100% {
+                    opacity: 1;
+                  }
+                  50% {
+                    opacity: 0.7;
+                  }
+                }
+              `}</style>
             </Paper>
-          )}
+        )}
         </>
       )}
     </div>

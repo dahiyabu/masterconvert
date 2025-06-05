@@ -248,57 +248,129 @@ export default function MergeSection({ API_URL }) {
       {/* ✅ Success Result */}
       {showDownloadContainer && conversionStatus === 'success' && result && (
         <Paper
-          elevation={2}
-          style={{
-            marginTop: '2rem',
-            padding: '1.5rem',
-            borderRadius: '12px',
-            backgroundColor: '#ecfdf5',
-            width: '100%',
-            maxWidth: '500px',
+        elevation={0}
+        sx={{
+          marginTop: 4,
+          padding: 3,
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+          border: '1px solid rgba(34, 197, 94, 0.1)',
+          width: '100%',
+          maxWidth: 500,
+          margin: '2rem auto',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+          }
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 2.5,
+            position: 'relative',
           }}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               display: 'flex',
-              justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: '1rem',
-              color: '#22c55e',
+              justifyContent: 'center',
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              marginRight: 2,
+              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': { boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' },
+                '50%': { boxShadow: '0 6px 20px rgba(34, 197, 94, 0.5)' },
+                '100%': { boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' },
+              }
             }}
           >
-            <Check size={20} style={{ marginRight: 8 }} />
-            <Typography fontWeight={600}>
-              Merge Complete!
-            </Typography>
-          </div>
-
-          <Button
-            variant="contained"
-            color="primary"
-            href={`${API_URL}/download/${result.merge_id}`}
-            fullWidth
-            style={{ marginBottom: '1rem' }}
-            startIcon={<Download size={18} />}
-          >
-            Download File
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleReset}
-            fullWidth
-            startIcon={<RotateCcw size={18} />}
-            style={{
-              borderRadius: 999,
-              fontSize: '0.875rem',
-              textTransform: 'none',
+            <Check size={24} color="white" />
+          </Box>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 700,
+              color: '#15803d',
+              letterSpacing: '-0.025em'
             }}
           >
-            Merge More Files
-          </Button>
-        </Paper>
+            Merge Complete!
+          </Typography>
+        </Box>
+      
+        <Button
+          variant="contained"
+          href={`${API_URL}/download/${result.merge_id}`}
+          fullWidth
+          startIcon={<Download size={20} />}
+          sx={{
+            marginBottom: 2,
+            borderRadius: 2,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
+            textTransform: 'none',
+            fontSize: '1rem',
+            fontWeight: 600,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #2563eb, #1e40af)',
+              boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
+              transform: 'translateY(-1px)',
+            },
+            '&:active': {
+              transform: 'translateY(0)',
+            }
+          }}
+        >
+          Download File
+        </Button>
+      
+        <Button
+          variant="outlined"
+          onClick={handleReset}
+          fullWidth
+          startIcon={<RotateCcw size={18} />}
+          sx={{
+            borderRadius: 50,
+            py: 1.25,
+            borderColor: 'rgba(59, 130, 246, 0.3)',
+            color: '#3b82f6',
+            textTransform: 'none',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            transition: 'all 0.2s ease-in-out',
+            backdropFilter: 'blur(10px)',
+            background: 'rgba(255, 255, 255, 0.7)',
+            '&:hover': {
+              borderColor: '#3b82f6',
+              background: 'rgba(59, 130, 246, 0.05)',
+              transform: 'translateY(-1px)',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+            },
+            '&:active': {
+              transform: 'translateY(0)',
+            }
+          }}
+        >
+          Merge More Files
+        </Button>
+      </Paper>
       )}
 
       {/* Snackbar for Duplicate File Warning */}

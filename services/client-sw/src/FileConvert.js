@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ModeSelector from './components/ModeSelector';
 import ConvertSection from './components/ConvertSection';
 import MergeSection from './components/MergeSection';
-import FormatCompatibilityTable from './components/FormatCompatibilityTable';
+import FormatCompatibilityLookup from './components/FormatCompatibilityTable';
 
 const styles = {
   container: {
@@ -58,7 +58,7 @@ export default function FileConvertApp() {
                 <>
                   <ConvertSection API_URL={API_URL} />
                   <div style={{ marginTop: '3rem' }}>
-                    <FormatCompatibilityTable />
+                    <FormatCompatibilityLookup />
                   </div>
                 </>
               ) : (

@@ -354,58 +354,135 @@ export default function ConvertSection({ API_URL }) {
           {/* Success Result */}
           {showDownloadContainer && conversionStatus === 'success' && conversionResult && (
             <Paper
-              elevation={2}
+              elevation={0}
               style={{
-                marginTop: '2rem',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                backgroundColor: '#ecfdf5',
+                margin: '2rem auto',
+                padding: '2rem',
+                borderRadius: '24px',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                border: '1px solid rgba(34, 197, 94, 0.1)',
                 width: '100%',
                 maxWidth: '500px',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'block',
               }}
             >
+              {/* Subtle background pattern */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 50%)',
+                  pointerEvents: 'none',
+                }}
+              />
+              
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: '1rem',
+                  marginBottom: '1.5rem',
                   color: '#22c55e',
+                  position: 'relative',
                 }}
               >
-                <Check size={20} style={{ marginRight: 8 }} />
-                <Typography fontWeight={600}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    marginRight: '12px',
+                    animation: 'pulse 2s infinite',
+                  }}
+                >
+                  <Check size={24} />
+                </div>
+                <Typography 
+                  fontWeight={700}
+                  fontSize="1.25rem"
+                  style={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
                   Conversion Complete!
                 </Typography>
               </div>
 
               <Button
                 variant="contained"
-                color="primary"
                 onClick={handleDownload}
                 fullWidth
-                style={{ marginBottom: '1rem' }}
-                startIcon={<Download size={18} />}
+                style={{ 
+                  marginBottom: '1rem',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: '16px',
+                  padding: '14px 24px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)',
+                  border: 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 35px rgba(59, 130, 246, 0.4)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                  }
+                }}
+                startIcon={<Download size={20} />}
               >
                 Download File
               </Button>
 
               <Button
                 variant="outlined"
-                color="primary"
                 onClick={handleReset}
                 fullWidth
                 startIcon={<RotateCcw size={18} />}
                 style={{
-                  borderRadius: 999,
-                  fontSize: '0.875rem',
+                  borderRadius: '16px',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
                   textTransform: 'none',
+                  padding: '12px 24px',
+                  border: '2px solid rgba(59, 130, 246, 0.2)',
+                  color: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    border: '2px solid rgba(59, 130, 246, 0.4)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    transform: 'translateY(-1px)',
+                  }
                 }}
               >
                 Upload Another File
               </Button>
+
+              <style jsx>{`
+                @keyframes pulse {
+                  0%, 100% {
+                    opacity: 1;
+                  }
+                  50% {
+                    opacity: 0.7;
+                  }
+                }
+              `}</style>
             </Paper>
-          )}
+        )}
         </>
       )}
     </div>

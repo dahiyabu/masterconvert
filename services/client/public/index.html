@@ -479,6 +479,84 @@ header .btn {
                 align-items: center;
             }
         }
+        .modern-formats-btn {
+            position: relative;
+            display: inline-block;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            text-decoration: none;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            .modern-formats-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+            }
+
+            .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            }
+
+            .btn-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            }
+
+            .btn-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            }
+
+            .main-text {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.2;
+            }
+
+            .sub-text {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 400;
+            }
+
+            .btn-arrow {
+            font-size: 16px;
+            transition: transform 0.3s ease;
+            margin-left: 8px;
+            }
+
+            .modern-formats-btn:hover .btn-icon {
+            transform: scale(1.1) rotate(5deg);
+            }
+
+            .modern-formats-btn:hover .btn-arrow {
+            transform: translateX(4px);
+            }
+
+            .btn-glow {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s;
+            }
+
+            .modern-formats-btn:hover .btn-glow {
+            left: 100%;
+            }
     </style>
 </head>
 <body>
@@ -496,7 +574,7 @@ header .btn {
                     </div>
                 </div>
                 <div class="hero-image">
-                    <img src="/api/placeholder/600/400" alt="ConvertMaster application interface">
+                    <img src="app.JPG" alt="ConvertMaster application interface">
                 </div>
             </div>
         </div>
@@ -515,8 +593,8 @@ header .btn {
                             <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
                         </svg>
                     </div>
-                    <h3>100% Secure</h3>
-                    <p>All conversions happen locally on your device. Your files never leave your computer, ensuring complete privacy and security.</p>
+                    <h3>100% Secure & Private</h3>
+                    <p>All processing happens locally on your device. Your files never leave your computer, ensuring complete privacy and security for even the most sensitive documents.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -524,18 +602,8 @@ header .btn {
                             <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2z"/>
                         </svg>
                     </div>
-                    <h3>40+ Formats Supported</h3>
-                    <p>Convert between documents, images, videos, audio files and more with our comprehensive format support.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
-                            <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                        </svg>
-                    </div>
-                    <h3>Works Offline</h3>
-                    <p>No internet connection required. Convert files anytime, anywhere, even when you're completely offline.</p>
+                    <h3>50+ Formats Supported</h3>
+                    <p>Convert between documents, images, videos, audio files, spreadsheets and archives with our comprehensive format support including PDF, DOCX, MP4, PNG, and more.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -543,8 +611,46 @@ header .btn {
                             <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
                         </svg>
                     </div>
-                    <h3>Lightning Fast</h3>
-                    <p>Optimized conversion algorithms ensure quick processing even for large files. Save time with batch conversions.</p>
+                    <h3>Lightning Fast Processing</h3>
+                    <p>Optimized algorithms ensure quick processing even for large files. Batch convert multiple files, compress folders, or merge documents in seconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
+                        </svg>
+                    </div>
+                    <h3>File Compression & Archiving</h3>
+                    <p>Reduce file sizes with intelligent compression algorithms. Create and extract ZIP, RAR, 7Z, and TAR archives with customizable compression levels.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                        </svg>
+                    </div>
+                    <h3>Merge & Split Files</h3>
+                    <p>Combine multiple PDFs into one document, merge images into a single file, or split large files into smaller parts for easier sharing and storage.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                        </svg>
+                    </div>
+                    <h3>Advanced Encryption</h3>
+                    <p>Protect your sensitive files with military-grade AES-256 encryption. Password-protect documents and archives to ensure only authorized access.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                            <path d="M6 11.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </div>
+                    <h3>User-Friendly Interface</h3>
+                    <p>Intuitive drag-and-drop interface makes processing files simple, even for beginners. Advanced settings available for power users. No technical knowledge required.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -557,13 +663,13 @@ header .btn {
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
+                        <!-- List icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                            <path d="M6 11.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
                         </svg>
                     </div>
-                    <h3>User-Friendly Interface</h3>
-                    <p>Intuitive drag-and-drop interface makes converting files simple, even for beginners. No technical knowledge required.</p>
+                    <h3>Regular Format Updates</h3>
+                    <p>We’re constantly adding support for new formats and features with every version. Stay up-to-date with the latest in file conversion technology.</p>
                 </div>
             </div>
         </div>
@@ -580,7 +686,17 @@ header .btn {
     <section class="formats" id="formats">
         <div class="container">
             <div class="section-title">
-                <h2>Supported File Formats</h2>
+                <a href="#formats" class="modern-formats-btn" id="formats-btn">
+                    <div class="btn-content">
+                      <div class="btn-icon">📄</div>
+                      <div class="btn-text">
+                        <span class="main-text">Supported File Formats</span>
+                        <span class="sub-text">Click to explore</span>
+                      </div>
+                      <div class="btn-arrow">→</div>
+                    </div>
+                    <div class="btn-glow"></div>
+                  </a>
                 <p>Convert between any of these formats with just a few clicks</p>
             </div>
             <div class="formats-container">
@@ -595,6 +711,15 @@ header .btn {
                     </div>
                 </div>
                 <div class="format-category">
+                    <h3>Spreadsheet Formats</h3>
+                    <div class="formats-grid">
+                        <div class="format-item">XLSX</div>
+                        <div class="format-item">XLS</div>
+                        <div class="format-item">CSV</div>
+                        <div class="format-item">ODS</div>
+                    </div>
+                </div>
+                <div class="format-category">
                     <h3>Image Formats</h3>
                     <div class="formats-grid">
                         <div class="format-item">JPG/JPEG</div>
@@ -602,6 +727,8 @@ header .btn {
                         <div class="format-item">SVG</div>
                         <div class="format-item">WEBP</div>
                         <div class="format-item">GIF</div>
+                        <div class="format-item">TIFF</div>
+                        <div class="format-item">BMP</div>
                     </div>
                 </div>
                 <div class="format-category">
@@ -612,6 +739,8 @@ header .btn {
                         <div class="format-item">AVI</div>
                         <div class="format-item">WEBM</div>
                         <div class="format-item">MKV</div>
+                        <div class="format-item">FLV</div>
+                        <div class="format-item">WMV</div>
                     </div>
                 </div>
                 <div class="format-category">
@@ -622,6 +751,8 @@ header .btn {
                         <div class="format-item">OGG</div>
                         <div class="format-item">FLAC</div>
                         <div class="format-item">AAC</div>
+                        <div class="format-item">M4A</div>
+                        <div class="format-item">WMA</div>
                     </div>
                 </div>
                 <div class="format-category">
@@ -632,12 +763,14 @@ header .btn {
                         <div class="format-item">TAR</div>
                         <div class="format-item">7Z</div>
                         <div class="format-item">ISO</div>
+                        <div class="format-item">GZ</div>
+                        <div class="format-item">BZ2</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
+    
     <section class="how-it-works" id="how-it-works">
         <div class="container">
             <div class="section-title">
