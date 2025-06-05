@@ -74,12 +74,12 @@ FORMAT_COMPATIBILITY = {
     'xls': ['pdf', 'txt', 'rtf', 'odt','xlsx','xls'],
     
     # Image formats
-    'jpg': ['png', 'webp', 'gif', 'svg', 'pdf','jpg'],
-    'jpeg': ['png', 'webp', 'gif', 'svg', 'pdf','jpeg'],
-    'png': ['jpg', 'webp', 'gif', 'svg', 'pdf','png'],
-    'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp','svg'],
+    'jpg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpg'],
+    'jpeg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpeg'],
+    'png': ['jpg', 'webp', 'gif', 'svg','ico', 'pdf','png'],
+    'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp','ico','svg'],
     'webp': ['png', 'jpg', 'gif','webp'],
-    'gif': ['png', 'jpg', 'webp', 'mp4','gif'],
+    'gif': ['png', 'jpg', 'webp', 'ico','gif'],
     
     # Video formats
     'mp4': ['mov', 'avi', 'webm', 'mkv', 'gif','mp4'],
@@ -445,10 +445,11 @@ def convert_image(input_path, output_path, source_format, target_format, options
                         'png': 'PNG',
                         'webp': 'WEBP',
                         'bmp': 'BMP',
-                        'tiff': 'TIFF'
+                        'tiff': 'TIFF',
+                        'ico': 'ICO'
                     }
         # Use PIL for image conversions
-        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'gif']:
+        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'gif','ico']:
             try:
                 image = Image.open(input_path)
                 
@@ -464,7 +465,7 @@ def convert_image(input_path, output_path, source_format, target_format, options
                     save_options['quality'] = quality
                 
                 # Handle specific format settings
-                if target_format in ['jpg', 'jpeg','gif']:
+                if target_format in ['jpg', 'jpeg','gif','ico']:
                     # Convert to RGB if needed (for PNG with transparency)
                     if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
                         # Convert to RGBA for consistency

@@ -25,7 +25,7 @@ def is_main_process_running(proc):
     return proc.poll() is None
 
 
-LOGO=os.path.join(get_lib_path(),'logo.jpg')
+LOGO=os.path.join(get_lib_path(),'resources','logo.jpg')
 def launch_main_app():
     global main_process
     sleep(1.5)  # splash delay
