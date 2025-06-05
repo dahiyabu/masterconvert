@@ -88,8 +88,10 @@ jobs:
       - name: Build launcher exe
         shell: cmd
         run: |
-          pyinstaller --onefile --windowed  --name launcher ^
-          --add-data "services/converter-sw/logo.jpg;." ^
+          pyinstaller --onefile --windowed  --name convertMaster ^
+          --icon=services/converter-sw/resources/logo.ico ^
+          --version-file=services/converter-sw/resources/version.txt ^
+          --add-data "services/converter-sw/resources/logo.jpg;resources" ^
           --add-data "proc/masterConverter.exe;." ^
           --distpath output/windows services/converter-sw/launcher.py
 
