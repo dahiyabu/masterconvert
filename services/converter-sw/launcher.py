@@ -5,7 +5,11 @@ from PIL import Image, ImageTk
 from time import sleep
 import os
 import psutil
-from init import cleanup_files,get_lib_path,get_base_folder
+import sys
+
+sys.path.append('../')
+from converter.init import cleanup_files,get_lib_path,get_base_folder
+from converter.license import validate_license
 
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
@@ -32,7 +36,7 @@ def launch_main_app():
 
     if os.name == 'nt':
         # Windows: start in new console with title
-        MASTER_CONVERTER=os.path.join(get_lib_path(),'masterConverter.exe')
+        MASTER_CONVERTER=os.path.join(get_lib_path(),'app.exe')
         main_process = subprocess.Popen(
             [MASTER_CONVERTER],
             #[MASTER_CONVERTER],
@@ -41,7 +45,7 @@ def launch_main_app():
         )
     else:
         # macOS/Linux
-        MASTER_CONVERTER=os.path.join(get_lib_path(),'masterConverter')
+        MASTER_CONVERTER=os.path.join(get_lib_path(),'app')
         main_process = subprocess.Popen(
             ['x-terminal-emulator', '-e', MASTER_CONVERTER]
             if shutil.which('x-terminal-emulator') else
@@ -55,7 +59,7 @@ def launch_main_app():
 def check_ready_file(attempt=0):
     if os.path.exists(READY_FILE):
         os.remove(READY_FILE)
-        status_label.config(text="MasterConverter APP is Ready. Enjoy!")
+        status_label.config(text="Convert Master APP is Ready. Enjoy!")
         # Start monitoring main app exit now
         threading.Thread(target=monitor_main_app, daemon=True).start()
     elif attempt < MAX_ATTEMPTS:
@@ -87,7 +91,7 @@ font = ("Arial", 10)
 
 # Create splash window
 root = tk.Tk()
-root.title("MasterConverter")
+root.title("ConvertMaster")
 root.overrideredirect(True)
 root.configure(bg="white")
 
@@ -130,14 +134,27 @@ status_label = tk.Label(
 status_label.pack(pady=(10, 10))
 
 # Resize and center window
-root.update_idletasks()
-win_width = max(padded_img.width, status_label.winfo_width())
-win_height = padded_img.height + status_label.winfo_height() + 20
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-x = (screen_width - win_width) // 2
-y = (screen_height - win_height) // 2
-root.geometry(f"{win_width}x{win_height}+{x}+{y}")
+def resize_window():
+    root.update_idletasks()
+    win_width = max(padded_img.width, status_label.winfo_width())
+    win_height = padded_img.height + status_label.winfo_height() + 20
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width - win_width) // 2
+    y = (screen_height - win_height) // 2
+    root.geometry(f"{win_width}x{win_height}+{x}+{y}")
 
-threading.Thread(target=launch_main_app, daemon=True).start()
+def start_after_license_check():
+    try:
+        validate_license()
+        resize_window()
+        threading.Thread(target=launch_main_app, daemon=True).start()
+    except Exception as e:
+        status_label.config(text=f"License Error: {str(e)}", fg="red")
+        resize_window()
+        print("License validation failed:", e)
+        cleanup_files(get_lib_path(),del_log=True)
+        root.after(5000, root.destroy)
+
+root.after(100, start_after_license_check)
 root.mainloop()

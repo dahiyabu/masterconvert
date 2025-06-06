@@ -4,16 +4,7 @@ import zipfile
 import rarfile
 import tarfile
 import py7zr
-import uuid
-import logging
-from pathlib import Path
-
-logging.basicConfig(level=logging.INFO, filename='app.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-# Configuration
-UPLOAD_FOLDER = 'uploads'
-CONVERTED_FOLDER = 'converted'
+from converter.init import logger
 
 def merge_files_to_archive(output_path, merge_type, password, *file_paths):
     """

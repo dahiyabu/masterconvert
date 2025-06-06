@@ -1,12 +1,11 @@
 import os
 import io
+import sys
+import tempfile
 import uuid
-import json
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file, send_from_directory
-from flask_cors import CORS
+from flask import jsonify
 from werkzeug.utils import secure_filename
-import logging
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,35 +15,34 @@ import tarfile
 import pytesseract
 import py7zr
 import rarfile
-import mimetypes
-import ffmpeg
+import atexit
+import signal
+import cv2
+import threading
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from pdf2docx import Converter
-from docx2pdf import convert
 import docx2txt
 import fitz
 from PIL import Image
 #from cryptography.fernet import Fernet
 import time
-import pdfplumber
-import pypandoc
-import config
-#from weasyprint import HTML
-from docx import Document
-from archive import merge_files_to_archive
-from compress import compress_file
-# Initialize Flask app
-app = Flask(__name__, static_folder=os.path.join(os.getcwd(), 'build', 'static'))
-CORS(app)  # Enable CORS for all routes
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, filename='app.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import converter.config
+from converter.img2svg import raster_image_to_svg,convert_svg_to_jpg,convert_image_to_webp
+from converter.init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path,set_base_folder
+from converter.archive import merge_files_to_archive
+from converter.compress import compress_file
+from converter.pdf2xl import convert_pdf_to_xl
+from converter.pdf2doc import convert_from_pdf
+
+def get_curr_folder():
+    if getattr(sys, 'frozen', False):
+        # If running as a PyInstaller executable, use the temp folder path
+        return sys._MEIPASS
+    else:
+        # If running as a script, the folder is at the root
+        return os.path.dirname(os.path.abspath(__file__))#app.root_path
 
 # Configuration
-UPLOAD_FOLDER = 'uploads'
-CONVERTED_FOLDER = 'converted'
 ALLOWED_EXTENSIONS = {
     'pdf', 'docx', 'txt', 'rtf', 'odt','xlsx','xls','csv',  # Documents
     'jpg', 'jpeg', 'png', 'svg', 'webp', 'gif',  # Images
@@ -53,9 +51,6 @@ ALLOWED_EXTENSIONS = {
     'zip', 'rar', 'tar', '7z', 'iso'  # Archives
 }
 
-# Create necessary folders
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(CONVERTED_FOLDER, exist_ok=True)
 
 # Generate a key for file encryption (in a production app, store this securely)
 #ENCRYPTION_KEY = Fernet.generate_key()
@@ -73,12 +68,12 @@ FORMAT_COMPATIBILITY = {
     'xls': ['pdf', 'txt', 'rtf', 'odt','xlsx','xls'],
     
     # Image formats
-    'jpg': ['png', 'webp', 'gif', 'svg', 'pdf','jpg'],
-    'jpeg': ['png', 'webp', 'gif', 'svg', 'pdf','jpeg'],
-    'png': ['jpg', 'webp', 'gif', 'svg', 'pdf','png'],
-    'svg': ['png', 'jpg', 'webp','svg'],
+    'jpg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpg'],
+    'jpeg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpeg'],
+    'png': ['jpg', 'webp', 'gif', 'svg','ico', 'pdf','png'],
+    'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp','ico','svg'],
     'webp': ['png', 'jpg', 'gif','webp'],
-    'gif': ['png', 'jpg', 'webp', 'mp4','gif'],
+    'gif': ['png', 'jpg', 'webp', 'ico','gif'],
     
     # Video formats
     'mp4': ['mov', 'avi', 'webm', 'mkv', 'gif','mp4'],
@@ -143,8 +138,25 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 'Video':['None','50','23','18'],
 'Audio':['None','64k','128k','192k'],
 'Archive':['None','1','5','9']}
-ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'svg', 'webp', 'gif']
+#removed svg as converted after using raster is already a compressed enough
+ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
+
+def setup(path=None):
+    # Create necessary folders
+    os.makedirs(get_upload_folder(), exist_ok=True)
+    os.makedirs(get_converted_folder(), exist_ok=True)
+
+# Register cleanup on normal interpreter exit
+atexit.register(cleanup_files)
+
+def signal_handler(sig, frame):
+    logger.info(f"Received signal {sig}. Cleaning up and exiting.")
+    cleanup_files(get_base_folder(),del_log=True)
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
 
 def allowed_file(filename):
     """Check if file has an allowed extension"""
@@ -188,21 +200,19 @@ def encrypt_pdf(input_path, output_path, password):
         # Delete the temporary file
         #os.remove(pdf_path)
     except Exception as e:
-        print(f"Error encrypting PDF: {e}")
+        logger.error(f"Error encrypting PDF: {e}")
         return False
     
 def create_password_protected_zip(input_file, output_zip, password):
     """Create a password-protected zip file."""
     try:
-        with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add the file to the ZIP archive with password
+        with pyzipper.AESZipFile(output_zip, 'w', compression=pyzipper.ZIP_DEFLATED, encryption=pyzipper.WZ_AES) as zipf:
             zipf.setpassword(password.encode())
-            zipf.setencryption(pyzipper.WZ_AES)
-            zipf.write(input_file, arcname=input_file.split("/")[-1])
+            zipf.write(input_file, arcname=os.path.basename(input_file))
         logger.info(f"Password-protected ZIP created: {output_zip}")
         return True
     except Exception as e:
-        print(f"Error creating password-protected ZIP: {e}")
+        logger.error(f"Error creating password-protected ZIP: {e}")
         return False
 
 def is_pdf(file_path):
@@ -214,7 +224,7 @@ def is_pdf(file_path):
             # PDF files start with "%PDF"
             return header == b'%PDF'
     except Exception as e:
-        print(f"Error checking file: {e}")
+        logger.error(f"Error checking file: {e}")
         return False
            
 def encrypt_file(input_path, output_path, password):
@@ -229,19 +239,6 @@ def encrypt_file(input_path, output_path, password):
         return create_password_protected_zip(input_path,output_zip=output_path,password=password)
     except Exception as e:
         logger.error(f"Encryption error: {str(e)}")
-        return False
-
-def convert_pdf_to_docx(input_path, output_path):
-    try:
-        # Create a PDF converter object
-        cv = Converter(input_path)
-        # Convert the PDF to DOCX
-        cv.convert(output_path, start=0, end=None)  # You can specify the page range (start, end)
-        cv.close()
-        logger.info(f"PDF converted to DOCX and saved at {output_path}")
-        return True
-    except Exception as e:
-        logger.error(f"Error converting PDF to DOCX: {e}")
         return False
 
 def convert_pdf_to_image(input_path, output_path, target_format):
@@ -314,42 +311,11 @@ def convert_doc_to_pdf(input_path, output_path, source_format):
         logger.error(f"Error during conversion to PDF: {e}")
         return False
 
-def convert_from_pdf(input_path, output_path, dest_format):
-    try:
-     #   libreoffice_path = r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"
-        output_dir = os.path.dirname(output_path)
-        base_name = os.path.splitext(os.path.basename(input_path))[0]
-        generated_doc = os.path.join(output_dir, f"{base_name}.{dest_format}")
-        try:
-            subprocess.run([
-                config.LIBREOFFICE_PATH,
-                '--headless',
-                '--convert-to', dest_format,
-                '--outdir', output_dir,
-                input_path
-            ], check=True)
-
-            logger.info(f"Geenerated doc at {generated_doc}")
-            if os.path.exists(generated_doc):
-                shutil.move(generated_doc, output_path)
-            logger.info(f"✅ Converted to PDF: {output_path}")
-            logger.info(f"PDF conversion successful! Saved at {output_path}")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"❌ Error: {e}")
-        return True
-        #else:
-         #   raise Exception("Conversion failed during the process.")
-    
-    except Exception as e:
-        logger.error(f"Error during conversion to PDF: {e}")
-        return False
-
 def convert_docx_to_txt(input_path,output_path):
     try:
         with open(input_path, 'rb') as infile:
             with open(output_path, 'w', encoding='utf-8') as outfile:
                 doc = docx2txt.process(infile)
-                print(doc)
                 outfile.write(doc)
         logger.info(f"docx converted to TXT and saved at {output_path}")
         return True
@@ -398,18 +364,8 @@ def convert_pdf_to_txt(input_path, output_path):
 def convert_document(input_path, output_path, source_format, target_format, options=None):
     """Convert document files"""
     try:
-        # Example PDF to DOCX conversion (would use libraries like python-docx in production)
-        if source_format == 'pdf' and target_format == 'docx':
-            # In a real app, use python-docx or LibreOffice CLI
-            conversion_success = convert_pdf_to_docx(input_path, output_path)
-            if conversion_success:
-                logger.info(f"Conversion successful! The file is saved at {output_path}")
-            else:
-                logger.info("Conversion failed.")
-            return True
-            
         # PDF to image conversion
-        elif source_format == 'pdf' and target_format in ['png', 'jpg']:
+        if source_format == 'pdf' and target_format in ['png', 'jpg']:
             # In a real app, use pdf2image
             conversion_success = convert_pdf_to_image(input_path, output_path, target_format)
             if conversion_success:
@@ -440,8 +396,16 @@ def convert_document(input_path, output_path, source_format, target_format, opti
                 return False
             shutil.copy(input_path, output_path)  # Dummy conversion
             return True
-        elif source_format == 'pdf' and target_format in ['xlsx','xls']:
+        elif source_format == 'pdf' and target_format in ['docx','odt']:
             conversion_success = convert_from_pdf(input_path,output_path,target_format)
+            if conversion_success:
+                logger.info(f"Conversion successful! The File is saved at {output_path}")
+                return True
+            else:
+                logger.error("Conversion failed.")
+                return False
+        elif source_format == 'pdf' and target_format in ['xlsx','xls']:
+            conversion_success = convert_pdf_to_xl(input_path,output_path)
             if conversion_success:
                 logger.info(f"Conversion successful! The File is saved at {output_path}")
                 return True
@@ -467,10 +431,11 @@ def convert_image(input_path, output_path, source_format, target_format, options
                         'png': 'PNG',
                         'webp': 'WEBP',
                         'bmp': 'BMP',
-                        'tiff': 'TIFF'
+                        'tiff': 'TIFF',
+                        'ico': 'ICO'
                     }
         # Use PIL for image conversions
-        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        if source_format in ['jpg', 'jpeg', 'png', 'webp', 'gif'] and target_format in ['jpg', 'jpeg', 'png', 'gif','ico']:
             try:
                 image = Image.open(input_path)
                 
@@ -486,7 +451,7 @@ def convert_image(input_path, output_path, source_format, target_format, options
                     save_options['quality'] = quality
                 
                 # Handle specific format settings
-                if target_format in ['jpg', 'jpeg','gif']:
+                if target_format in ['jpg', 'jpeg','gif','ico']:
                     # Convert to RGB if needed (for PNG with transparency)
                     if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
                         # Convert to RGBA for consistency
@@ -531,13 +496,21 @@ def convert_image(input_path, output_path, source_format, target_format, options
             except Exception as e:
                 logger.error(f"Image to PDF conversion error: {str(e)}")
                 return False
-                
+        elif source_format == 'svg':
+            if convert_svg_to_jpg(input_path,output_path,target_format=target_format):
+                logger.info(f"Converted image to {output_path}")
+                return True
+        elif target_format == 'webp':
+            if convert_image_to_webp(input_path,output_path):
+                logger.info(f"Converted image to {output_path}")
+                return True
         # SVG conversions would require additional libraries
-        elif source_format == 'svg' or target_format == 'svg':
-            # In a real app, use cairosvg or other SVG libraries
-            shutil.copy(input_path, output_path)  # Dummy conversion
-            return True
-            
+        elif target_format == 'svg':
+            if raster_image_to_svg(input_path, output_path):
+                logger.info(f"Converted image to {output_path}")
+                return True
+            return False
+
         # Default fallback
         else:
             shutil.copy(input_path, output_path)  # Dummy conversion
@@ -622,6 +595,10 @@ def convert_audio(input_path, output_path, source_format, target_format, options
 def convert_archive(input_path, output_path, source_format, target_format, options=None):
     """Convert archive files"""
     try:
+        #rarfile.UNRAR_TOOL = r"C:\Program Files\WinRAR\UnRAR.exe"
+        #rar_exe = r"C:\Program Files\WinRAR\rar.exe"  # Adjust if needed
+        rarfile.UNRAR_TOOL = config.UNRAR_PATH
+        rar_exe = config.RAR_PATH
         # If the target format is a zip archive
         if target_format == 'zip':
             if source_format == 'zip':
@@ -655,9 +632,10 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                                 zipf.writestr(file, extracted_file_content)
                     elif source_format == 'rar':
                         # Extract from rar and add to zip
-                        logger.info("File Format=",input_path)
                         with rarfile.RarFile(input_path) as rar:
                             for file in rar.namelist():
+                                if file.endswith('/'):  # Skip directories
+                                    continue
                                 content = rar.read(file)
                                 zipf.writestr(file, content)
 
@@ -684,21 +662,39 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                     # If source is already tar, just copy it (dummy conversion)
                     shutil.copy(input_path, output_path)
                 elif source_format == '7z':
+                    temp_dir = os.path.join(get_lib_path(),"temp_extract")
+                    os.makedirs(temp_dir, exist_ok=True)        
                     # Extract from 7z and add to tar
                     with py7zr.SevenZipFile(input_path, mode='r') as archive:
-                        for file in archive.getnames():
-                            tarf.add(file, arcname=os.path.basename(file))
+                        archive.extractall(path=temp_dir)
+                    with tarfile.open(output_path, "w") as tarf:
+                        for root, dirs, files in os.walk(temp_dir):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                arcname = os.path.relpath(file_path, temp_dir)  # Preserve structure
+                                tarf.add(file_path, arcname=arcname)
+                    shutil.rmtree(temp_dir)
                 elif source_format == 'rar':
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
                         for file in rar.namelist():
-                            tarf.add(file, arcname=os.path.basename(file))
+                            logger.info(f"adding {file}")
+                            if file.endswith('/'):  # Skip directories
+                                continue
+                            logger.info(f"Adding {file} to tar")
+
+                            file_data = rar.read(file)
+                            file_info = tarfile.TarInfo(name=os.path.basename(file))
+                            file_info.size = len(file_data)
+
+                            tarf.addfile(file_info, io.BytesIO(file_data))
+#                            tarf.add(file, arcname=os.path.basename(file))
 
             logger.info(f"Conversion successful: {input_path} to {output_path}")
             return True
         elif target_format == '7z':
             with py7zr.SevenZipFile(output_path, 'a') as archive:
-                temp_dir = "temp_extract"
+                temp_dir = os.path.join(get_lib_path(),"temp_extract")
                 os.makedirs(temp_dir, exist_ok=True)        
                 if source_format == 'zip':
                     # Extract from zip and add to tar
@@ -707,21 +703,62 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                         zipf.extractall(temp_dir)
                 elif source_format == 'tar':
                     with tarfile.open(input_path, 'r') as tarf:
-                        tarf.extractall(temp_dir)
+                        for member in tarf.getmembers():
+                            logger.info(f"Extracting {member.name}")
+                            try:
+                                tarf.extract(member, path=temp_dir)
+                            except Exception as e:
+                                logger.error(f"Failed to extract {member.name}: {e}")
                 elif source_format == 'rar':
                     # Extract from rar and add to tar
                     with rarfile.RarFile(input_path) as rar:
-                        rar.extract_all(temp_dir)
+                        rar.extractall(temp_dir)
                 archive.writeall(temp_dir, arcname='')
                 for root, dirs, files in os.walk(temp_dir, topdown=False):
                     for name in files:
                         os.remove(os.path.join(root, name))
                     for name in dirs:
                         os.rmdir(os.path.join(root, name))
-                os.rmdir(temp_dir)  # Remove the base temp
+                shutil.rmtree(temp_dir)  # Remove the base temp
             logger.info(f"Conversion successful: {input_path} to {output_path}")
             return True
+        elif target_format == 'rar':
 
+            parent_temp_dir = tempfile.gettempdir()
+            temp_dir = os.path.join(parent_temp_dir, "temp_extract")
+            #temp_dir = os.path.join(get_lib_path(),"temp_extract")
+            os.makedirs(temp_dir, exist_ok=True)
+
+            try:
+                # Extract based on source format
+                if source_format == 'zip':
+                    with zipfile.ZipFile(input_path, 'r') as zipf:
+                        zipf.extractall(temp_dir)
+                elif source_format == 'tar':
+                    with tarfile.open(input_path, 'r:*') as tarf:
+                        for member in tarf.getmembers():
+                            logger.info(f"Extracting {member.name}")
+                            try:
+                                tarf.extract(member, path=temp_dir)
+                            except Exception as e:
+                                logger.error(f"Failed to extract {member.name}: {e}")
+                elif source_format == '7z':
+                    with py7zr.SevenZipFile(input_path, mode='r') as archive:
+                        archive.extractall(path=temp_dir)
+                elif source_format == 'rar':
+                    with rarfile.RarFile(input_path) as rar:
+                        rar.extractall(temp_dir)
+                #output_dir = os.path.dirname(output_path)
+                #output_basename = os.path.splitext(os.path.basename(output_path))[0]
+                cmd = [rar_exe, 'a', '-r', output_path, '.']
+
+                subprocess.run(cmd, cwd=temp_dir, check=True)
+                logger.info(f"Conversion successful: {input_path} to {output_path}")
+                shutil.rmtree(temp_dir)
+                return True
+            except Exception as e:
+                logger.error(f"Error Converting to RAR format {e}")
+                return False
         else:
             # For unsupported formats, just copy the file (dummy conversion)
             shutil.copy(input_path, output_path)
@@ -802,18 +839,11 @@ def merge_pdfs(output_path,temp_merge_path, *file_paths):
     finally:
         merger.close()
 
-@app.route('/api/merge', methods=['POST'])
-def merge_files():
-    if 'files' not in request.files:
-        return jsonify({"error": "No files provided."}), 400
-
-    files = request.files.getlist('files')
-    merge_type = request.form.get('merge_type', 'pdf')
-    password = request.form.get('password',None)
+def merge_file_handler(files,merge_type,password):
     # Save uploaded files
     uploaded_file_paths = []
-    upload_merge_path = os.path.join(UPLOAD_FOLDER,"temp-merge")
-    temp_merge_path = os.path.join(CONVERTED_FOLDER,"temp-merge")
+    upload_merge_path = os.path.join(get_upload_folder(),"temp-merge")
+    temp_merge_path = os.path.join(get_converted_folder(),"temp-merge")
     os.makedirs(upload_merge_path, exist_ok=True)
     os.makedirs(temp_merge_path, exist_ok=True)
     for file in files:
@@ -829,13 +859,13 @@ def merge_files():
     try:
         # Create a temporary output file path for the merged result
         merged_output_filename = f"{uuid.uuid4().hex}.{merge_type}"
-        merged_output_path = os.path.join(CONVERTED_FOLDER, merged_output_filename)
+        merged_output_path = os.path.join(get_converted_folder(), merged_output_filename)
         if merge_type == 'pdf':
             merge_pdfs(merged_output_path,temp_merge_path, *uploaded_file_paths)
             # Apply password protection if requested
             if password:
                 encrypted_filename = f"{uuid.uuid4().hex}.{merge_type}"
-                encrypted_path = os.path.join(CONVERTED_FOLDER, encrypted_filename)
+                encrypted_path = os.path.join(get_converted_folder(), encrypted_filename)
                 
                 if encrypt_file(merged_output_path, encrypted_path, password):
                     # Remove the unencrypted file
@@ -863,17 +893,7 @@ def merge_files():
         logger.error(f"Error during merge: {e}")
         return jsonify({"error": "An error occurred while merging the files."}), 500
 
-# API Routes
-@app.route('/api/upload', methods=['POST'])
-def upload_file():
-    """Handle file upload and return compatible formats"""
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-        
-    file = request.files['file']
-    
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+def upload_file_handler(file):
         
     if not allowed_file(file.filename):
         return jsonify({'error': 'File type not allowed'}), 400
@@ -883,7 +903,7 @@ def upload_file():
         original_filename = secure_filename(file.filename)
         file_extension = get_file_extension(original_filename)
         unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+        file_path = os.path.join(get_upload_folder(), unique_filename)
         
         # Save the file
         file.save(file_path)
@@ -916,19 +936,9 @@ def upload_file():
     except Exception as e:
         logger.error(f"Upload error: {str(e)}")
         return jsonify({'error': 'File upload failed'}), 500
-
-@app.route('/api/convert', methods=['POST'])
-def convert_file():
-    """Handle file conversion"""
+    
+def file_conversion_handler(data):
     try:
-        data = request.json
-        
-        # Validate required fields
-        required_fields = ['file_id', 'target_format']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        
         file_id = data['file_id']
         target_format = data['target_format'].lower()
         password = data.get('password', None)
@@ -936,7 +946,7 @@ def convert_file():
         options = data.get('options', {})
         
         # Validate file exists
-        input_path = os.path.join(UPLOAD_FOLDER, file_id)
+        input_path = os.path.join(get_upload_folder(), file_id)
         if not os.path.exists(input_path):
             return jsonify({'error': 'File not found'}), 404
         
@@ -949,7 +959,7 @@ def convert_file():
         
         # Generate output filename
         output_filename = f"{uuid.uuid4().hex}.{target_format}"
-        output_path = os.path.join(CONVERTED_FOLDER, output_filename)
+        output_path = os.path.join(get_converted_folder(), output_filename)
         
         # Log conversion start
         logger.info(f"Starting conversion: {source_format} to {target_format}")
@@ -972,7 +982,7 @@ def convert_file():
                 os.remove(input_path)
             input_path=output_path
             output_filename=f"{uuid.uuid4().hex}.{target_format}"
-            output_path = os.path.join(CONVERTED_FOLDER,output_filename)
+            output_path = os.path.join(get_converted_folder(),output_filename)
             compress_file(input_file=input_path,output_file=output_path,quality_level=compress_rate)
             if os.path.exists(input_path):
                 os.remove(input_path)   
@@ -980,7 +990,7 @@ def convert_file():
         # Apply password protection if requested
         if password:
             encrypted_filename = f"{uuid.uuid4().hex}.{target_format}"
-            encrypted_path = os.path.join(CONVERTED_FOLDER, encrypted_filename)
+            encrypted_path = os.path.join(get_converted_folder(), encrypted_filename)
             
             if encrypt_file(output_path, encrypted_path, password):
                 # Remove the unencrypted file
@@ -1005,57 +1015,3 @@ def convert_file():
     except Exception as e:
         logger.error(f"Conversion error: {str(e)}")
         return jsonify({'error': 'Conversion process failed'}), 500
-
-@app.route('/api/download/<conversion_id>', methods=['GET'])
-def download_file(conversion_id):
-    """Download a converted file"""
-    try:
-        file_path = os.path.join(CONVERTED_FOLDER, conversion_id)
-        
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'File not found'}), 404
-        
-        # Get original filename from request query params or use conversion_id
-        original_name = request.args.get('name', conversion_id)
-        
-        # Handle file download
-        return send_file(
-            file_path,
-            download_name=original_name,
-            as_attachment=True
-        )
-        
-    except Exception as e:
-        logger.error(f"Download error: {str(e)}")
-        return jsonify({'error': 'Download failed'}), 500
-
-@app.route('/api/formats', methods=['GET'])
-def get_formats():
-    """Get all supported formats and their compatibility"""
-    return jsonify({
-        'format_compatibility': FORMAT_COMPATIBILITY,
-        'file_categories': FILE_CATEGORIES
-    }), 200
-
-@app.route('/')
-def serve_react_app():
-    # This will serve index.html for the root URL
-    return send_from_directory(os.path.join(app.root_path, 'build'), 'index.html')
-
-@app.route('/static/<path:path>')
-def serve_static(path):
-    dirpath=os.path.join(app.root_path, 'build', 'static')
-    logger.info(f"sending file from {dirpath} {path}")
-    return send_from_directory(os.path.join(app.root_path, 'build', 'static'), path)
-
-# Error handlers
-@app.errorhandler(404)
-def not_found(e):
-    return jsonify({'error': 'Resource not found'}), 404
-
-@app.errorhandler(500)
-def server_error(e):
-    return jsonify({'error': 'Server error occurred'}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)

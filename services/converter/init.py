@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 
+base_folder = None
 def get_lib_path():
     # Base path for extracting bundled files if running from a packaged EXE
     if getattr(sys, 'frozen', False):
@@ -13,13 +14,21 @@ def get_lib_path():
         return os.getcwd()
 
 def get_base_folder():
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(os.path.abspath(sys.argv[0]))
+    global base_folder
+    if base_folder is None:
+        if getattr(sys, 'frozen', False):
+            base_folder = os.path.dirname(sys.executable)
+        else:
+            base_folder = os.path.dirname(os.path.abspath(sys.argv[0]))
+    return base_folder
+
+def set_base_folder(path=None):
+    global base_folder
+    base_folder = path or get_base_folder()   
     
 def get_upload_folder():
     return os.path.join(get_base_folder(), 'uploads')
+
 def get_converted_folder():
     return os.path.join(get_base_folder(), 'converted')
 

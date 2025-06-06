@@ -2,8 +2,6 @@ import io
 import os
 import shutil
 import subprocess
-import config
-from init import logger,get_lib_path
 import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
@@ -11,6 +9,8 @@ from docx import Document
 from docx.shared import Inches
 from pdf2docx import Converter
 
+import converter.config
+from converter.init import logger,get_lib_path
 
 # ✅ Detect if PDF is scanned
 def is_scanned_pdf(pdf_path):

@@ -2,10 +2,11 @@ import os
 import pdfplumber
 import pandas as pd
 import pytesseract
-import config
 import fitz  # PyMuPDF
 from PIL import Image
-from init import logger
+
+import converter.config
+from converter.init import logger
 
 # ✅ Detect if PDF is scanned (image-based)
 def is_scanned_pdf(pdf_path):
