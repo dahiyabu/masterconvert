@@ -34,6 +34,7 @@ from converter.compress import compress_file
 from converter.pdf2xl import convert_pdf_to_xl
 from converter.pdf2doc import convert_from_pdf
 
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 def get_curr_folder():
     if getattr(sys, 'frozen', False):
         # If running as a PyInstaller executable, use the temp folder path
@@ -662,7 +663,7 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
                     # If source is already tar, just copy it (dummy conversion)
                     shutil.copy(input_path, output_path)
                 elif source_format == '7z':
-                    temp_dir = os.path.join(get_lib_path(),"temp_extract")
+                    temp_dir = os.path.join(get_lib_path(CURR_DIR),"temp_extract")
                     os.makedirs(temp_dir, exist_ok=True)        
                     # Extract from 7z and add to tar
                     with py7zr.SevenZipFile(input_path, mode='r') as archive:
@@ -694,7 +695,7 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
             return True
         elif target_format == '7z':
             with py7zr.SevenZipFile(output_path, 'a') as archive:
-                temp_dir = os.path.join(get_lib_path(),"temp_extract")
+                temp_dir = os.path.join(get_lib_path(CURR_DIR),"temp_extract")
                 os.makedirs(temp_dir, exist_ok=True)        
                 if source_format == 'zip':
                     # Extract from zip and add to tar

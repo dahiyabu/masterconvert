@@ -12,6 +12,8 @@ from pdf2docx import Converter
 import converter.config
 from converter.init import logger,get_lib_path
 
+CURR_DIR=os.path.join(os.path.dirname(__file__))
+
 # ✅ Detect if PDF is scanned
 def is_scanned_pdf(pdf_path):
     doc = fitz.open(pdf_path)
@@ -89,7 +91,7 @@ def convert_smart_scanned_pdf_to_docx(input_path, output_path, min_text_length=2
                     doc.add_paragraph(line_text.strip())
         else:
             # Add image instead of text
-            image_path = os.path.join(get_lib_path(),f"page_{i+1}.png")
+            image_path = os.path.join(get_lib_path(CURR_DIR),f"page_{i+1}.png")
             img.save(image_path)
             doc.add_picture(image_path, width=Inches(6.5))
             os.remove(image_path)

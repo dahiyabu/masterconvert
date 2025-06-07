@@ -3,15 +3,16 @@ import os
 import sys
 import shutil
 
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 base_folder = None
-def get_lib_path():
+def get_lib_path(path=CURR_DIR):
     # Base path for extracting bundled files if running from a packaged EXE
     if getattr(sys, 'frozen', False):
         # If the app is packaged, dependencies will be extracted to a temporary folder
         return sys._MEIPASS
     else:
         # If running from source code, use the current working directory
-        return os.getcwd()
+        return path
 
 def get_base_folder():
     global base_folder
@@ -56,7 +57,7 @@ def cleanup_files(parent_folder=get_base_folder(),del_log=False):
                 print("Deleted log file: converter.log")
             except Exception as e:
                 print(f"Failed to delete log file: {e}")
-    READY_FILE = os.path.join(get_lib_path(),"app_ready.tmp")
+    READY_FILE = os.path.join(get_lib_path(CURR_DIR),"app_ready.tmp")
     if os.path.exists(READY_FILE):
         os.remove(READY_FILE)
 

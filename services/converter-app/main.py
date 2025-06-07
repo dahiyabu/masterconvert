@@ -1,9 +1,8 @@
-import sys
-sys.path.append('../')
+import sys,os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from converter.convertMaster import cleanup_files,setup
 from converter.init import get_base_folder,set_base_folder
 from converter.app import app
-import os
 
 if __name__ == '__main__':
     temp_path = os.getenv('TEMPPATH')

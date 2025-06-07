@@ -4,8 +4,9 @@ from flask import Flask,request,jsonify, send_file
 from flask_cors import CORS
 import os,sys
 
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 # Initialize Flask app
-app = Flask("Convert Master", static_folder=os.path.join(get_lib_path(), 'build', 'static'))
+app = Flask("Convert Master", static_folder=os.path.join(get_lib_path(CURR_DIR), 'build', 'static'))
 CORS(app)  # Enable CORS for all routes
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 

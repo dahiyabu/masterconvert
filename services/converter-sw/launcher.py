@@ -7,20 +7,21 @@ import os
 import psutil
 import sys
 
-sys.path.append('../')
+#sys.path.append('../')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from converter.init import cleanup_files,get_lib_path,get_base_folder
 from converter.license import validate_license
 
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 
-READY_FILE = os.path.join(get_lib_path(),"app_ready.tmp")
+READY_FILE = os.path.join(get_lib_path(CURR_DIR),"app_ready.tmp")
 CHECK_INTERVAL_MS = 1500
 TIMEOUT_SECONDS = 300
 MAX_ATTEMPTS = TIMEOUT_SECONDS * 1000 // CHECK_INTERVAL_MS
 
 main_process = None  # Global to hold the Popen object
-
 
 def is_main_process_running(proc):
     """Check if the main process is still running"""
@@ -29,14 +30,14 @@ def is_main_process_running(proc):
     return proc.poll() is None
 
 
-LOGO=os.path.join(get_lib_path(),'resources','logo.jpg')
+LOGO=os.path.join(get_lib_path(CURR_DIR),'resources','logo.jpg')
 def launch_main_app():
     global main_process
     sleep(1.5)  # splash delay
 
     if os.name == 'nt':
         # Windows: start in new console with title
-        MASTER_CONVERTER=os.path.join(get_lib_path(),'app.exe')
+        MASTER_CONVERTER=os.path.join(get_lib_path(CURR_DIR),'app.exe')
         main_process = subprocess.Popen(
             [MASTER_CONVERTER],
             #[MASTER_CONVERTER],
@@ -45,7 +46,7 @@ def launch_main_app():
         )
     else:
         # macOS/Linux
-        MASTER_CONVERTER=os.path.join(get_lib_path(),'app')
+        MASTER_CONVERTER=os.path.join(get_lib_path(CURR_DIR),'app')
         main_process = subprocess.Popen(
             ['x-terminal-emulator', '-e', MASTER_CONVERTER]
             if shutil.which('x-terminal-emulator') else
@@ -80,7 +81,7 @@ def monitor_main_app():
         pass  # Process already ended
 
     print("Main app closed.")
-    cleanup_files(get_lib_path(),del_log=True)
+    cleanup_files(get_lib_path(CURR_DIR),del_log=True)
     # Close splash window and exit
     root.after(0, root.destroy)
     root.after(100, lambda: os._exit(0))
@@ -153,7 +154,7 @@ def start_after_license_check():
         status_label.config(text=f"License Error: {str(e)}", fg="red")
         resize_window()
         print("License validation failed:", e)
-        cleanup_files(get_lib_path(),del_log=True)
+        cleanup_files(get_lib_path(CURR_DIR),del_log=True)
         root.after(5000, root.destroy)
 
 root.after(100, start_after_license_check)

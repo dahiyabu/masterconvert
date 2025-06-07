@@ -3,8 +3,9 @@ from flask import send_from_directory
 from converter.app import app
 from converter.init import logger,get_lib_path
 
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 def get_build_folder():
-    return os.path.join(get_lib_path(),'build')
+    return os.path.join(get_lib_path(CURR_DIR),'build')
 
 @app.route('/')
 def serve_react_app():

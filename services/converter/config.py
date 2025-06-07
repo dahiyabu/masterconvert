@@ -5,9 +5,9 @@ from converter.init import logger,get_lib_path
 
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()
+CURR_DIR=os.path.join(os.path.dirname(__file__))
 
-
-BASE_PATH = get_lib_path()
+BASE_PATH = get_lib_path(CURR_DIR)
 
 # Set paths for external binaries based on platform
 if SYSTEM_PLATFORM == 'windows':
