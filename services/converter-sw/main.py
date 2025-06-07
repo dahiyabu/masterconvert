@@ -1,5 +1,9 @@
 import sys,os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+if getattr(sys, 'frozen', False):
+    # When frozen, use the temp folder where PyInstaller extracts
+    sys.path.insert(0, sys._MEIPASS)
+else:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from converter.convertMaster import cleanup_files,setup
 from converter.init import get_base_folder
 from converter.app import app

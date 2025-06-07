@@ -7,8 +7,11 @@ import os
 import psutil
 import sys
 
-#sys.path.append('../')
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+if getattr(sys, 'frozen', False):
+    # When frozen, use the temp folder where PyInstaller extracts
+    sys.path.insert(0, sys._MEIPASS)
+else:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from converter.init import cleanup_files,get_lib_path,get_base_folder
 from converter.license import validate_license
 
