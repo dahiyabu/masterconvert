@@ -78,31 +78,31 @@ jobs:
       
       - name: Build app (Windows)
         run: |
-          cd build_app ^
-          pyinstaller ^
-            --noconfirm --clean --console --name app^
-            --onefile --log-level DEBUG ^
-            --add-data "converter-sw\\build;build" ^
-            --add-data "..\\libreoffice;dependencies/libreoffice" ^
-            --add-data "..\\tesseract-bin;dependencies/tesseract-ocr" ^
-            --add-data "..\\ffmpeg-bin\\ffmpeg.exe;dependencies" ^
-            --add-data "..\\ghostscript;dependencies/ghostscript" ^
-            --add-data "..\\7zip;dependencies/7zip" ^
-            --add-data "..\\cairosvg;dependencies/cairosvg" ^
-            --add-data "..\\rar;dependencies/rar" ^
-            --distpath ..\\proc converter-sw\\main.py
-        shell: cmd
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "converter-sw\\build;build" \
+            --add-data "../libreoffice;dependencies/libreoffice" \
+            --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
+            --add-data "../ffmpeg-bin/ffmpeg.exe;dependencies" \
+            --add-data "../ghostscript;dependencies/ghostscript" \
+            --add-data "../7zip;dependencies/7zip" \
+            --add-data "../cairosvg;dependencies/cairosvg" \
+            --add-data "../rar;dependencies/rar" \
+            --distpath ../proc converter-sw/main.py
+        shell: bash
       
       - name: Build launcher exe
-        shell: cmd
+        shell: bash
         run: |
-          cd build_app ^
-          pyinstaller --onefile --windowed  --name convertMaster ^
-          --icon=converter-sw\\resources\\logo.ico ^
-          --version-file=converter-sw\\resources\\version.txt ^
-          --add-data "converter-sw\\resources\\logo.jpg;resources" ^
-          --add-data "..\\proc\\app.exe;." ^
-          --distpath ..\\output\\windows converter-sw\\launcher.py
+          cd build_app
+          pyinstaller --onefile --windowed  --name convertMaster \
+          --icon=converter-sw/resources/logo.ico \
+          --version-file=converter-sw/resources/version.txt \
+          --add-data "converter-sw/resources/logo.jpg;resources" \
+          --add-data "../proc/app.exe;." \
+          --distpath ../output/windows converter-sw/launcher.py
 
       
       - name: Upload Windows build artifact
