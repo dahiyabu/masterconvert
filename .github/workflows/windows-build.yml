@@ -82,6 +82,8 @@ jobs:
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
+            --paths=converter \
+            --paths=converter-sw \
             --add-data "converter-sw\\build;build" \
             --add-data "../libreoffice;dependencies/libreoffice" \
             --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
@@ -100,6 +102,8 @@ jobs:
           pyinstaller --onefile --windowed  --name convertMaster \
           --icon=converter-sw/resources/logo.ico \
           --version-file=converter-sw/resources/version.txt \
+          --paths=converter \
+          --paths=converter-sw \
           --add-data "converter-sw/resources/logo.jpg;resources" \
           --add-data "../proc/app.exe;." \
           --distpath ../output/windows converter-sw/launcher.py
