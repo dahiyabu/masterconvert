@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir -p build_app
           cp -r services/converter build_app/converter
-          cp -r services/converter-sw build_app/converter-sw
+          cp -r services/converter-sw/* build_app/
       
       - name: Build app (Windows)
         run: |
@@ -82,9 +82,7 @@ jobs:
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
-            --paths=converter \
-            --paths=converter-sw \
-            --add-data "converter-sw\\build;build" \
+            --add-data "build;build" \
             --add-data "../libreoffice;dependencies/libreoffice" \
             --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
             --add-data "../ffmpeg-bin/ffmpeg.exe;dependencies" \
@@ -92,7 +90,7 @@ jobs:
             --add-data "../7zip;dependencies/7zip" \
             --add-data "../cairosvg;dependencies/cairosvg" \
             --add-data "../rar;dependencies/rar" \
-            --distpath ../proc converter-sw/main.py
+            --distpath ../proc main.py
         shell: bash
       
       - name: Build launcher exe
@@ -100,13 +98,11 @@ jobs:
         run: |
           cd build_app
           pyinstaller --onefile --windowed  --name convertMaster \
-          --icon=converter-sw/resources/logo.ico \
-          --version-file=converter-sw/resources/version.txt \
-          --paths=converter \
-          --paths=converter-sw \
-          --add-data "converter-sw/resources/logo.jpg;resources" \
+          --icon=resources/logo.ico \
+          --version-file=resources/version.txt \
+          --add-data "resources/logo.jpg;resources" \
           --add-data "../proc/app.exe;." \
-          --distpath ../output/windows converter-sw/launcher.py
+          --distpath ../output/windows launcher.py
 
       
       - name: Upload Windows build artifact
