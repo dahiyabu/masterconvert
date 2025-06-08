@@ -19,10 +19,12 @@ def get_device_id():
 
 def read_license():
     if not os.path.exists(LICENSE_PATH):
+        print("License File not found")
         return None
     try:
         with open(LICENSE_PATH, "rb") as f:
-            encrypted = f.read()
+            encrypted_b64 = f.read()
+        encrypted = base64.b64decode(encrypted_b64)  # Decode base64 to raw bytes
         decrypted = fernet.decrypt(encrypted)
         return json.loads(decrypted)
     except Exception as e:
@@ -35,7 +37,6 @@ def write_license(data):
         f.write(encrypted)
 
 def validate_license():
-    #generate_license_file(LICENSE_PATH,-1)
     data = read_license()
 
     if not data:
