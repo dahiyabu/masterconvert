@@ -1,10 +1,11 @@
+import base64
 import json
 import uuid
 import socket
 import hashlib
 from datetime import datetime, timezone, timedelta
 import os
-from converter.init import get_base_folder
+from converter.init import get_base_folder,logger
 from cryptography.fernet import Fernet
 
 LICENSE_PATH = os.path.join(get_base_folder(), "license.lic")
@@ -34,7 +35,7 @@ def write_license(data):
         f.write(encrypted)
 
 def validate_license():
-    generate_license_file(LICENSE_PATH,-1)
+    #generate_license_file(LICENSE_PATH,-1)
     data = read_license()
 
     if not data:
@@ -61,7 +62,9 @@ def generate_license_file(output_path='', expiry_days=30):
         "used": False
     }
     encrypted = fernet.encrypt(json.dumps(license_data).encode())
-    return encrypted
+    key_b64 = base64.b64encode(encrypted).decode('utf-8')
+
+    return key_b64
     with open(output_path, "wb") as f:
         f.write(encrypted)
     print("License file generated:", output_path)

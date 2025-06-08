@@ -1,20 +1,18 @@
 from converter.convertMaster import FORMAT_COMPATIBILITY,FILE_CATEGORIES,file_conversion_handler,merge_file_handler,upload_file_handler,get_converted_folder
 from converter.init import logger,get_lib_path
-from flask import Flask,request,jsonify, send_file
-from flask_cors import CORS
+from flask import Blueprint,request,jsonify, send_file
 import os,sys
+
+cm_bp = Blueprint('cm_bp', __name__)
 
 CURR_DIR=os.path.join(os.path.dirname(__file__))
 # Initialize Flask app
-app = Flask("Convert Master", static_folder=os.path.join(get_lib_path(CURR_DIR), 'build', 'static'))
-CORS(app)  # Enable CORS for all routes
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
 
 cli = sys.modules.get('flask.cli')
 if cli:
     cli.show_server_banner = lambda *args, **kwargs: None
 
-@app.route('/api/formats', methods=['GET'])
+@cm_bp.route('/api/formats', methods=['GET'])
 def get_formats():
     """Get all supported formats and their compatibility"""
     return jsonify({
@@ -23,15 +21,15 @@ def get_formats():
     }), 200
 
 # Error handlers
-@app.errorhandler(404)
+@cm_bp.errorhandler(404)
 def not_found(e):
     return jsonify({'error': 'Resource not found'}), 404
 
-@app.errorhandler(500)
+@cm_bp.errorhandler(500)
 def server_error(e):
     return jsonify({'error': 'Server error occurred'}), 500
 
-app.route('/api/merge', methods=['POST'])
+cm_bp.route('/api/merge', methods=['POST'])
 def merge_files():
     if 'files' not in request.files:
         return jsonify({"error": "No files provided."}), 400
@@ -42,7 +40,7 @@ def merge_files():
     return merge_file_handler(files,merge_type,password)
 
 # API Routes
-@app.route('/api/upload', methods=['POST'])
+@cm_bp.route('/api/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and return compatible formats"""
     if 'file' not in request.files:
@@ -54,7 +52,7 @@ def upload_file():
         return jsonify({'error': 'No file selected'}), 400
     return upload_file_handler(file)
 
-@app.route('/api/convert', methods=['POST'])
+@cm_bp.route('/api/convert', methods=['POST'])
 def convert_file():
     """Handle file conversion"""
     try:
@@ -70,7 +68,7 @@ def convert_file():
         logger.exception(f"caught exception {e}")
         return jsonify({'error': 'Conversion process failed'}), 500
 
-@app.route('/api/download/<conversion_id>', methods=['GET'])
+@cm_bp.route('/api/download/<conversion_id>', methods=['GET'])
 def download_file(conversion_id):
     """Download a converted file"""
     try:
