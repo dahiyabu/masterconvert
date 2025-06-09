@@ -33,12 +33,12 @@ def read_license():
 
 def write_license(data):
     encrypted = fernet.encrypt(json.dumps(data).encode())
-    with open(LICENSE_PATH, "wb") as f:
-        f.write(encrypted)
+    key_b64 = base64.b64encode(encrypted).decode('utf-8')
+    with open(LICENSE_PATH, "w") as f:
+        f.write(key_b64)
 
 def validate_license():
     data = read_license()
-
     if not data:
         raise Exception("Missing or invalid license file. Please obtain a valid license.")
     
