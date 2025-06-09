@@ -82,6 +82,7 @@ jobs:
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
+            --hidden-import=_argon2 \
             --add-data "build;build" \
             --add-data "../libreoffice;dependencies/libreoffice" \
             --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
