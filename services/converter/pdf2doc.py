@@ -9,7 +9,7 @@ from docx import Document
 from docx.shared import Inches
 from pdf2docx import Converter
 
-import converter.config
+from converter import config
 from converter.init import logger,get_lib_path
 
 CURR_DIR=os.path.join(os.path.dirname(__file__))

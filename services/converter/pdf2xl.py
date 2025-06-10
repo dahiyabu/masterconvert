@@ -5,7 +5,7 @@ import pytesseract
 import fitz  # PyMuPDF
 from PIL import Image
 
-import converter.config
+from converter import config
 from converter.init import logger
 
 # ✅ Detect if PDF is scanned (image-based)

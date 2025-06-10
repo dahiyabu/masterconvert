@@ -3,7 +3,7 @@ import subprocess
 import mimetypes
 from scour import scour
 
-import converter.config
+from converter import config
 from converter.init import logger
 
 def is_audio(file_path):

@@ -26,7 +26,7 @@ from PIL import Image
 #from cryptography.fernet import Fernet
 import time
 
-import converter.config
+from converter import config
 from converter.img2svg import raster_image_to_svg,convert_svg_to_jpg,convert_image_to_webp
 from converter.init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path,set_base_folder
 from converter.archive import merge_files_to_archive
