@@ -1,0 +1,83 @@
+name: Build Ubuntu Software
+
+on:
+  push:
+    branches: 
+      - "main"
+    paths:
+      - services/converter-sw/**
+      - services/converter/**
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13.2'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libreoffice \
+            tesseract-ocr \
+            ghostscript \
+            p7zip-full \
+            gtk2-engines-pixbuf \
+            wget \
+            curl \
+            unzip
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r ./services/converter/requirements.txt
+
+      - name: Download FFmpeg static build
+        run: |
+          curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+          tar -xf ffmpeg.tar.xz
+          mkdir -p ffmpeg-bin
+          cp ffmpeg-*/ffmpeg ffmpeg-bin/
+
+      - name: Copy Converter and Converter-sw
+        run: |
+          mkdir -p build_app
+          cp -r services/converter build_app/converter
+          cp -r services/converter-sw/* build_app/
+
+      - name: Build app (Linux)
+        run: |
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "build:build" \
+            --add-data "../ffmpeg-bin/ffmpeg:dependencies" \
+            --add-data "/usr/bin/tesseract:dependencies/tesseract-ocr" \
+            --add-data "/usr/bin/gs:dependencies/ghostscript" \
+            --add-data "/usr/bin/7z:dependencies/7zip" \
+            --add-data "/usr/lib/libgtk-x11-2.0.so.0:dependencies/gtk2" \
+            --add-data "/usr/bin/libreoffice:dependencies/libreoffice" \
+            main.py
+
+      - name: Build launcher executable
+        run: |
+          cd build_app
+          pyinstaller --onefile --windowed --name convertMaster \
+          --icon=resources/logo.jpg \
+          --add-data "resources/logo.jpg:resources" \
+          --add-data "../dist/app:." \
+          --distpath ../output/linux launcher.py
+
+      - name: Upload Linux build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: ./output/linux/*

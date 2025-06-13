@@ -6,6 +6,7 @@ on:
       - "main"
     paths:
       - services/converter-sw/**
+      - services/converter/**
   workflow_dispatch:
 
 jobs:
