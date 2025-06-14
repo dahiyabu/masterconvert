@@ -20,6 +20,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Deploy Docker image on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          script: |
+            mkdir -p /var/tmp/convertMaster
+      
       - name: Build Docker image
         run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
 
@@ -35,6 +45,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           source: "upload/*"
           target: "/var/tmp/"
           port: 22
@@ -50,17 +61,19 @@ jobs:
       - name: Copy dist to VPS
         uses: appleboy/scp-action@master
         with:
-            host: ${{ secrets.DEPLOY_HOST }}
-            username: ${{ secrets.DEPLOY_USER }}
-            key: ${{ secrets.DEPLOY_HOST_KEY }}
-            source: "./services/converter-app/docker-compose.yml"
-            target: "~/"
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          source: "./services/converter-app/docker-compose.yml"
+          target: "~/"
       - name: Deploy Docker image on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
             docker load -i /var/tmp/convertmaster.tar
