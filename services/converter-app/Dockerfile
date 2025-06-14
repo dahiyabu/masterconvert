@@ -37,7 +37,7 @@ RUN pip install --no-cache-dir -r converter/requirements.txt \
 RUN curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip && \
     unzip ffmpeg.zip && \
     mkdir -p ffmpeg-bin && \
-    cp ffmpeg-*/bin/ffmpeg ffmpeg-bin/ && \
+    cp ffmpeg-*/ffmpeg ffmpeg-bin/ && \
     rm -rf ffmpeg.zip ffmpeg-*
 
 # Build main application using PyInstaller
