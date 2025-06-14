@@ -1,5 +1,6 @@
-from converter.convertMaster import FORMAT_COMPATIBILITY,FILE_CATEGORIES,file_conversion_handler,merge_file_handler,upload_file_handler,get_converted_folder
-from converter.init import logger,get_lib_path
+from converter.convertMaster import FORMAT_COMPATIBILITY,FILE_CATEGORIES,merge_file_handler,upload_file_handler,get_converted_folder
+import logging as logger
+from converter.handlers import common_conversion_handler
 from flask import Blueprint,request,jsonify, send_file
 import os,sys
 
@@ -29,7 +30,7 @@ def not_found(e):
 def server_error(e):
     return jsonify({'error': 'Server error occurred'}), 500
 
-cm_bp.route('/api/merge', methods=['POST'])
+@cm_bp.route('/api/merge', methods=['POST'])
 def merge_files():
     if 'files' not in request.files:
         return jsonify({"error": "No files provided."}), 400
@@ -54,19 +55,8 @@ def upload_file():
 
 @cm_bp.route('/api/convert', methods=['POST'])
 def convert_file():
-    """Handle file conversion"""
-    try:
-        data = request.json
-        
-        # Validate required fields
-        required_fields = ['file_id', 'target_format']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-        return file_conversion_handler(data)
-    except Exception as e:
-        logger.exception(f"caught exception {e}")
-        return jsonify({'error': 'Conversion process failed'}), 500
+    logger.info("common conversion called")
+    return common_conversion_handler(request)
 
 @cm_bp.route('/api/download/<conversion_id>', methods=['GET'])
 def download_file(conversion_id):

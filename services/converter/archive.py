@@ -4,7 +4,7 @@ import zipfile
 import rarfile
 import tarfile
 import py7zr
-from converter.init import logger
+import logging as logger
 
 def merge_files_to_archive(output_path, merge_type, password, *file_paths):
     """

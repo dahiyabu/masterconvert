@@ -30,8 +30,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
           source: "convertmaster.tar"
           target: "/var/tmp/"
       - name: Copy dist to VPS
@@ -39,8 +38,7 @@ jobs:
       with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
           source: "./services/converter-app/docker-compose.yml"
           target: "~/"
       - name: Deploy Docker image on server
@@ -48,8 +46,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
             docker load -i /var/tmp/convertmaster.tar

@@ -22,13 +22,14 @@ import threading
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 import docx2txt
 import fitz
+import logging as logger
 from PIL import Image
 #from cryptography.fernet import Fernet
 import time
 
 from converter import config
 from converter.img2svg import raster_image_to_svg,convert_svg_to_jpg,convert_image_to_webp
-from converter.init import logger,get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path,set_base_folder
+from converter.init import get_upload_folder,get_converted_folder,cleanup_files,get_base_folder,get_lib_path
 from converter.archive import merge_files_to_archive
 from converter.compress import compress_file
 from converter.pdf2xl import convert_pdf_to_xl
@@ -77,18 +78,31 @@ FORMAT_COMPATIBILITY = {
     'gif': ['png', 'jpg', 'webp', 'ico','gif'],
     
     # Video formats
-    'mp4': ['mov', 'avi', 'webm', 'mkv', 'gif','mp4'],
-    'mov': ['mp4', 'avi', 'webm', 'mkv','mov'],
-    'avi': ['mp4', 'mov', 'webm', 'mkv','avi'],
-    'webm': ['mp4', 'mov', 'avi', 'mkv','webm'],
-    'mkv': ['mp4', 'mov', 'avi', 'webm','mkv'],
-    
+    'mp4':  ['mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mp4'],
+    'mov':  ['mp4', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mov'],
+    'avi':  ['mp4', 'mov', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'avi'],
+    'webm': ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'webm'],
+    'mkv':  ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mkv'],
+    'flv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'flv'],
+    'wmv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'wmv'],
+    'mpeg': ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpg', 'm4v', '3gp', 'gif', 'mpeg'],
+    'mpg':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'm4v', '3gp', 'gif', 'mpg'],
+    'm4v':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', '3gp', 'gif', 'm4v'],
+    '3gp':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', 'gif', '3gp'],
+    'gif':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'],
+
     # Audio formats
-    'mp3': ['wav', 'ogg', 'flac', 'aac','mp3'],
-    'wav': ['mp3', 'ogg', 'flac', 'aac','wav'],
-    'ogg': ['mp3', 'wav', 'flac', 'aac','ogg'],
-    'flac': ['mp3', 'wav', 'ogg', 'aac','flac'],
-    'aac': ['mp3', 'wav', 'ogg', 'flac','aac'],
+    'mp3':  ['wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'mp3'],
+    'wav':  ['mp3', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'wav'],
+    'ogg':  ['mp3', 'wav', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'ogg'],
+    'flac': ['mp3', 'wav', 'ogg', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'flac'],
+    'aac':  ['mp3', 'wav', 'ogg', 'flac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'aac'],
+    'wma':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'wma'],
+    'm4a':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'alac', 'opus', 'amr', 'ac3', 'm4a'],
+    'alac': ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'opus', 'amr', 'ac3', 'alac'],
+    'opus': ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'amr', 'ac3', 'opus'],
+    'amr':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'ac3', 'amr'],
+    'ac3':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3'],
     
     # Archive/Other formats
     'zip': ['rar', 'tar', '7z','zip'],
@@ -153,7 +167,7 @@ atexit.register(cleanup_files)
 
 def signal_handler(sig, frame):
     logger.info(f"Received signal {sig}. Cleaning up and exiting.")
-    cleanup_files(get_base_folder(),del_log=True)
+    cleanup_files(get_base_folder())
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
@@ -523,24 +537,45 @@ def convert_image(input_path, output_path, source_format, target_format, options
 
 def convert_video(input_path, output_path, source_format, target_format, options=None):
     try:
-        # Check if the source and target formats are supported for conversion
-        if source_format in ['mp4', 'mov', 'avi', 'webm', 'mkv'] and target_format in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'gif']:
-            # Determine video quality
-            quality = 'high' if options and options.get('quality') == 'high' else 'medium'
-            crf = '18' if quality == 'high' else '23'  # Lower CRF = higher quality
+        supported_formats = [
+            'mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'
+        ]
 
-            # FFmpeg command to convert video
+        if source_format in supported_formats and target_format in supported_formats:
+            quality = 'high' if options and options.get('quality') == 'high' else 'medium'
+            crf = '18' if quality == 'high' else '23'
+
+            # Codec logic per format
+            video_codec = 'libx264'
+            audio_codec = 'aac'
+
+            if target_format == 'webm':
+                video_codec = 'libvpx-vp9'
+                audio_codec = 'libopus'
+            elif target_format == 'gif':
+                # Special handling for GIF (no audio)
+                cmd = [
+                    config.FFMPEG_PATH, '-i', input_path,
+                    '-vf', 'fps=10,scale=320:-1:flags=lanczos',  # resize and fps for smaller gifs
+                    '-gifflags', '+transdiff',
+                    '-y',  # overwrite without asking
+                    output_path
+                ]
+                subprocess.run(cmd, check=True)
+                logger.info(f"GIF conversion successful! Saved at {output_path}")
+                return True
+
+            # Standard video conversion
             cmd = [
-                config.FFMPEG_PATH, '-i', input_path,        # Input file
-                '-c:v', 'libx264',                # Video codec (H.264)
-                '-crf', crf,                      # CRF (Quality)
-                '-c:a', 'aac',                    # Audio codec (AAC)
-                output_path                        # Output file
+                config.FFMPEG_PATH, '-i', input_path,
+                '-c:v', video_codec,
+                '-crf', crf,
+                '-c:a', audio_codec,
+                '-y',  # overwrite
+                output_path
             ]
 
-            # Run the command and check for errors
             subprocess.run(cmd, check=True)
-
             logger.info(f"Video conversion successful! Saved at {output_path}")
             return True
 
@@ -554,25 +589,39 @@ def convert_video(input_path, output_path, source_format, target_format, options
         logger.error(f"Error during video conversion: {e}")
         return False
 
+
 def convert_audio(input_path, output_path, source_format, target_format, options=None):
     """Convert audio files"""
     try:
         # Supported formats for conversion
-        supported_formats = ['mp3', 'wav', 'ogg', 'flac', 'aac']
-        
+        #supported_formats = ['mp3', 'wav', 'ogg', 'flac', 'aac']
+        supported_formats = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3']
+
+        codec_map = {
+            'alac': 'alac',
+            'opus': 'libopus',
+            'ac3': 'ac3',
+            'aac': 'aac',  # optionally explicit
+            # others use FFmpeg default
+        }
+        codec = codec_map.get(target_format)
         # Check if source and target formats are supported
-        if source_format in supported_formats and target_format in supported_formats:
+        if source_format!=target_format and source_format in supported_formats and target_format in supported_formats:
             # Determine the quality (bitrate) based on options
             quality = 'high' if options and options.get('quality') == 'high' else 'medium'
             bitrate = '320k' if quality == 'high' else '192k'
             
             # Example ffmpeg command for audio conversion
             cmd = [
-                config.FFMPEG_PATH, '-i', input_path,  # Input file
-                '-b:a', bitrate,            # Set bitrate for audio quality
-                '-ac', '2',                 # Convert to stereo (2 channels) if not stereo
-                output_path                 # Output file
+                config.FFMPEG_PATH, '-i', input_path,
+                '-b:a', bitrate,        # Set bitrate for audio quality
+                '-ac', '2',             # Convert to stereo (2 channels) if not stereo
             ]
+
+            if codec:
+                cmd += ['-c:a', codec]
+
+            cmd += [output_path]
             
             # Run the command to convert the audio
             subprocess.run(cmd, check=True)

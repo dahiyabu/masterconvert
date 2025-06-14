@@ -3,7 +3,7 @@ from pathlib import Path
 import cairosvg
 import io
 from PIL import Image
-from converter.init import logger
+import logging as logger
 
 def raster_image_to_svg(input_path, output_path):
     with open(input_path, "rb") as f:

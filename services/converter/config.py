@@ -1,7 +1,8 @@
 import sys
 import os
 import platform
-from converter.init import logger,get_lib_path
+from converter.init import get_lib_path
+import logging as logger
 
 # Detect the platform (Windows, macOS, Linux)
 SYSTEM_PLATFORM = platform.system().lower()

@@ -4,13 +4,14 @@ import shutil
 import subprocess
 import fitz  # PyMuPDF
 import pytesseract
+import logging as logger
 from PIL import Image
 from docx import Document
 from docx.shared import Inches
 from pdf2docx import Converter
 
 from converter import config
-from converter.init import logger,get_lib_path
+from converter.init import get_lib_path
 
 CURR_DIR=os.path.join(os.path.dirname(__file__))
 

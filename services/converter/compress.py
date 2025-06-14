@@ -4,7 +4,7 @@ import mimetypes
 from scour import scour
 
 from converter import config
-from converter.init import logger
+import logging as logger
 
 def is_audio(file_path):
     mime_type, _ = mimetypes.guess_type(file_path)

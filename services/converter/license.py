@@ -5,7 +5,8 @@ import socket
 import hashlib
 from datetime import datetime, timezone, timedelta
 import os
-from converter.init import get_base_folder,logger
+from converter.init import get_base_folder
+import logging as logger
 from cryptography.fernet import Fernet
 
 LICENSE_PATH = os.path.join(get_base_folder(), "license.lic")
