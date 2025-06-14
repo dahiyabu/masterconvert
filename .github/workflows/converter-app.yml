@@ -32,8 +32,20 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
-          source: "/tmp/convertmaster.tar"
-          target: "/var/tmp/"
+          source: /tmp/convertmaster.tar
+          target: /var/tmp/
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: false
+          tar_dereference: false
+          tar_exec: tar
+          tar: false
+
       - name: Copy dist to VPS
         uses: appleboy/scp-action@master
         with:
