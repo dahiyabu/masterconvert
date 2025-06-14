@@ -38,13 +38,14 @@ RUN apt-get update && apt-get install -y ffmpeg
 RUN mkdir -p ffmpeg-bin && cp /usr/bin/ffmpeg ffmpeg-bin/
 
 # Build main application using PyInstaller
-RUN pyinstaller \
-    --noconfirm --clean --console --name app \
-    --onefile --log-level DEBUG \
-    --add-data "ffmpeg-bin/ffmpeg:dependencies" \
-    --add-data "/usr/bin/tesseract:dependencies/tesseract-ocr" \
-    --add-data "/usr/bin/gs:dependencies/ghostscript" \
-    --add-data "/usr/bin/7z:dependencies/7zip" \
-    --add-data "/usr/lib/libgtk-x11-2.0.so.0:dependencies/gtk2" \
-    --add-data "/usr/bin/libreoffice:dependencies/libreoffice" \
-    main.py
+RUN GTK_PATH=$(ldconfig -p | grep libgtk-x11-2.0.so.0 | head -n 1 | awk '{print $4}') && \
+    pyinstaller \
+      --noconfirm --clean --console --name app \
+      --onefile --log-level DEBUG \
+      --add-data "ffmpeg-bin/ffmpeg:dependencies" \
+      --add-data "/usr/bin/tesseract:dependencies/tesseract-ocr" \
+      --add-data "/usr/bin/gs:dependencies/ghostscript" \
+      --add-data "/usr/bin/7z:dependencies/7zip" \
+      --add-data "$GTK_PATH:dependencies/gtk2" \
+      --add-data "/usr/bin/libreoffice:dependencies/libreoffice" \
+      main.py
