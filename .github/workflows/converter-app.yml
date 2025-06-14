@@ -24,7 +24,7 @@ jobs:
         run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
 
       - name: Save Docker image to tarball
-        run: docker save convertmaster:latest -o convertmaster.tar
+        run: docker save convertmaster:latest -o /tmp/convertmaster.tar
 
       - name: Copy Docker image to server
         uses: appleboy/scp-action@v0.1.7
@@ -32,7 +32,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
-          source: "convertmaster.tar"
+          source: "/tmp/convertmaster.tar"
           target: "/var/tmp/"
       - name: Copy dist to VPS
         uses: appleboy/scp-action@master
