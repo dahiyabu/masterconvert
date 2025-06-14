@@ -27,7 +27,7 @@ jobs:
         run: docker save convertmaster:latest -o convertmaster.tar
 
       - name: Move image to temporary directory
-        run: mkdir -p upload && mv convertmaster.tar upload/
+        run: mkdir -p upload && mv convertmaster.tar upload/ && chmod -R 755 upload
 
       - name: Copy Docker image to server
         uses: appleboy/scp-action@v0.1.7
