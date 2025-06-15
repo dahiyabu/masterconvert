@@ -42,15 +42,16 @@ def initialize_args():
 
 if __name__ == '__main__':
     initialize_args()
+    temp_path = os.getenv('TEMPPATH')
+    if temp_path:
+        os.makedirs(temp_path)
     # Initialize IP DB
-    init_ip_log_db()
+    print(temp_path)
+    init_ip_log_db(temp_path)
 
     # Start midnight DB reset thread
     schedule_midnight_reset()
 
-    temp_path = os.getenv('TEMPPATH')
-    if temp_path:
-        os.makedirs(temp_path)
     set_base_folder(path=temp_path)
     cleanup_files(get_base_folder())
     create_timed_rotating_log()

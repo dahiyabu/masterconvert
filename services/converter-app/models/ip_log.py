@@ -8,6 +8,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'ip_log.db')
 MAX_DAILY_REQUESTS = 2  # Example: Max requests per IP per day
 
 def get_db():
+    global DB_PATH
     """Return a persistent DB connection for the current context."""
     if 'ip_db' not in g:
         g.ip_db = sqlite3.connect(DB_PATH)
@@ -20,7 +21,10 @@ def close_db(e=None):
     if db is not None:
         db.close()
 
-def init_ip_log_db():
+def init_ip_log_db(db_path=None):
+    global DB_PATH
+    if db_path:
+        DB_PATH = os.path.join(db_path, 'ip_log.db')
     """Init DB on startup or recreate if older than today."""
     if os.path.exists(DB_PATH):
         modified_time = datetime.fromtimestamp(os.path.getmtime(DB_PATH)).date()
@@ -59,7 +63,10 @@ def log_ip_address(ip):
 
     conn.commit()
 
-def recreate_ip_log_db():
+def recreate_ip_log_db(db_path=None):
+    global DB_PATH
+    if db_path:
+        DB_PATH=os.path.join(db_path, 'ip_log.db')
     """Drops and recreates the DB."""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
