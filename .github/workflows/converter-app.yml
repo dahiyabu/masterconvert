@@ -19,16 +19,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Deploy Docker image on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_HOST_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          script: |
-            mkdir -p /var/tmp/convertMaster
       
       - name: Build Docker image
         run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
@@ -76,7 +66,7 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
-            docker load -i /var/tmp/convertmaster.tar
+            docker load -i /var/tmp/upload/convertmaster.tar
             docker stop convertmaster || true
             docker rm convertmaster || true
             mkdir -p /var/tmp/convertMaster/logs
