@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   distService:
-    image: convertMaster:latest
+    image: convertmaster:latest
     container_name: convertmaster
     restart: unless-stopped
     environment:
