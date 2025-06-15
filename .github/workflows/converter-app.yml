@@ -48,7 +48,7 @@ jobs:
           overwrite: true  # ensures overwrite of existing file
           tar_dereference: false
 
-      - name: Copy dist to VPS
+      - name: Copy compose file to VPS
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.DEPLOY_HOST }}
