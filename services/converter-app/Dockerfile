@@ -27,7 +27,7 @@ WORKDIR /app
 
 # Copy your app's code
 COPY ./services/converter /app/converter
-COPY ./services/converter-sw /app/
+COPY ./services/converter-app /app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r converter/requirements.txt \
