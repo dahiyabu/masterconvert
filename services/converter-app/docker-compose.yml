@@ -6,12 +6,12 @@ services:
     restart: unless-stopped
     environment:
       - PORT=9081
-      - TEMPPATH=/var/tmp/
+      - TEMPPATH=/var/tmp/converterMaster
       
     ports:
       - "9081:9081"
     volumes:
-      - /var/tmp/convertMaster/logs:/var/tmp/convertMaster/logs
+      - /var/tmp/convertMaster:/var/tmp/convertMaster
     command: ./dist/app -l /var/tmp/convertMaster/logs/converter.log
     networks:
       - converter-network
