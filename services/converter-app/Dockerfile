@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk2.0-0 \
     ca-certificates \
     git \
+    ffmpeg \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -35,16 +36,12 @@ COPY ./services/converter-app/tasks/*.py /app/tasks/
 RUN pip install --no-cache-dir -r converter/requirements.txt \
     && pip install pyinstaller
 
-# Download FFmpeg static binary
-RUN apt-get update && apt-get install -y ffmpeg
-RUN mkdir -p ffmpeg-bin && cp /usr/bin/ffmpeg ffmpeg-bin/
-
-# Build main application using PyInstaller
+# Build main application using PyInstaller (with system-installed dependencies)
 RUN GTK_PATH=$(ldconfig -p | grep libgtk-x11-2.0.so.0 | head -n 1 | awk '{print $4}') && \
     pyinstaller \
       --noconfirm --clean --console --name app \
       --onefile --log-level DEBUG \
-      --add-data "ffmpeg-bin/ffmpeg:dependencies" \
+      --add-data "/usr/bin/ffmpeg:dependencies/ffmpeg" \
       --add-data "/usr/bin/tesseract:dependencies/tesseract-ocr" \
       --add-data "/usr/bin/gs:dependencies/ghostscript" \
       --add-data "/usr/bin/7z:dependencies/7zip" \
