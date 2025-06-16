@@ -7,7 +7,7 @@ services:
     environment:
       - PORT=9081
       - TEMPPATH=/var/tmp/converterMaster
-      
+      - MAX_REQUESTS=3
     ports:
       - "9081:9081"
     volumes:

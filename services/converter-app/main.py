@@ -43,7 +43,7 @@ def initialize_args():
 if __name__ == '__main__':
     initialize_args()
     temp_path = os.getenv('TEMPPATH')
-    if temp_path:
+    if temp_path and not os.path.exists(temp_path):
         os.makedirs(temp_path)
     # Initialize IP DB
     print(temp_path)

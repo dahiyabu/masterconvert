@@ -5,7 +5,6 @@ import logging as logger
 from datetime import date, datetime
 from flask import g
 DB_PATH = os.path.join(os.path.dirname(__file__), 'ip_log.db')
-MAX_DAILY_REQUESTS = 2  # Example: Max requests per IP per day
 
 def get_db():
     global DB_PATH
@@ -23,6 +22,7 @@ def close_db(e=None):
 
 def init_ip_log_db(db_path=None):
     global DB_PATH
+    global MAX_DAILY_REQUESTS
     if db_path:
         DB_PATH = os.path.join(db_path, 'ip_log.db')
     """Init DB on startup or recreate if older than today."""
@@ -46,6 +46,8 @@ def init_ip_log_db(db_path=None):
         ''')
         conn.commit()
         conn.close()
+
+    MAX_DAILY_REQUESTS=int(os.getenv('MAX_REQUESTS', 2))
 
 def log_ip_address(ip):
     """Insert or update IP usage log for today."""
@@ -76,6 +78,7 @@ def recreate_ip_log_db(db_path=None):
     init_ip_log_db()
     
 def is_ip_under_limit(ip):
+    global MAX_DAILY_REQUESTS
     """Return True if IP has not exceeded daily usage."""
     today = date.today().isoformat()
     conn = get_db()
