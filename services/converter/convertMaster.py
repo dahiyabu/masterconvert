@@ -135,12 +135,24 @@ FILE_CATEGORIES = {
     'avi': 'Video',
     'webm': 'Video',
     'mkv': 'Video',
+    'flv': 'Video',
+    'wmv': 'Video',
+    'mpeg': 'Video',
+    'mpg': 'Video',
+    'm4v': 'Video',
+    '3gp': 'Video',
     
     'mp3': 'Audio',
     'wav': 'Audio',
     'ogg': 'Audio',
     'flac': 'Audio',
     'aac': 'Audio',
+    'wma': 'Audio',
+    'm4a': 'Audio',
+    'alac': 'Audio',
+    'opus': 'Audio',
+    'amr': 'Audio',
+    'ac3': 'Audio',
     
     'zip': 'Archive',
     'rar': 'Archive',
@@ -957,14 +969,11 @@ def upload_file_handler(file):
         
         # Save the file
         file.save(file_path)
-        
         # Get compatible formats
         compatible_formats = FORMAT_COMPATIBILITY.get(file_extension.lower(), [])
-        
         # Get file size and metadata
         file_size = os.path.getsize(file_path)
         file_category = FILE_CATEGORIES.get(file_extension.lower(), 'Unknown')
-        
         allowed_encrypt_extensions = [format for format in compatible_formats if format in ALLOWED_ENCRYPT_EXTENTIONS]
         compressed_quality={}
         for format in compatible_formats:
