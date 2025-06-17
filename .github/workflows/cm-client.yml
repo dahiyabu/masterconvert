@@ -60,7 +60,7 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
-            docker load -i /var/tmp/upload/cmclient.tar
+            docker load -i /var/tmp/upload-cm/cmclient.tar
             docker stop cmclient || true
             docker rm cmclient || true
             sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml

@@ -66,7 +66,7 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
-            docker load -i /var/tmp/upload/convertmaster.tar
+            docker load -i /var/tmp/upload-cm-app/convertmaster.tar
             docker stop convertmaster || true
             docker rm convertmaster || true
             mkdir -p /var/tmp/convertMaster/logs
