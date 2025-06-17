@@ -1,7 +1,7 @@
 import logging as logger
 from converter.license import generate_license_file
 from converter.handlers import common_conversion_handler
-from models.ip_log import is_ip_under_limit,log_ip_address
+from models.ip_log import is_ip_under_limit,log_ip_address,change_max_allowed_request
 from flask import Blueprint,request,jsonify
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
@@ -20,6 +20,19 @@ def convert_file_app():
         return jsonify({'error': 'Conversion process failed'}), 500
     return common_conversion_handler(request)
 
+@cm_app_bp.route('/api/changeMaxReqest', methods=['POST'])
+def max_request():
+    try:
+        # Log caller IP (once per day)
+        max_request = request.values.get("max_request")
+        if not max_request:
+            return jsonify({'error': 'Max request is required'}), 429
+        if change_max_allowed_request(max_request):
+            return jsonify({'message':'Successfully changed max allowed conversions'}),200
+    except Exception as e:
+        logger.exception(f"Caught exception {e}")
+    return jsonify({'error': 'Max Request change failed'}), 500
+    
 @cm_app_bp.route('/api/generateLicense',methods=['POST'])
 def generate_license():
     print(request)
