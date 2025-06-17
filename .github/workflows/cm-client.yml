@@ -63,7 +63,7 @@ jobs:
             docker load -i /var/tmp/upload-cm/cmclient.tar
             docker stop cmclient || true
             docker rm cmclient || true
-            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
+            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081\/api/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
             mkdir -p /var/tmp/convertMaster/logs
             docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/convertMaster/logs/cmclient_stderr.log 1>/var/tmp/convertMaster/logs/cmclient_stdout.log
             rm -rf ~/services/client
