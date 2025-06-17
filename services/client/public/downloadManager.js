@@ -4,10 +4,10 @@
  */
 const DownloadManager = (function() {
     'use strict';
-
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     // Configuration
     const config = {
-        licenseApiEndpoint: 'http://localhost:5000/api/generateLicense', // Update this to your actual endpoint
+        licenseApiEndpoint: `${API_URL}/generateLicense`, // Update this to your actual endpoint
         downloadUrls: {
             windows: 'https://github.com/dahiyabu/masterconvert/actions/runs/15498537930/artifacts/3278714068',
             macos: 'downloads/ConvertMaster-macOS.dmg',

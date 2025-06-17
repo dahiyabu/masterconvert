@@ -10,7 +10,7 @@ function App() {
   const [showContact, setShowContact] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [scrollTarget, setScrollTarget] = useState(null);
-  const API_URL = process.env.CM_APP_API_URL || 'http://localhost:5000/api';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const tryButton = document.getElementById('try-free-btn');
