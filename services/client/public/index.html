@@ -38,7 +38,7 @@
         
         /* Style for the container inside the header */
 header .container {
-  max-width: 1200px; /* Adjust as per your design */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 15px;
 }
@@ -200,6 +200,7 @@ header .btn {
         
         .features {
             padding: 5rem 0;
+            scroll-margin-top: 100px;
         }
         
         .section-title {
@@ -279,6 +280,7 @@ header .btn {
         
         .how-it-works {
             padding: 5rem 0;
+            scroll-margin-top: 100px;
         }
         
         .steps {
@@ -312,6 +314,7 @@ header .btn {
         .testimonials {
             background-color: #f0f9ff;
             padding: 5rem 0;
+            scroll-margin-top: 100px;
         }
         
         .testimonials-grid {
@@ -557,6 +560,7 @@ header .btn {
             .modern-formats-btn:hover .btn-glow {
             left: 100%;
             }
+            #formats {scroll-margin-top: 100px; }
     </style>
 </head>
 <body>
@@ -696,10 +700,10 @@ header .btn {
                       <div class="btn-arrow">→</div>
                     </div>
                     <div class="btn-glow"></div>
-                  </a>
+                </a>
                 <p>Convert between any of these formats with just a few clicks</p>
             </div>
-            <div class="formats-container">
+       <!--     <div class="formats-container">
                 <div class="format-category">
                     <h3>Document Formats</h3>
                     <div class="formats-grid">
@@ -768,6 +772,7 @@ header .btn {
                     </div>
                 </div>
             </div>
+        -->
         </div>
     </section>
     
@@ -843,34 +848,47 @@ header .btn {
         </div>
     </section>
     <section class="download" id="download">
+        <script>
+            // Function to open pricing page
+            function openPricingPage() {
+                // Dispatch a custom event that App.js can listen to
+                const event = new CustomEvent('open-pricing-page');
+                window.dispatchEvent(event);
+            }
+            </script>
+        
       <div class="container">
         <h2>Download ConvertMaster Today</h2>
         <p>Available for all major platforms. Free for personal use.</p>
         <div class="platforms">
           <!-- Windows Button -->
-          <a href="downloads/ConvertMaster-Windows.exe" class="platform-btn" download>
+          <button class="platform-btn" onclick="openPricingPage()" id="windowsBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M1 3.5l9.5-1.4v8.9H1V3.5zm10.5-1.5L23 0v11h-11.5V2zM1 12h9.5v8.9L1 19.5V12zm10.5 0H23v11l-11.5-2.1V12z"/>
             </svg>
             <span>Download for Windows</span>
-          </a>
+          </button>
     
           <!-- macOS Button -->
-          <a href="downloads/ConvertMaster-macOS.dmg" class="platform-btn" download>
+          <button class="platform-btn" onclick="openPricingPage()" id="macosBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16.365 1.43c0 1.14-.474 2.283-1.306 3.136-.87.88-2.018 1.39-3.11 1.32-.06-1.09.42-2.28 1.28-3.14.83-.84 2.14-1.42 3.14-1.32zm5.058 16.07c-.42.97-.88 1.87-1.47 2.72-.78 1.14-1.59 2.26-2.82 2.28-1.12.02-1.48-.73-2.98-.72s-1.9.73-2.96.74c-1.24.01-2.19-1.21-2.97-2.34-2.03-3-3.58-8.47-1.5-12.17.87-1.53 2.45-2.5 4.15-2.53 1.06-.02 2.07.74 2.97.74.87 0 2.26-.91 3.8-.77.65.03 2.47.27 3.63 2.05-3.2 1.75-2.67 6.31.05 7.97z"/>
             </svg>
             <span>Download for macOS</span>
-          </a>
+          </button>
     
           <!-- Linux Button -->
-          <a href="downloads/ConvertMaster-Linux.AppImage" class="platform-btn" download>
+          <button class="platform-btn" onclick="openPricingPage()" id="linuxBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 0a12 12 0 1012 12A12.013 12.013 0 0012 0zm0 22.093a10.093 10.093 0 1110.093-10.093A10.105 10.105 0 0112 22.093zm0-13.343a3.25 3.25 0 103.25 3.25 3.254 3.254 0 00-3.25-3.25z"/>
             </svg>
             <span>Download for Linux</span>
-          </a>
+          </button>
         </div>
+        <!-- Status Container -->
+        <div id="downloadStatusContainer"></div>
+        
+        
       </div>
     </section>
   </div>

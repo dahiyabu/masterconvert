@@ -154,7 +154,7 @@ COMPRESSED_QUALITY={'Documents':['None','low','medium','high'],
 'Audio':['None','64k','128k','192k'],
 'Archive':['None','1','5','9']}
 #removed svg as converted after using raster is already a compressed enough
-ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','mp3', 'wav', 'ogg', 'flac','pdf','jpg', 'jpeg', 'png', 'webp', 'gif']
+ALLOWED_COMPRESS_EXTENTIONS=['mp4', 'mov', 'avi', 'mkv', 'webm','flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp','mp3', 'wav', 'ogg', 'flac','aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3','pdf','jpg', 'jpeg', 'png', 'webp', 'gif']
 ALLOWED_ENCRYPT_EXTENTIONS=['pdf','zip']
 
 def setup(path=None):

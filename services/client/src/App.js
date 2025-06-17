@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import FileConvertApp from './FileConvert'; // Adjust the path if needed
 import FormatCompatibilityLookup from './components/FormatCompatibilityTable';
+import ContactPage from './components/Contact';
+import PricingPage from './components/Pricing';
+
 function App() {
   const [showApp, setShowApp] = useState(false);
   const [formats, setFormats] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
+  const [scrollTarget, setScrollTarget] = useState(null);
+  const API_URL = process.env.CM_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const tryButton = document.getElementById('try-free-btn');
@@ -11,6 +18,7 @@ function App() {
     const handleClick = (e) => {
       e.preventDefault();
       setShowApp(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     if (tryButton) {
@@ -25,11 +33,26 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleFreePlanClick = () => {
+      setShowApp(true);
+      setShowPricing(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  
+    window.addEventListener('open-free-plan', handleFreePlanClick);
+  
+    return () => {
+      window.removeEventListener('open-free-plan', handleFreePlanClick);
+    };
+  }, []);
+  
+  useEffect(() => {
     const formatsButton = document.getElementById('formats-btn');
 
     const handleClick = (e) => {
       e.preventDefault();
       setFormats(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     if (formatsButton) {
@@ -46,30 +69,39 @@ function App() {
   useEffect(() => {
     const landing = document.getElementById('landing-page');
     if (landing) {
-      landing.style.display = showApp ? 'none' : 'block';
+      landing.style.display = (showApp || formats || showContact || showPricing) ? 'none' : 'block';
     }
-  }, [showApp]);
+  }, [showApp, formats, showContact,showPricing]);
 
   useEffect(() => {
-    const landing = document.getElementById('landing-page');
-    if (landing) {
-      landing.style.display = formats ? 'none' : 'block';
-    }
-  }, [formats]);
-
-  useEffect(() => {
-    if (!formats) return;
+    //if (!formats) return;
   
     const navLinks = document.querySelectorAll('.nav-links a');
   
     const handleNavClick = (e) => {
-      e.preventDefault();
-      handleBack(); // call your function
       const href = e.currentTarget.getAttribute('href');
-      const section = document.querySelector(href);
+      if (e.currentTarget.getAttribute('href') === '#contact'){
+        e.preventDefault();
+      setShowApp(false);
+      setFormats(false);
+      setShowContact(true);
+      setShowPricing(false);
+      return;
+    }
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      //handleBack(); // call your function
+      setShowApp(false);
+      setFormats(false);
+      setShowContact(false);
+      setShowPricing(false);
+      setScrollTarget(href);
+    }
+    
+    /*  const section = document.querySelector(href);
       if (section) {
         section.scrollIntoView({ behavior: 'smooth' });
-      }
+      }*/
     };
   
     navLinks.forEach(link => link.addEventListener('click', handleNavClick));
@@ -77,17 +109,73 @@ function App() {
     return () => {
       navLinks.forEach(link => link.removeEventListener('click', handleNavClick));
     };
-  }, [formats]);
+  }, []);
+
+  useEffect(() => {
+  const handlePricingPageClick = () => {
+    setShowApp(false);
+    setFormats(false);
+    setShowContact(false);
+    setShowPricing(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  window.addEventListener('open-pricing-page', handlePricingPageClick);
+
+  return () => {
+    window.removeEventListener('open-pricing-page', handlePricingPageClick);
+  };
+}, []);
+  useEffect(() => {
+    if (!showApp && !formats && !showContact && !showPricing && scrollTarget) {
+        setTimeout(() => {
+          const section = document.querySelector(scrollTarget);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      } 
+      setScrollTarget(null);
+    }, 300);
+    }
+  }, [showApp, formats, showContact, showPricing, scrollTarget]);
+  
 
   const handleBack = () => {
     setShowApp(false);
     setFormats(false);
+    setShowContact(false);
+    setShowPricing(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleContactClick = (e) => {
+    e.preventDefault();
+    setShowApp(false);
+    setFormats(false);
+    setShowContact(true); // ← Show contact page
+    setShowPricing(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePricingClick = (e) => {
+    e.preventDefault();
+    setShowApp(false);
+    setFormats(false);
+    setShowContact(false);
+    setShowPricing(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <>
-      <header>
+      <header style={{
+        position: 'fixed',
+        top: 0,
+        width: '100%',
+        backgroundColor: '#fff',
+        zIndex: 1000,
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.05)',
+        padding: '1rem 2rem'
+      }}>
         <div className="container">
           <nav>
           <div className="logo"  onClick={handleBack}  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -112,23 +200,32 @@ function App() {
                 <a href="#formats">Formats</a>
                 <a href="#how-it-works">How It Works</a>
                 <a href="#testimonials">Testimonials</a>
+                <a href="#pricing" onClick={handlePricingClick}>Pricing</a>
+                <a href="#contact" onClick={handleContactClick}>Contact Us</a>
               </div>
             )}
 
             <div>
               {!showApp && (
                 <>
-                  <a href="#try-free" className="btn btn-secondary">Try It Free</a>
-                  <a href="#download" className="btn">Download Now</a>
+                  <a href="#try-free" className="btn btn-secondary" onClick={(e) => {e.preventDefault();setScrollTarget('#try-free');
+                    setShowApp(false);setFormats(false);setShowContact(false);setShowPricing(false);}}>
+                    Try It Free
+                  </a>
+                  <a href="#download" className="btn" onClick={(e) => {e.preventDefault();setScrollTarget('#download');setShowApp(false);
+                    setFormats(false);setShowContact(false);setShowPricing(false);}}>
+                      Download Now
+                  </a>
                 </>
               )}
             </div>
           </nav>
         </div>
       </header>
+      <main className="pt-24 w-full min-h-screen bg-gray-50">
       {formats && (
         <div style={{ paddingTop: '90px' }}>
-          <FormatCompatibilityLookup />
+          <FormatCompatibilityLookup API_URL={API_URL}/>
         </div>
       )}
 
@@ -137,6 +234,17 @@ function App() {
           <FileConvertApp />
         </div>
       )}
+      {showContact && (
+        <div style={{ paddingTop: '90px' }}>
+          <ContactPage />
+        </div>
+      )}
+      {showPricing && (
+        <div style={{ paddingTop: '90px' }}>
+          <PricingPage />
+        </div>
+      )}
+      </main>
     </>
   );
 }

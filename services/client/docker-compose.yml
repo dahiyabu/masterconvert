@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  giloysClient:
+    image: cmclient:latest
+    restart: always
+    ports:
+      - "9080:9080"
+    environment:
+      - PORT=9080
+      - CM_APP_API_URL=CM_APP_API_URL_VALUE
+
+    volumes:
+      - /var/tmp/convertMaster/logs:/var/tmp/convertMaster/logs
+    command: npm start
+    networks:
+      - converter-network
+networks:
+    converter-network:
+      external: true

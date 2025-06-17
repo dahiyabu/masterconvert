@@ -41,7 +41,7 @@ const styles = {
 
 export default function FileConvertApp() {
   const [mode, setMode] = useState('convert');
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_URL = process.env.CM_APP_API_URL || 'http://localhost:5000/api';
 
   return (
     <div style={styles.container}>
@@ -58,7 +58,7 @@ export default function FileConvertApp() {
                 <>
                   <ConvertSection API_URL={API_URL} />
                   <div style={{ marginTop: '3rem' }}>
-                    <FormatCompatibilityLookup />
+                    <FormatCompatibilityLookup API_URL={API_URL}/>
                   </div>
                 </>
               ) : (

@@ -1,6 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Image, Music, Video, Archive, Search, ChevronDown, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, Image, Music, Video, Archive, Search, ChevronDown } from 'lucide-react';
 import './FormatCompatibilityTable.css';
+
+const FORMAT_COMPATIBILITY = {
+  pdf: ['docx', 'txt', 'rtf', 'odt', 'png', 'jpg', 'xlsx', 'xls', 'pdf'],
+  docx: ['pdf', 'txt', 'rtf', 'odt', 'docx'],
+  txt: ['pdf', 'docx', 'rtf', 'odt', 'txt'],
+  rtf: ['pdf', 'docx', 'txt', 'odt', 'rtf'],
+  odt: ['pdf', 'docx', 'txt', 'rtf', 'odt'],
+  xlsx: ['pdf', 'txt', 'rtf', 'odt', 'xls', 'xlsx'],
+  xls: ['pdf', 'txt', 'rtf', 'odt', 'xlsx', 'xls'],
+  jpg: ['png', 'webp', 'gif', 'svg', 'pdf', 'jpg'],
+  jpeg: ['png', 'webp', 'gif', 'svg', 'pdf', 'jpeg'],
+  png: ['jpg', 'webp', 'gif', 'svg', 'pdf', 'png'],
+  svg: ['png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp', 'svg'],
+  webp: ['png', 'jpg', 'gif', 'webp'],
+  gif: ['png', 'jpg', 'webp', 'mp4', 'gif'],
+  mp4: ['mov', 'avi', 'webm', 'mkv', 'gif', 'mp4'],
+  mov: ['mp4', 'avi', 'webm', 'mkv', 'mov'],
+  avi: ['mp4', 'mov', 'webm', 'mkv', 'avi'],
+  webm: ['mp4', 'mov', 'avi', 'mkv', 'webm'],
+  mkv: ['mp4', 'mov', 'avi', 'webm', 'mkv'],
+  mp3: ['wav', 'ogg', 'flac', 'aac', 'mp3'],
+  wav: ['mp3', 'ogg', 'flac', 'aac', 'wav'],
+  ogg: ['mp3', 'wav', 'flac', 'aac', 'ogg'],
+  flac: ['mp3', 'wav', 'ogg', 'aac', 'flac'],
+  aac: ['mp3', 'wav', 'ogg', 'flac', 'aac'],
+  zip: ['rar', 'tar', '7z', 'zip'],
+  rar: ['zip', 'tar', '7z', 'rar'],
+  tar: ['zip', 'rar', '7z', 'tar'],
+  '7z': ['zip', 'rar', 'tar', '7z'],
+  iso: ['zip', 'tar', 'iso']
+};
 
 const getFormatIcon = (format) => {
   const imageFormats = ['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif'];
@@ -28,81 +59,9 @@ const getFormatColorClass = (format) => {
   return 'format-bg-document';
 };
 
-export default function FormatCompatibilityLookup({ API_URL }) {
+export default function FormatCompatibilityLookup() {
   const [selectedFormat, setSelectedFormat] = useState('');
-  const [formatCompatibility, setFormatCompatibility] = useState({});
-  const [fileCategories, setFileCategories] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch format data from API
-  useEffect(() => {
-    const fetchFormats = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch(`${API_URL}/formats`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        setFormatCompatibility(data.format_compatibility || {});
-        setFileCategories(data.file_categories || {});
-      } catch (err) {
-        console.error('Error fetching format data:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFormats();
-  }, []);
-
-  const formatList = Object.keys(formatCompatibility).sort();
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="format-container">
-        <div className="format-wrapper">
-          <div className="format-card">
-            <div className="format-loading">
-              <Loader2 className="format-loading-spinner" />
-              <p className="format-loading-text">Loading format data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="format-container">
-        <div className="format-wrapper">
-          <div className="format-card">
-            <div className="format-error">
-              <AlertCircle className="format-error-icon" />
-              <p className="format-error-title">Failed to load format data</p>
-              <p className="format-error-message">{error}</p>
-              <button 
-                className="format-retry-button"
-                onClick={() => window.location.reload()}
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const formatList = Object.keys(FORMAT_COMPATIBILITY).sort();
 
   return (
     <div className="format-container">
@@ -147,7 +106,7 @@ export default function FormatCompatibilityLookup({ API_URL }) {
           </div>
 
           {/* Results */}
-          {selectedFormat && formatCompatibility[selectedFormat] && (
+          {selectedFormat && (
             <div className="format-results">
               {/* Selected Format Display */}
               <div className="format-selected-display">
@@ -160,10 +119,10 @@ export default function FormatCompatibilityLookup({ API_URL }) {
               {/* Compatible Formats Grid */}
               <div>
                 <h3 className="format-compatible-header">
-                  Compatible Formats ({formatCompatibility[selectedFormat].length})
+                  Compatible Formats ({FORMAT_COMPATIBILITY[selectedFormat].length})
                 </h3>
                 <div className="format-grid">
-                  {formatCompatibility[selectedFormat].map((format, index) => (
+                  {FORMAT_COMPATIBILITY[selectedFormat].map((format, index) => (
                     <div
                       key={format}
                       className="format-item"

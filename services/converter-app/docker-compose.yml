@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=9081
-      - TEMPPATH=/var/tmp/converterMaster
+      - TEMPPATH=/var/tmp/convertMaster
       - MAX_REQUESTS=3
     ports:
       - "9081:9081"
