@@ -1,33 +1,27 @@
-name: Build and Deploy Converter App
+name: Build and Deploy to CM-Client
 
 on:
   push:
-    branches: 
-      - "main"
+    branches: [ "main" ]
     paths:
-      - services/converter/**
-      - services/converter-app/**
+      services/client/**
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: Check out the repo
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
       
-      - name: Build Docker image
-        run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
+      - name: Build the Docker image
+        run: docker build -f services/client/Dockerfile -t cmclient:latest .
 
       - name: Save Docker image to tarball
-        run: docker save convertmaster:latest -o convertmaster.tar
+        run: docker save cmclient:latest -o cmclient.tar
 
       - name: Move image to temporary directory
-        run: mkdir -p upload-cm-app && mv convertmaster.tar upload-cm-app/ && chmod -R 755 upload-cm-app
+        run: mkdir -p upload-cm && mv cmclient.tar upload-cm/ && chmod -R 755 upload-cm
 
       - name: Copy Docker image to server
         uses: appleboy/scp-action@v0.1.7
@@ -36,7 +30,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          source: "upload-cm-app/*"
+          source: "upload-cm/*"
           target: "/var/tmp/"
           port: 22
           timeout: 30s
@@ -55,7 +49,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          source: "./services/converter-app/docker-compose.yml"
+          source: "./services/client/docker-compose.yml"
           target: "~/"
       - name: Deploy Docker image on server
         uses: appleboy/ssh-action@v1.0.3
@@ -66,10 +60,11 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
-            docker load -i /var/tmp/upload/convertmaster.tar
-            docker stop convertmaster || true
-            docker rm convertmaster || true
+            docker load -i /var/tmp/upload/cmclient.tar
+            docker stop cmclient || true
+            docker rm cmclient || true
+            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
             mkdir -p /var/tmp/convertMaster/logs
-            docker compose -f ~/services/converter-app/docker-compose.yml up -d 2>/var/tmp/convertMaster/logs/converter-app_stderr.log 1>/var/tmp/convertMaster/logs/converter-app_stdout.log
-            rm -rf ~/services/converter-app
-            rm -rf /var/tmp/upload-cm-app
+            docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/convertMaster/logs/cmclient_stderr.log 1>/var/tmp/convertMaster/logs/cmclient_stdout.log
+            rm -rf ~/services/client
+            rm -rf /var/tmp/upload-cm
