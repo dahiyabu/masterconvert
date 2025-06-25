@@ -67,9 +67,31 @@ jobs:
           script: |
             docker network create converter-network || echo "converter-network already exists"
             docker load -i /var/tmp/upload-cm-app/convertmaster.tar
-            docker stop convertmaster || true
-            docker rm convertmaster || true
+            
             mkdir -p /var/tmp/convertMaster/logs
-            docker compose -f ~/services/converter-app/docker-compose.yml up -d 2>/var/tmp/convertMaster/logs/converter-app_stderr.log 1>/var/tmp/convertMaster/logs/converter-app_stdout.log
+            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| "s/STRIPE_KEY_VALUE/{{ secrets.STRIPE_KEY }}/g"| "s/STRIPE_ENDPOINT_SECRET_VALUE/{{ secrets.STRIPE_ENDPOINT_SECRET}}" > ~/services/converter-app/compose.yml
+            if [[ `docker ps|grep convertmaster` ]]; then
+             container_id=`docker ps |grep convertmaster|awk '{print $1}'`
+             docker stop $container_id
+             docker rm $container_id
+            fi
+            docker rmi convertmaster:latest || echo "No old dev image found to remove"
+            
+            docker compose -f ~/services/converter-app/compose.yml up -d 2>/var/tmp/convertMaster/logs/converter-app_stderr.log 1>/var/tmp/convertMaster/logs/converter-app_stdout.log
+            
+            elapsed_time=0
+
+            while ! docker ps | grep -q convertmaster && [ $elapsed_time -lt 300 ]; do
+              echo "Waiting for convertmaster container to start..."
+              sleep 20
+              elapsed_time=$((elapsed_time + 20))
+            done
+
+            if [ $elapsed_time -ge 300 ]; then
+              echo "Timeout reached! Container did not start after 300 seconds."
+              exit 1  # Fail the job if the container did not start
+            fi
+            echo "Container is up and running!"
+            
             rm -rf ~/services/converter-app
             rm -rf /var/tmp/upload-cm-app
