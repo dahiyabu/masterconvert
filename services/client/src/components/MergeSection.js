@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Typography, Button, CircularProgress, FormControl, FormLabel,
   RadioGroup, FormControlLabel, Radio, TextField, IconButton, Snackbar, Paper
 } from '@mui/material';
-import { Upload, ArrowRight, RotateCcw, Delete, Download } from 'lucide-react';
+import { ArrowRight, RotateCcw, Delete, Download } from 'lucide-react';
 import { Check } from '@mui/icons-material';
 import UploadFileButton from './UploadFileButton';
+import { Alert } from '@mui/material';
 import Box from '@mui/material/Box';
 
 export default function MergeSection({ API_URL }) {
@@ -14,12 +15,37 @@ export default function MergeSection({ API_URL }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [password, setPassword] = useState('');
   const [result, setResult] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [compatibleFormats, setCompatibleFormats] = useState({});
   const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar for duplicate file warning
   const [availableMergeTypes, setAvailableMergeTypes] = useState(['pdf', 'zip', 'tar', '7z']); // Removed 'rar' option
   const [conversionStatus, setConversionStatus] = useState('idle'); // idle, processing, success, error
   const [showDownloadContainer, setShowDownloadContainer] = useState(false); // Manage download container visibility
+  const [maxFileSizeMB, setMaxFileSizeMB] = useState(null);
+  const [conversionsLeft, setConversionsLeft] = useState(null);
 
+  //Effects
+  const fetchAccountLimits = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/account-limits`);
+        const data = await response.json();
+  
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch limits');
+  
+        setMaxFileSizeMB(data.max_file_size_mb);  // expected from backend
+        setConversionsLeft(data.conversions_left);  // expected from backend
+      } catch (err) {
+        console.error('Error fetching limits:', err);
+        setMaxFileSizeMB(50); // fallback
+        setConversionsLeft('N/A');
+      }
+   }, []);
+
+   useEffect(() => {
+    fetchAccountLimits();
+  }, [fetchAccountLimits]);
+
+  
   // Fetch formats compatibility on component mount
   useEffect(() => {
     const fetchCompatibleFormats = async () => {
@@ -38,12 +64,34 @@ export default function MergeSection({ API_URL }) {
   }, [API_URL]);
 
   const handleFileChange = (e) => {
+    const fileSizeLimitMB = maxFileSizeMB || 50;
+    const MAX_FILE_SIZE_BYTES = fileSizeLimitMB * 1024 * 1024;
+    
     const newFiles = Array.from(e.target.files);
-    const newFilesToAdd = newFiles.filter((newFile) => {
-      // Check if the file is already in the files array by comparing the file name
-      return !files.some((existingFile) => existingFile.name === newFile.name);
-    });
+    const newFilesToAdd = [];
 
+    for (const newFile of newFiles) {
+      const isDuplicate = files.some((existingFile) => existingFile.name === newFile.name);
+
+      if (isDuplicate) {
+        setOpenSnackbar(true); // Duplicate file warning
+        continue;
+      }
+
+      if (newFile.size > MAX_FILE_SIZE_BYTES) {
+        setErrorMessage(`File "${newFile.name}" exceeds the ${fileSizeLimitMB}MB limit.`);
+        setConversionStatus('error');
+        //continue;
+        return;
+      }
+
+      newFilesToAdd.push(newFile);
+    }
+  //  const newFilesToAdd = newFiles.filter((newFile) => {
+      // Check if the file is already in the files array by comparing the file name
+    //  return !files.some((existingFile) => existingFile.name === newFile.name);
+   // });
+    setErrorMessage('');
     if (newFilesToAdd.length > 0) {
       // If there are new files to add, update the state
       setFiles((prevFiles) => {
@@ -109,9 +157,10 @@ export default function MergeSection({ API_URL }) {
       setResult(data);
       setConversionStatus('success'); // Set to success once merged
       setShowDownloadContainer(true); // Show download container after successful merge
+      await fetchAccountLimits(); //refresh limits
     } catch (err) {
       setConversionStatus('error'); // Set to error on failure
-      alert(err.message);
+      setErrorMessage(err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -128,10 +177,65 @@ export default function MergeSection({ API_URL }) {
 
   return (
     <div>
-      {!showDownloadContainer && (
+      {/* If there's an error due to conversion, hide everything except the error message and reset button */}
+      {conversionStatus === 'error' && (
+        <Alert
+        severity="error"
+        variant="outlined"
+        icon={<RotateCcw />} // Optional: Replace with an alert icon if you prefer
+        sx={{
+          mt: 3,
+          mb: 2,
+          borderRadius: 2,
+          borderColor: 'error.main',
+          bgcolor: '#fff5f5',
+          color: 'error.main',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: 2,
+        }}
+      >
+        <Typography variant="body1" fontWeight="bold" gutterBottom>
+          {errorMessage}
+        </Typography>
+
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Upgrade your plan to increase file size limit or conversions.
+        </Typography>
+
+        <Box display="flex" gap={1}>
+          <Button
+            variant="contained"
+            color="primary"
+            href="/pricing"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            View Pricing Plans
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleReset}
+            startIcon={<RotateCcw />}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Reset
+          </Button>
+        </Box>
+      </Alert>
+      )}
+      {conversionStatus != 'error' && !showDownloadContainer && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
           <UploadFileButton handleFileChange={handleFileChange} />
-
+          {/* Inserted: Max File Size and Conversions Left */}
+          {maxFileSizeMB && (
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Max File Size: <strong>{maxFileSizeMB} MB</strong> &nbsp;|&nbsp;
+              Conversions Left: <strong>{conversionsLeft !== null ? conversionsLeft : 'Unlimited'}</strong>
+            </Typography>
+          )}
           {files.length > 0 && (
             <>
               <Typography variant="body2" mt={1}>

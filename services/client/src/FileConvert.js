@@ -42,9 +42,9 @@ const styles = {
 export default function FileConvertApp() {
   const [mode, setMode] = useState('convert');
   console.log("REACT_APP_URL in FILE CONVERT =");
-  console.log(process.env.REACT_APP_API_URL);
+  console.log(window.env.REACT_APP_API_URL);
   
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_URL = window.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   return (
     <div style={styles.container}>

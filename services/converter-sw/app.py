@@ -1,5 +1,6 @@
 import os
-from converter.init import logger,get_lib_path
+import logging as logger
+from converter.init import get_lib_path
 from flask import Blueprint,send_from_directory
 
 cm_sw_bp = Blueprint('cm_sw_bp', __name__)

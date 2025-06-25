@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState,useEffect,useCallback } from 'react';
 import {
   Typography, Button, CircularProgress, TextField, Paper,
   RadioGroup, FormControlLabel, Radio, FormLabel, FormControl
 } from '@mui/material';
-import { Upload, ArrowRight, RotateCcw, Download, Check } from 'lucide-react';
+import { ArrowRight, RotateCcw, Download, Check } from 'lucide-react';
+import { Alert } from '@mui/material';
 import UploadFileButton from './UploadFileButton';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -23,7 +24,30 @@ export default function ConvertSection({ API_URL }) {
   const [compressionQualityOptions, setCompressionQualityOptions] = useState({});
   const [compressionQuality, setCompressionQuality] = useState('');
   const [showDownloadContainer, setShowDownloadContainer] = useState(false);
+  const [maxFileSizeMB, setMaxFileSizeMB] = useState(null);
+  const [conversionsLeft, setConversionsLeft] = useState(null);
 
+  //Effects
+  const fetchAccountLimits = useCallback(async () => {
+      try {
+        const response = await fetch(`${API_URL}/account-limits`);
+        const data = await response.json();
+  
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch limits');
+  
+        setMaxFileSizeMB(data.max_file_size_mb);  // expected from backend
+        setConversionsLeft(data.conversions_left);  // expected from backend
+      } catch (err) {
+        console.error('Error fetching limits:', err);
+        setMaxFileSizeMB(50); // fallback
+        setConversionsLeft('N/A');
+      }
+  }, []);
+  
+  useEffect(() => {
+    fetchAccountLimits();
+  }, [fetchAccountLimits]);
+  
   const handleDownload = () => {
     if (!conversionResult) return;
     const downloadUrl = `${API_URL}/download/${conversionResult.conversion_id}?name=${encodeURIComponent(fileData.original_name.split('.')[0] + '.' + targetFormat)}`;
@@ -54,6 +78,14 @@ export default function ConvertSection({ API_URL }) {
     const file = e.target.files[0];
     if (!file) return;
 
+    const fileSizeLimitMB = maxFileSizeMB || 50;
+    const MAX_FILE_SIZE_BYTES = fileSizeLimitMB * 1024 * 1024;
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setErrorMessage(`File size exceeds the ${fileSizeLimitMB}MB limit.`);
+      setConversionStatus('error');
+      return;
+    }
     setSelectedFile(file);
     setConversionStatus('uploading');
     setErrorMessage('');
@@ -103,6 +135,7 @@ export default function ConvertSection({ API_URL }) {
       setConversionResult(data);
       setConversionStatus('success');
       setShowDownloadContainer(true); // Show the download container after successful conversion
+      await fetchAccountLimits(); // Reset limits
     } catch (err) {
       setErrorMessage(err.message);
       setConversionStatus('error');
@@ -113,24 +146,67 @@ export default function ConvertSection({ API_URL }) {
     <div>
       {/* If there's an error due to conversion, hide everything except the error message and reset button */}
       {conversionStatus === 'error' && (
-        <>
-          <Typography color="error" style={{ marginTop: 20 }}>
-            {errorMessage}
-          </Typography>
-          <div style={{ marginTop: 20 }}>
-            <Button
-              onClick={handleReset}
-              startIcon={<RotateCcw />}
-            >
-              Reset
-            </Button>
-          </div>
-        </>
+                <Alert
+                severity="error"
+                variant="outlined"
+                icon={<RotateCcw />} // Optional: Replace with an alert icon if you prefer
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  borderRadius: 2,
+                  borderColor: 'error.main',
+                  bgcolor: '#fff5f5',
+                  color: 'error.main',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: 2,
+                }}
+              >
+                <Typography variant="body1" fontWeight="bold" gutterBottom>
+                  {errorMessage}
+                </Typography>
+        
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Upgrade your plan to increase file size limit or conversions.
+                </Typography>
+        
+                <Box display="flex" gap={1}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    href="/pricing"
+                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                  >
+                    View Pricing Plans
+                  </Button>
+        
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleReset}
+                    startIcon={<RotateCcw />}
+                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                  >
+                    Reset
+                  </Button>
+                </Box>
+              </Alert>        
       )}
+
 
       {/* Only show upload and conversion section if there's no error */}
       {conversionStatus !== 'error' && (
         <>
+          {/* Display limits */}
+          {maxFileSizeMB  && (
+            <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+              <Typography variant="body2" color="textSecondary">
+                Max File Size: <strong>{maxFileSizeMB} MB</strong> &nbsp;|&nbsp; 
+                Conversions Left: <strong>{conversionsLeft !== null ? conversionsLeft : 'Unlimited'}</strong>
+              </Typography>
+            </Box>
+          )}
           {/* Upload Section */}
           {!selectedFile && !showDownloadContainer && (
             <UploadFileButton handleFileChange={handleFileChange} />

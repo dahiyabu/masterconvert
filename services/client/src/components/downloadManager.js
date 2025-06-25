@@ -2,6 +2,8 @@
  * Download Manager Module
  * Handles software download with license generation
  */
+import JSZip from 'jszip';
+
 const DownloadManager = (function() {
     'use strict';
     console.log("REACT_APP_URL in DOWNLOAD =");
@@ -386,5 +388,6 @@ Platform: ${platform}
     };
 })();
 
+export default DownloadManager;
 // Make it globally available
-window.DownloadManager = DownloadManager;
+//window.DownloadManager = DownloadManager;

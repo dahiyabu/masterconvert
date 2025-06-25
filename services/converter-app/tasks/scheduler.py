@@ -1,7 +1,7 @@
 import threading
 import time
 from datetime import datetime, timedelta
-from models.ip_log import recreate_ip_log_db
+from models.ip_log_pg import recreate_ip_log_db
 
 def schedule_midnight_reset():
     def reset_task():

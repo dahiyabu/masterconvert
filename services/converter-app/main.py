@@ -8,7 +8,7 @@ from converter.app import cm_bp
 from app import cm_app_bp
 from flask import Flask
 from flask_cors import CORS
-from models.ip_log import init_ip_log_db,close_db
+from models.ip_log_pg import init_ip_log_db,close_db
 from tasks.scheduler import schedule_midnight_reset
 
 
@@ -47,14 +47,14 @@ if __name__ == '__main__':
         os.makedirs(temp_path)
     # Initialize IP DB
     print(temp_path)
-    init_ip_log_db(temp_path)
-
+    
     # Start midnight DB reset thread
     schedule_midnight_reset()
 
     set_base_folder(path=temp_path)
     cleanup_files(get_base_folder())
     create_timed_rotating_log()
+    init_ip_log_db()
 
     setup()
     port=int(os.getenv('PORT', 5000))

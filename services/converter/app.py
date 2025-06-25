@@ -1,6 +1,6 @@
 from converter.convertMaster import FORMAT_COMPATIBILITY,FILE_CATEGORIES,merge_file_handler,upload_file_handler,get_converted_folder
 import logging as logger
-from converter.handlers import common_conversion_handler
+from converter.handlers import common_conversion_handler,common_merge_handler
 from flask import Blueprint,request,jsonify, send_file
 import os,sys
 
@@ -32,13 +32,7 @@ def server_error(e):
 
 @cm_bp.route('/api/merge', methods=['POST'])
 def merge_files():
-    if 'files' not in request.files:
-        return jsonify({"error": "No files provided."}), 400
-
-    files = request.files.getlist('files')
-    merge_type = request.form.get('merge_type', 'pdf')
-    password = request.form.get('password',None)
-    return merge_file_handler(files,merge_type,password)
+    return common_merge_handler(request)
 
 # API Routes
 @cm_bp.route('/api/upload', methods=['POST'])

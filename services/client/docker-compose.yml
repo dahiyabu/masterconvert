@@ -4,14 +4,12 @@ services:
     image: cmclient:latest
     restart: always
     ports:
-      - "9080:9080"
+      - "9080:80"
     environment:
-      - PORT=9080
       - REACT_APP_API_URL=CM_APP_API_URL_VALUE
 
     volumes:
       - /var/tmp/convertMaster/logs:/var/tmp/convertMaster/logs
-    command: npm start
     networks:
       - converter-network
 networks:
