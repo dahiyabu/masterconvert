@@ -12,9 +12,6 @@ cm_app_bp = Blueprint('cm_app_bp', __name__)
 monthly_price_id=os.getenv('MONTHLY_PRICE_ID', None)
 yearly_price_id=os.getenv('YEARLY_PRICE_ID', None)
 daily_price_id=os.getenv('DAILY_PRICE_ID', None)
-#monthly_price_id = 'price_1Rb6W5QPcChcTzeT0XUpwh9b'
-#yearly_price_id = 'price_1Rb6W5QPcChcTzeTOYlJu9AP'
-#daily_price_id ='price_1Rcw9zQPcChcTzeTW35Q1mqM'
 
 
 @cm_app_bp.route('/api/convert', methods=['POST'],endpoint='convert_file')
@@ -78,7 +75,6 @@ def generate_license():
         return jsonify({'message':'Internal License generarion Error'}), 400
     
 stripe.api_key = os.getenv("STRIPE_KEY",None)
-#'sk_test_51Rb6QxQPcChcTzeTPzUYiycboDEIVG0rPfyO8zkg43YayONKFFXnW6lapghxQgmnSOQCuSkdUHtekSwI3EJ9zvFt00xNgfbAQn')
 
 YOUR_DOMAIN = 'http://localhost:3000'
 @cm_app_bp.route('/create-checkout-session', methods=['POST'])
@@ -134,7 +130,6 @@ def get_checkout_session(session_id):
     return get_session_info(session_id)
 
 endpoint_secret=os.getenv("STRIPE_ENDPOINT_SECRET",None)
-#endpoint_secret = 'whsec_4c0244a370a57105ce44c2524cfed77f1a3a4818acfe9ecfa2e7e5a0b50b8ec9'  # Replace with your actual secret
 @cm_app_bp.route('/webhook', methods=['POST'])
 def stripe_webhook():
     payload = request.data

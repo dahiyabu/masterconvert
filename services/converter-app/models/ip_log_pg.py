@@ -9,7 +9,6 @@ from flask import g,jsonify
 
 # Environment-based PostgreSQL DSN (customize as needed)
 POSTGRES_DSN = os.getenv("POSTGRES_DSN", None)
-#"dbname=cm_dev user=dev_giloy_owner password=kLhcRC7v2Epq  host=ep-white-queen-a6lt09cn.us-west-2.aws.neon.tech port=5432")
 
 MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 2))
 
