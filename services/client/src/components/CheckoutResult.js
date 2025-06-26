@@ -58,7 +58,7 @@ const CheckoutResultPage = ({ API_URL }) => {
     setIsVerifying(true);
     setVerificationError('');
     try {
-      const response = await fetch(`${API_URL}/api/verifypayment`, {
+      const response = await fetch(`${API_URL}/verifypayment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

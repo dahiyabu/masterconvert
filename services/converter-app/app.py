@@ -11,7 +11,7 @@ cm_app_bp = Blueprint('cm_app_bp', __name__)
 
 stripe.api_key = os.getenv("STRIPE_KEY",None)
 stripe.ca_bundle_path = '/etc/ssl/certs/ca-certificates.crt'
-APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080/')
+APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080')
 
 monthly_price_id=os.getenv('MONTHLY_PRICE_ID', None)
 yearly_price_id=os.getenv('YEARLY_PRICE_ID', None)
