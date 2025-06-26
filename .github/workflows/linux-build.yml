@@ -72,11 +72,14 @@ jobs:
             --add-data "../proc/app:." \
             --distpath ../output/linux launcher.py
 
-      - name: Upload to S3
-        uses: aws-actions/aws-cli-action@v1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-          inlineScript: |
-            aws s3 cp ./output/linux/convertMaster s3://convertmasterfiles/software/linux/convertMaster
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp ./output/linux/convertMaster s3://convertmasterfiles/software/linux/convertMaster
