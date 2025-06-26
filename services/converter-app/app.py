@@ -76,8 +76,8 @@ def generate_license():
     
 stripe.api_key = os.getenv("STRIPE_KEY",None)
 
-YOUR_DOMAIN = 'http://localhost:3000'
-@cm_app_bp.route('/create-checkout-session', methods=['POST'])
+APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080/')
+@cm_app_bp.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.json
     email = data.get('email')
@@ -95,7 +95,7 @@ def create_checkout_session():
     if not price_id:
         return jsonify({'error': 'Invalid plan'}), 400
 
-    success_url=f'{YOUR_DOMAIN}/checkout-result?success=true&session_id={{CHECKOUT_SESSION_ID}}&plan={plan}'
+    success_url=f'{APP_DOMAIN}/checkout-result?success=true&session_id={{CHECKOUT_SESSION_ID}}&plan={plan}'
     logger.info(success_url)
     try:
         client_ref_id = str(uuid.uuid4())
@@ -110,7 +110,7 @@ def create_checkout_session():
                 'quantity': 1
             }],
             success_url=success_url,
-            cancel_url=f'{YOUR_DOMAIN}/checkout-result?canceled=true',
+            cancel_url=f'{APP_DOMAIN}/checkout-result?canceled=true',
             metadata={
                 'plan': plan,
                 'ip_address': ip_address  # 👈 Custom metadata
@@ -125,7 +125,7 @@ def create_checkout_session():
         return jsonify({'error': str(e)}), 500
     return ({'message':'Internal Server Error'}),400
     
-@cm_app_bp.route('/checkout-session/<session_id>', methods=['GET'])
+@cm_app_bp.route('api/checkout-session/<session_id>', methods=['GET'])
 def get_checkout_session(session_id):
     return get_session_info(session_id)
 
