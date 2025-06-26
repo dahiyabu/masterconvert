@@ -5,6 +5,7 @@ import uuid
 from converter.license import generate_license_file
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment,verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
+from models.s3 import generate_download_link
 from flask import Blueprint,request,jsonify,redirect
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
@@ -152,10 +153,11 @@ def stripe_webhook():
         reference_id = session.get('client_reference_id')
         plan = session.get('metadata', {}).get('plan')
         ip_address = session.get('metadata', {}).get('ip_address')
+        receipt = session.get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
 
-        return mark_successful_payment(session_id,plan,ip_address)
+        return mark_successful_payment(session_id,plan,ip_address,receipt)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])
@@ -172,3 +174,15 @@ def verify_payment():
 def account_limits():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     return get_account_limits(ip)
+
+@cm_app_bp.route("/api/get-download-link", methods=["POST"])
+def get_download_link():
+    data = request.get_json()
+    key = data.get("key")
+
+    if not key:
+        return jsonify({"error": "Missing download key"}), 400
+    return generate_download_link(key)
+    
+if __name__ == "__main__":
+    app.run(debug=True)

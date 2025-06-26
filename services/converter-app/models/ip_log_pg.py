@@ -84,7 +84,8 @@ def init_ip_log_db():
                 plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
                 client_reference_id TEXT,
                 payment_status TEXT CHECK(payment_status IN ('pending', 'success', 'failed')) NOT NULL DEFAULT 'pending',
-                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                receipt TEXT
             )
         ''')
 
@@ -158,16 +159,17 @@ def log_user_payment(session_id, email, plan, client_reference_id, payment_statu
     conn.commit()
     return True
 
-def mark_successful_payment(session_id,plan,ip_address):
+def mark_successful_payment(session_id,plan,ip_address,receipt):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE checkout_sessions
-            SET payment_status = %s
+            SET payment_status = %s,
+                       receipt = %s
             WHERE session_id = %s
-        ''', ('success', session_id))
+        ''', ('success', receipt, session_id))
         # If this was a daily plan, mark is_paid=True for this IP and today's date
         if plan == 'daily' and ip_address:
             today = date.today().isoformat()

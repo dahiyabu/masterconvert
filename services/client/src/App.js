@@ -251,7 +251,7 @@ function AppContent() {
         </header>
         <main className="pt-24 w-full min-h-screen bg-gray-50">
           <div style={{ paddingTop: '90px' }}>
-            <DownloadPage />
+            <DownloadPage API_URL={API_URL}/>
           </div>
         </main>
       </>

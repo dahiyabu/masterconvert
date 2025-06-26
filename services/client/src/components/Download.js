@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, CheckCircle, AlertCircle, Loader2, Sparkles, Shield, Zap, Users, Star, ArrowRight, X, FolderOpen, Monitor, Laptop, Smartphone, RefreshCw, Home, Clock, Gift, Crown } from 'lucide-react';
 import DownloadApp from './DownloadApp';
 
-const DownloadPage = () => {
+const DownloadPage = ({API_URL}) => {
   const [verificationStatus, setVerificationStatus] = useState('verifying');
   const [planDetails, setPlanDetails] = useState(null);
   const [customerEmail, setCustomerEmail] = useState('');
@@ -16,10 +16,7 @@ const DownloadPage = () => {
   const [sessionId, setSessionId] = useState('');
   const [planName, setPlanName] = useState('');
   const [verificationError, setVerificationError] = useState('');
-    
-
-  const API_URL = window.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
+  
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const plan = urlParams.get('plan');
@@ -94,23 +91,41 @@ const DownloadPage = () => {
   };
 
   const downloadSoftware = async (platform) => {
-    const downloadUrls = {
-      windows: 'https://github.com/dahiyabu/masterconvert/actions/runs/15498537930/artifacts/3278714068',
-      macos: 'downloads/ConvertMaster-macOS.dmg',
-      linux: 'downloads/ConvertMaster-Linux.AppImage'
+    const s3Keys = {
+      windows: 'software/windows/convertMaster.exe',
+      macos: 'software/macos/convertMaster',
+      linux: 'software/linux/convertMaster'
     };
-
+  
     try {
-      const response = await fetch(downloadUrls[platform]);
-      if (!response.ok) throw new Error('Download failed');
-      return await response.blob();
+      // Step 1: Get presigned URL from backend
+      const res = await fetch(`${API_URL}/api/get-download-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: s3Keys[platform] })
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Failed to get download link');
+      }
+  
+      // Step 2: Fetch the file using the presigned URL
+      const fileRes = await fetch(data.url);
+      if (!fileRes.ok) throw new Error('Failed to fetch file');
+  
+      const blob = await fileRes.blob();
+      return blob;
     } catch (error) {
       console.error('Software download error:', error);
-      return new Blob([`Demo ${platform} software - ${new Date().toISOString()}`], 
-        { type: 'application/octet-stream' });
+      return new Blob(
+        [`Demo ${platform} software - ${new Date().toISOString()}`],
+        { type: 'application/octet-stream' }
+      );
     }
   };
-
+  
   const createPackage = async (licenseData, softwareBlob, platform) => {
     const JSZip = window.JSZip;
     const zip = new JSZip();
