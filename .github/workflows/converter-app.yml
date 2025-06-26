@@ -69,7 +69,7 @@ jobs:
             docker load -i /var/tmp/upload-cm-app/convertmaster.tar
             
             mkdir -p /var/tmp/convertMaster/logs
-            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| "s/STRIPE_KEY_VALUE/{{ secrets.STRIPE_KEY }}/g"| "s/STRIPE_ENDPOINT_SECRET_VALUE/{{ secrets.STRIPE_ENDPOINT_SECRET}}" > ~/services/converter-app/compose.yml
+            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| "s/STRIPE_KEY_VALUE/{{ secrets.STRIPE_KEY }}/g"| "s/STRIPE_ENDPOINT_SECRET_VALUE/{{ secrets.STRIPE_ENDPOINT_SECRET }}" > ~/services/converter-app/compose.yml
             if [[ `docker ps|grep convertmaster` ]]; then
              container_id=`docker ps |grep convertmaster|awk '{print $1}'`
              docker stop $container_id
