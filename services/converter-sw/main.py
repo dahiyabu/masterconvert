@@ -4,8 +4,9 @@ if getattr(sys, 'frozen', False):
     sys.path.insert(0, sys._MEIPASS)
 else:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import converter.config
 from converter.convertMaster import cleanup_files,setup
-from converter.init import get_base_folder,get_lib_path
+from converter.init import get_base_folder,get_lib_path,create_timed_rotating_log
 from converter.app import cm_bp
 from app import cm_sw_bp
 
@@ -32,8 +33,15 @@ def set_console_title(title: str):
         sys.stdout.write(f"\33]0;{title}\a")
         sys.stdout.flush()
 
+def initialize():
+    
+    #log.basicConfig(filename=logfile,format='%(asctime)s - %(name)s - %(process)d- %(levelname)s - %(message)s',level=log.DEBUG, force=True)
+    converter.config.logpath = os.path.join(get_base_folder(),'converter.log')
+
 if __name__ == '__main__':
+    initialize()
     cleanup_files(get_base_folder())
+    create_timed_rotating_log()
     set_console_title("ConvertMaster")
     ready_file=os.path.join(get_base_folder(),'app_ready.tmp')
     with open(ready_file, "w") as f:

@@ -12,7 +12,8 @@ if getattr(sys, 'frozen', False):
     sys.path.insert(0, sys._MEIPASS)
 else:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from converter.init import cleanup_files,get_lib_path,get_base_folder
+import converter.config
+from converter.init import cleanup_files,get_lib_path
 from converter.license import validate_license
 
 DETACHED_PROCESS = 0x00000008
@@ -84,7 +85,7 @@ def monitor_main_app():
         pass  # Process already ended
 
     print("Main app closed.")
-    cleanup_files(get_lib_path(CURR_DIR),del_log=True)
+    cleanup_files(get_lib_path(CURR_DIR))
     # Close splash window and exit
     root.after(0, root.destroy)
     root.after(100, lambda: os._exit(0))
@@ -157,7 +158,7 @@ def start_after_license_check():
         status_label.config(text=f"License Error: {str(e)}", fg="red")
         resize_window()
         print("License validation failed:", e)
-        cleanup_files(get_lib_path(CURR_DIR),del_log=True)
+        cleanup_files(get_lib_path(CURR_DIR))
         root.after(5000, root.destroy)
 
 root.after(100, start_after_license_check)
