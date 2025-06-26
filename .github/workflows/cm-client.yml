@@ -60,17 +60,19 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker network create converter-network || echo "converter-network already exists"
-            docker load -i /var/tmp/upload-cm/cmclient.tar
             
-            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081\/api/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
-            mkdir -p /var/tmp/convertMaster/logs
-
             if [[ `docker ps|grep cmclient` ]]; then
              container_id=`docker ps |grep cmclient|awk '{print $1}'`
              docker stop $container_id
              docker rm $container_id
             fi
             docker rmi cmclient:latest || echo "No old dev image found to remove"
+            
+            docker load -i /var/tmp/upload-cm/cmclient.tar
+            
+            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081\/api/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
+            mkdir -p /var/tmp/convertMaster/logs
+
             
             docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/convertMaster/logs/cmclient_stderr.log 1>/var/tmp/convertMaster/logs/cmclient_stdout.log
             
@@ -84,6 +86,8 @@ jobs:
 
             if [ $elapsed_time -ge 300 ]; then
               echo "Timeout reached! Container did not start after 300 seconds."
+              rm -rf ~/services/client
+              rm -rf /var/tmp/upload-cm
               exit 1  # Fail the job if the container did not start
             fi
             echo "Container is up and running!"
