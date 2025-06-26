@@ -95,7 +95,7 @@ jobs:
             docker load -i /var/tmp/upload-cm-app/convertmaster.tar
             
             mkdir -p /var/tmp/convertMaster/logs
-            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| sed "s/STRIPE_KEY_VALUE/${{ secrets.STRIPE_KEY }}/g"| sed "s/STRIPE_ENDPOINT_SECRET_VALUE/${{ secrets.STRIPE_ENDPOINT_SECRET }}" > ~/services/converter-app/compose.yml
+            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| sed "s/STRIPE_KEY_VALUE/${{ secrets.STRIPE_KEY }}/g"| sed "s/STRIPE_ENDPOINT_SECRET_VALUE/${{ secrets.STRIPE_ENDPOINT_SECRET }}/g" > ~/services/converter-app/compose.yml
             
             docker compose -f ~/services/converter-app/compose.yml up -d 2>/var/tmp/convertMaster/logs/converter-app_stderr.log 1>/var/tmp/convertMaster/logs/converter-app_stdout.log
             
