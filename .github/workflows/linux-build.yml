@@ -1,0 +1,82 @@
+name: Build Linux Software
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - services/converter-sw/**
+      - services/converter/**
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.13.2'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libreoffice \
+            tesseract-ocr \
+            ghostscript \
+            p7zip-full \
+            ffmpeg \
+            python3-dev \
+            build-essential \
+            libgtk-3-dev \
+            wget \
+            unzip
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r ./services/converter/requirements.txt
+
+      - name: Copy converter code
+        run: |
+          mkdir -p build_app
+          cp -r services/converter build_app/converter
+          cp -r services/converter-sw/* build_app/
+
+      - name: Build main app
+        shell: bash
+        run: |
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "build:build" \
+            --add-data "/usr/lib/libreoffice:dependencies/libreoffice" \
+            --add-data "/usr/share/tesseract-ocr:dependencies/tesseract-ocr" \
+            --add-data "/usr/bin/ffmpeg:dependencies" \
+            --add-data "/usr/bin/gs:dependencies/ghostscript" \
+            --add-data "/usr/bin/7z:dependencies/7zip" \
+            --distpath ../proc main.py
+
+      - name: Build launcher
+        run: |
+          cd build_app
+          pyinstaller --onefile --windowed --name convertMaster \
+            --icon=resources/logo.jpg \
+            --add-data "resources/logo.jpg:resources" \
+            --add-data "../proc/app:." \
+            --distpath ../output/linux launcher.py
+
+      - name: Upload to S3
+        uses: aws-actions/aws-cli-action@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          inlineScript: |
+            aws s3 cp ./output/linux/convertMaster s3://convertmasterfiles/software/linux/convertMaster
