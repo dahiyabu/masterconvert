@@ -1,5 +1,5 @@
 # # Step 1: Use an official Node.js image to build the React app
-FROM node:18-alpine 
+FROM node:18-alpine AS build
 
 # # Set the working directory in the container
 WORKDIR /app
