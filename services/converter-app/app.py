@@ -125,7 +125,7 @@ def create_checkout_session():
         return jsonify({'error': str(e)}), 500
     return ({'message':'Internal Server Error'}),400
     
-@cm_app_bp.route('api/checkout-session/<session_id>', methods=['GET'])
+@cm_app_bp.route('/api/checkout-session/<session_id>', methods=['GET'])
 def get_checkout_session(session_id):
     return get_session_info(session_id)
 
