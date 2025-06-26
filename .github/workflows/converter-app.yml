@@ -19,9 +19,27 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
-      - name: Build Docker image
-        run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Build and cache Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/converter-app/Dockerfile
+          tags: convertmaster:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          load: true  # needed if you want to use the image in later steps locally
+
+#      - name: Build Docker image
+ #       run: docker build -f services/converter-app/Dockerfile -t convertmaster:latest .
 
       - name: Save Docker image to tarball
         run: docker save convertmaster:latest -o convertmaster.tar
@@ -77,7 +95,7 @@ jobs:
             docker load -i /var/tmp/upload-cm-app/convertmaster.tar
             
             mkdir -p /var/tmp/convertMaster/logs
-            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| sed "s/STRIPE_KEY_VALUE/{{ secrets.STRIPE_KEY }}/g"| sed "s/STRIPE_ENDPOINT_SECRET_VALUE/{{ secrets.STRIPE_ENDPOINT_SECRET }}" > ~/services/converter-app/compose.yml
+            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN }}/g" ~/services/converter-app/docker-compose.yml| sed "s/MONTHLY_PRICE_ID_VALUE/${{ secrets.MONTHLY_PRICE_ID }}/g"| sed "s/YEARLY_PRICE_ID_VALUE/${{ secrets.YEARLY_PRICE_ID }}/g"| sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PRICE_ID }}/g"| sed "s/STRIPE_KEY_VALUE/${{ secrets.STRIPE_KEY }}/g"| sed "s/STRIPE_ENDPOINT_SECRET_VALUE/${{ secrets.STRIPE_ENDPOINT_SECRET }}" > ~/services/converter-app/compose.yml
             
             docker compose -f ~/services/converter-app/compose.yml up -d 2>/var/tmp/convertMaster/logs/converter-app_stderr.log 1>/var/tmp/convertMaster/logs/converter-app_stdout.log
             

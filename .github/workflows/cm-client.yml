@@ -14,8 +14,29 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
       
-      - name: Build the Docker image
-        run: docker build -f services/client/Dockerfile -t cmclient:latest services/client
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Build and cache Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: services/client
+          file: services/client/Dockerfile
+          tags: cmclient:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          load: true  # needed if you want to use the image in later steps locally
+
+#      - name: Build the Docker image
+ #       run: docker build -f services/client/Dockerfile -t cmclient:latest services/client
 
       - name: Save Docker image to tarball
         run: docker save cmclient:latest -o cmclient.tar
@@ -43,7 +64,7 @@ jobs:
           tar_dereference: false
 
       - name: Copy compose file to VPS
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
