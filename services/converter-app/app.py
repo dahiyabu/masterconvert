@@ -1,6 +1,5 @@
 import logging as logger
 import os
-os.environ['STRIPE_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
 import stripe
 import uuid
 from converter.license import generate_license_file
@@ -9,6 +8,10 @@ from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed
 from flask import Blueprint,request,jsonify,redirect
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
+
+stripe.api_key = os.getenv("STRIPE_KEY",None)
+stripe.ca_bundle_path = '/etc/ssl/certs/ca-certificates.crt'
+APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080/')
 
 monthly_price_id=os.getenv('MONTHLY_PRICE_ID', None)
 yearly_price_id=os.getenv('YEARLY_PRICE_ID', None)
@@ -75,9 +78,6 @@ def generate_license():
     except:
         return jsonify({'message':'Internal License generarion Error'}), 400
     
-stripe.api_key = os.getenv("STRIPE_KEY",None)
-
-APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080/')
 @cm_app_bp.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.json
@@ -92,7 +92,7 @@ def create_checkout_session():
         'yearly': yearly_price_id,
         'daily': daily_price_id
     }.get(plan)
-
+    logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
     if not price_id:
         return jsonify({'error': 'Invalid plan'}), 400
 
