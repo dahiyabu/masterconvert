@@ -1,5 +1,6 @@
 import logging as logger
 import os
+os.environ['STRIPE_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
 import stripe
 import uuid
 from converter.license import generate_license_file
