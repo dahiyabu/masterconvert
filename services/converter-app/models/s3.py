@@ -14,7 +14,7 @@ s3_client = boto3.client("s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY
 )
-logger.info(f"access_key={AWS_ACCESS_KEY_ID},secret_access_key={AWS_SECRET_ACCESS_KEY},region={AWS_REGION},bucket={S3_BUCKET_NAME}")
+
 #logger.info(boto3.client('sts').get_caller_identity())
 
 def generate_download_link(key):
@@ -24,6 +24,14 @@ def generate_download_link(key):
         #logger.info(response)
         #response = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=key)
         #logger.info(response)
+        logger.info(f"access_key={AWS_ACCESS_KEY_ID},secret_access_key={AWS_SECRET_ACCESS_KEY},region={AWS_REGION},bucket={S3_BUCKET_NAME}")
+        logger.debug("Region:", s3_client.meta.region_name)
+
+        # Credentials (not recommended to print in production)
+        session = boto3.session.Session()
+        credentials = session.get_credentials()
+        logger.debug("Access Key:", credentials.access_key)
+        logger.debug("Secret Key:", credentials.secret_key)
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": S3_BUCKET_NAME, "Key": key},
