@@ -15,7 +15,7 @@ s3_client = boto3.client("s3",
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY
 )
 
-logger.info(boto3.client('sts').get_caller_identity())
+#logger.info(boto3.client('sts').get_caller_identity())
 
 def generate_download_link(key):
     
