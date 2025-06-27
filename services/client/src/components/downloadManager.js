@@ -128,7 +128,7 @@ const DownloadManager = (function() {
             showStatus(`Fetching download link for ${platform}...`, 'info');
 
             // Step 1: Get presigned URL from backend
-            const res = await fetch(`${API_URL}/api/get-download-link`, {
+            const res = await fetch(`${API_URL}/get-download-link`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ key: s3Keys[platform] })
