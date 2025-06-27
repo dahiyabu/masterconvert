@@ -13,11 +13,6 @@ const DownloadManager = (function() {
     // Configuration
     const config = {
         licenseApiEndpoint: `${API_URL}/generateLicense`, // Update this to your actual endpoint
-        downloadUrls: {
-            windows: 'https://github.com/dahiyabu/masterconvert/actions/runs/15498537930/artifacts/3278714068',
-            macos: 'downloads/ConvertMaster-macOS.dmg',
-            linux: 'downloads/ConvertMaster-Linux.AppImage'
-        }
     };
 
     // Private variables
@@ -122,28 +117,51 @@ const DownloadManager = (function() {
         }
     }
 
-    async function downloadSoftware(url, platform) {
+    async function downloadSoftware(platform) {
+        const s3Keys = {
+            windows: 'software/windows/convertMaster.exe',
+            macos: 'software/macos/convertMaster',
+            linux: 'software/linux/convertMaster'
+        };
+
         try {
-            showStatus(`Downloading ${platform} software...`, 'info');
-            
-            const response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors'
+            showStatus(`Fetching download link for ${platform}...`, 'info');
+
+            // Step 1: Get presigned URL from backend
+            const res = await fetch(`${API_URL}/api/get-download-link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: s3Keys[platform] })
             });
 
-            if (!response.ok) {
-                throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+            const data = await res.json();
+
+            if (!res.ok || !data.url) {
+            throw new Error(data.error || 'Failed to get download link');
             }
 
-            const blob = await response.blob();
+            // Step 2: Fetch the actual file
+            showStatus(`Downloading ${platform} software...`, 'info');
+            const fileRes = await fetch(data.url, {
+            method: 'GET',
+            mode: 'cors'
+            });
+
+            if (!fileRes.ok) {
+            throw new Error(`Download failed: ${fileRes.status} ${fileRes.statusText}`);
+            }
+
+            const blob = await fileRes.blob();
             showStatus(`${platform} software downloaded successfully`, 'success');
             return blob;
 
         } catch (error) {
             console.error('Software download error:', error);
             showStatus(`Demo file created for ${platform} (download not available)`, 'info');
-            return new Blob([`Demo ${platform} software file - ${new Date().toISOString()}`], 
-                { type: 'application/octet-stream' });
+            return new Blob(
+            [`Demo ${platform} software - ${new Date().toISOString()}`],
+            { type: 'application/octet-stream' }
+            );
         }
     }
 
@@ -336,7 +354,7 @@ Platform: ${platform}
             updateProgress(10);
             const [licenseData, softwareBlob] = await Promise.all([
                 generateLicense(60 * 60 * 24 * 30),
-                downloadSoftware(config.downloadUrls[platform], platform)
+                downloadSoftware(platform)
             ]);
             
             updateProgress(60);
