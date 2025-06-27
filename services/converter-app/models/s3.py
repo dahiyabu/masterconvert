@@ -20,10 +20,10 @@ s3_client = boto3.client("s3",
 def generate_download_link(key):
     
     try:
-        response = s3_client.head_object(Bucket="convertmasterfiles", Key="software/windows/convertMaster.exe")
-        logger.info(response)
-        response = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=key)
-        logger.info(response)
+        #response = s3_client.head_object(Bucket="convertmasterfiles", Key="software/windows/convertMaster.exe")
+        #logger.info(response)
+        #response = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=key)
+        #logger.info(response)
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": S3_BUCKET_NAME, "Key": key},
