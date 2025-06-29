@@ -53,6 +53,7 @@ def init_ip_log_db():
                 CREATE TABLE ip_log (
                     id SERIAL PRIMARY KEY,
                     ip TEXT NOT NULL,
+                    fingerprint TEXT NOT NULL,
                     log_date DATE NOT NULL,
                     request_count INTEGER NOT NULL DEFAULT 1,
                     is_paid BOOLEAN NOT NULL DEFAULT FALSE
@@ -103,18 +104,23 @@ def init_ip_log_db():
             conn.close()
             logger.info("PostgreSQL connection closed after init_ip_log_db()")
 
-def log_ip_address(ip):
+def log_ip_address(ip,identifier):
     """Insert or update IP usage log for today."""
     today = date.today().isoformat()
     conn = get_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cursor.execute('SELECT request_count FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
+    #cursor.execute('SELECT request_count FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
+    cursor.execute('SELECT request_count FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
     row = cursor.fetchone()
+    #if row:
+    #    cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE ip = %s AND log_date = %s', (ip, today))
+    #else:
+    #    cursor.execute('INSERT INTO ip_log (ip, log_date, request_count) VALUES (%s, %s, %s)', (ip, today, 1))
     if row:
-        cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE ip = %s AND log_date = %s', (ip, today))
+        cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
     else:
-        cursor.execute('INSERT INTO ip_log (ip, log_date, request_count) VALUES (%s, %s, %s)', (ip, today, 1))
+        cursor.execute('INSERT INTO ip_log (ip,identifier, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
 
 def recreate_ip_log_db():
     """Drop and recreate just the ip_log table."""
@@ -125,13 +131,14 @@ def recreate_ip_log_db():
     logger.info("Dropped ip_log table")
     init_ip_log_db()
 
-def is_ip_under_limit(ip):
-    """Return True if IP has not exceeded daily usage."""
+def is_ip_under_limit(identifier):
+    """Return True if IDentifier/fingerprint has not exceeded daily usage."""
     today = date.today().isoformat()
     conn = get_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
+    #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
+    cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
     row = cursor.fetchone()
 
     if row:

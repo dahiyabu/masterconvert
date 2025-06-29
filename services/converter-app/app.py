@@ -25,7 +25,14 @@ def convert_file_app():
         # Log caller IP (once per day)
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
         logger.info(f"ipddress={ip_address}")
-        if not is_ip_under_limit(ip_address):
+        # Get fingerprint from request (sent by the frontend)
+        fingerprint = request.json.get('fingerprint')
+
+        # Validate the fingerprint and usage limits
+        if not fingerprint:
+            return jsonify({'error': 'Fingerprint is required'}), 400
+
+        if not is_ip_under_limit(ip_address,fingerprint):
             return jsonify({'error': 'Daily usage limit exceeded'}), 429
         log_ip_address(ip_address)
     except Exception as e:
@@ -39,7 +46,13 @@ def merge_file_app():
         # Log caller IP (once per day)
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
         logger.info(f"ipddress={ip_address}")
-        if not is_ip_under_limit(ip_address):
+        # Get fingerprint from request (sent by the frontend)
+        fingerprint = request.json.get('fingerprint')
+
+        # Validate the fingerprint and usage limits
+        if not fingerprint:
+            return jsonify({'error': 'Fingerprint is required'}), 400
+        if not is_ip_under_limit(ip_address,fingerprint):
             return jsonify({'error': 'Daily usage limit exceeded'}), 429
         log_ip_address(ip_address)
     except Exception as e:

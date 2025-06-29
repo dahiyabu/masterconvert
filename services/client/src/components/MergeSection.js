@@ -8,6 +8,7 @@ import { Check } from '@mui/icons-material';
 import UploadFileButton from './UploadFileButton';
 import { Alert } from '@mui/material';
 import Box from '@mui/material/Box';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export default function MergeSection({ API_URL }) {
   const [files, setFiles] = useState([]);
@@ -23,6 +24,7 @@ export default function MergeSection({ API_URL }) {
   const [showDownloadContainer, setShowDownloadContainer] = useState(false); // Manage download container visibility
   const [maxFileSizeMB, setMaxFileSizeMB] = useState(null);
   const [conversionsLeft, setConversionsLeft] = useState(null);
+  const [fingerprint, setFingerprint] = useState(null);
 
   //Effects
   const fetchAccountLimits = useCallback(async () => {
@@ -45,7 +47,17 @@ export default function MergeSection({ API_URL }) {
     fetchAccountLimits();
   }, [fetchAccountLimits]);
 
-  
+  // Initialize FingerprintJS and get the fingerprint
+  useEffect(() => {
+    const getFingerprint = async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      setFingerprint(result.visitorId);  // Store the fingerprint
+    };
+
+    getFingerprint();
+  }, []);
+
   // Fetch formats compatibility on component mount
   useEffect(() => {
     const fetchCompatibleFormats = async () => {
@@ -141,7 +153,16 @@ export default function MergeSection({ API_URL }) {
       formData.append('password', password);
     }
 
+    // Ensure fingerprint is included
+    if (!fingerprint) {
+      setErrorMessage('Fingerprint is required.');
+      setConversionStatus('error');
+      return;
+    }
     try {
+      // Add fingerprint to the form data
+      formData.append('fingerprint', fingerprint);
+
       // Call the backend API to merge the files
       const response = await fetch(`${API_URL}/merge`, {
         method: 'POST',

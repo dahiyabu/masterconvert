@@ -8,6 +8,7 @@ import { Alert } from '@mui/material';
 import UploadFileButton from './UploadFileButton';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 
 export default function ConvertSection({ API_URL }) {
@@ -26,6 +27,7 @@ export default function ConvertSection({ API_URL }) {
   const [showDownloadContainer, setShowDownloadContainer] = useState(false);
   const [maxFileSizeMB, setMaxFileSizeMB] = useState(null);
   const [conversionsLeft, setConversionsLeft] = useState(null);
+  const [fingerprint, setFingerprint] = useState(null);
 
   //Effects
   const fetchAccountLimits = useCallback(async () => {
@@ -48,6 +50,17 @@ export default function ConvertSection({ API_URL }) {
     fetchAccountLimits();
   }, [fetchAccountLimits]);
   
+  // Initialize FingerprintJS and get the fingerprint
+  useEffect(() => {
+    const getFingerprint = async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      setFingerprint(result.visitorId);  // Store the fingerprint
+    };
+
+    getFingerprint();
+  }, []);
+
   const handleDownload = () => {
     if (!conversionResult) return;
     const downloadUrl = `${API_URL}/download/${conversionResult.conversion_id}?name=${encodeURIComponent(fileData.original_name.split('.')[0] + '.' + targetFormat)}`;
@@ -115,7 +128,7 @@ export default function ConvertSection({ API_URL }) {
   };
 
   const handleConvert = async () => {
-    if (!fileData || !targetFormat) return;
+    if (!fileData || !targetFormat|| !fingerprint) return;
     setConversionStatus('converting');
     try {
       const response = await fetch(`${API_URL}/convert`, {
@@ -125,7 +138,8 @@ export default function ConvertSection({ API_URL }) {
           file_id: fileData.file_id,
           target_format: targetFormat,
           password,
-          compress_rate: compressionQuality
+          compress_rate: compressionQuality,
+          fingerprint
         })
       });
 
