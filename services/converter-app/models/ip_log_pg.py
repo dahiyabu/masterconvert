@@ -120,7 +120,7 @@ def log_ip_address(ip,identifier):
     if row:
         cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
     else:
-        cursor.execute('INSERT INTO ip_log (ip,identifier, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
+        cursor.execute('INSERT INTO ip_log (ip,fingerprint, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
 
 def recreate_ip_log_db():
     """Drop and recreate just the ip_log table."""
@@ -132,7 +132,7 @@ def recreate_ip_log_db():
     init_ip_log_db()
 
 def is_ip_under_limit(identifier):
-    """Return True if IDentifier/fingerprint has not exceeded daily usage."""
+    """Return True if Identifier/fingerprint has not exceeded daily usage."""
     today = date.today().isoformat()
     conn = get_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
