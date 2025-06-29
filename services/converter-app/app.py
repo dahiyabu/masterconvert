@@ -32,9 +32,9 @@ def convert_file_app():
         if not fingerprint:
             return jsonify({'error': 'Fingerprint is required'}), 400
 
-        if not is_ip_under_limit(ip_address,fingerprint):
+        if not is_ip_under_limit(fingerprint):
             return jsonify({'error': 'Daily usage limit exceeded'}), 429
-        log_ip_address(ip_address)
+        log_ip_address(ip_address,fingerprint)
     except Exception as e:
         logger.exception(f"Caught exception {e}")
         return jsonify({'error': 'Conversion process failed'}), 500
@@ -52,9 +52,9 @@ def merge_file_app():
         # Validate the fingerprint and usage limits
         if not fingerprint:
             return jsonify({'error': 'Fingerprint is required'}), 400
-        if not is_ip_under_limit(ip_address,fingerprint):
+        if not is_ip_under_limit(fingerprint):
             return jsonify({'error': 'Daily usage limit exceeded'}), 429
-        log_ip_address(ip_address)
+        log_ip_address(ip_address,fingerprint)
     except Exception as e:
         logger.exception(f"Caught exception {e}")
         return jsonify({'error': 'Merge process failed'}), 500
