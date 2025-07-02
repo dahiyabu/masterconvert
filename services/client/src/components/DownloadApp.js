@@ -12,6 +12,9 @@ const DownloadApp = () => {
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState('info');
   const [detectedPlatform, setDetectedPlatform] = useState(null);
+  const [hasDownloaded, setHasDownloaded] = useState(false);
+  const [downloadedPlatforms, setDownloadedPlatforms] = useState(new Set());
+  const [licenseId, setLicenseId] = useState(null);
 
   useEffect(() => {
     const platform = navigator.platform.toLowerCase();
@@ -23,6 +26,15 @@ const DownloadApp = () => {
     else if (platform.includes('linux') || userAgent.includes('linux')) detected = 'linux';
 
     setDetectedPlatform(detected);
+
+    // Check session storage for previous downloads
+    const downloadSession = sessionStorage.getItem('convertmaster_download_session');
+    if (downloadSession) {
+      const session = JSON.parse(downloadSession);
+      setHasDownloaded(session.hasDownloaded || false);
+      setDownloadedPlatforms(new Set(session.downloadedPlatforms || []));
+      setLicenseId(session.licenseId || null);
+    }
   }, []);
 
   const goToHomepage = () => {
@@ -30,6 +42,11 @@ const DownloadApp = () => {
   };
 
   const handleWindowsDownload = () => {
+    if (downloadedPlatforms.has('windows')) {
+      setStatusMessage('You have already downloaded ConvertMaster for Windows. Use your existing download.');
+      setStatusType('info');
+      return;
+    }
     setSelectedPlatform('windows');
     setDownloadPath('ConvertMaster-windows-Package.zip');
     setIsConfirmEnabled(true);
@@ -37,6 +54,11 @@ const DownloadApp = () => {
   };
 
   const handleMacDownload = () => {
+    if (downloadedPlatforms.has('macos')) {
+      setStatusMessage('You have already downloaded ConvertMaster for MacOS. Use your existing download.');
+      setStatusType('info');
+      return;
+    }
     setSelectedPlatform('macos');
     setDownloadPath('ConvertMaster-macos-Package.zip');
     setIsConfirmEnabled(true);
@@ -44,6 +66,11 @@ const DownloadApp = () => {
   };
 
   const handleLinuxDownload = () => {
+    if (downloadedPlatforms.has('linux')) {
+      setStatusMessage('You have already downloaded ConvertMaster for Linux. Use your existing download.');
+      setStatusType('info');
+      return;
+    }
     setSelectedPlatform('linux');
     setDownloadPath('ConvertMaster-linux-Package.zip');
     setIsConfirmEnabled(true);
@@ -73,7 +100,20 @@ const DownloadApp = () => {
     };
 
     try {
-      await DownloadManager.downloadPackage(selectedPlatform, downloadPath, onProgress, onStatus);
+      const result = await DownloadManager.downloadPackage(selectedPlatform, downloadPath, onProgress, onStatus,licenseId);
+      // Update download tracking
+      const newDownloadedPlatforms = new Set([...downloadedPlatforms, selectedPlatform]);
+      setDownloadedPlatforms(newDownloadedPlatforms);
+      setHasDownloaded(true);
+      setLicenseId(result.licenseId);
+
+      // Save to session storage
+      sessionStorage.setItem('convertmaster_download_session', JSON.stringify({
+        hasDownloaded: true,
+        downloadedPlatforms: Array.from(newDownloadedPlatforms),
+        licenseId: result.licenseId,
+        timestamp: Date.now()
+      }));
     } catch (error) {
       setStatusMessage(`Error: ${error.message}`);
       setStatusType('error');

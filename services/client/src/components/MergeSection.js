@@ -29,7 +29,7 @@ export default function MergeSection({ API_URL }) {
   //Effects
   const fetchAccountLimits = useCallback(async () => {
       try {
-        const response = await fetch(`${API_URL}/account-limits`);
+        const response = await fetch(`${API_URL}/account-limits?fp=${fingerprint}`);
         const data = await response.json();
   
         if (!response.ok) throw new Error(data.error || 'Failed to fetch limits');

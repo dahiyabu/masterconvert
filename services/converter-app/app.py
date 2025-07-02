@@ -2,9 +2,11 @@ import logging as logger
 import os
 import stripe
 import uuid
-from converter.license import generate_license_file
+from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
-from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment,verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
+from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
+from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
+from models.ip_log_pg import get_existing_license,store_license
 from models.s3 import generate_download_link
 from flask import Blueprint,request,jsonify,redirect
 
@@ -72,23 +74,38 @@ def max_request():
     except Exception as e:
         logger.exception(f"Caught exception {e}")
     return jsonify({'error': 'Max Request change failed'}), 500
-    
+
 @cm_app_bp.route('/api/generateLicense',methods=['POST'])
 def generate_license():
     print(request)
-    duration = request.values.get('duration')
-    logger.info(duration)
-    if duration is None:
-        duration = 30
+    data = request.get_json()
+    duration = data.get('duration', 30)
+    license_id = data.get('licenseId')
+    redownload = data.get('redownload', False)
+    
+    logger.info(f"Duration: {duration}, LicenseId: {license_id}, Redownload: {redownload}")
     if isinstance(duration,str):
         try:
             duration=int(duration)
         except:
             return jsonify({'message':'Incorrect duration type'}), 400
     try:
-        key = generate_license_file(expiry_days=duration)
-        logger.info(f"key type={type(key)}")
-        return jsonify({'key':key}),200
+        # If it's a redownload request with existing license ID
+        if redownload and license_id:
+            existing_license = get_existing_license(license_id)
+            if existing_license:
+                logger.info(f"Returning existing license for ID: {license_id}")
+                return jsonify({
+                    'key': existing_license['key'],
+                    'licenseId': license_id
+                }), 200
+        lic = generate_license_file(expiry_days=duration)
+        # Store the license for future redownloads
+        store_license(lic['license_id'], lic['key'])
+        return jsonify({
+            'key': lic['key'],
+            'licenseId': lic['license_id']
+        }), 200
     except:
         return jsonify({'message':'Internal License generarion Error'}), 400
     
@@ -97,6 +114,7 @@ def create_checkout_session():
     data = request.json
     email = data.get('email')
     plan = data.get('plan')  # 'monthly' or 'yearly'
+    fingerprint = data.get('fingerprint')
     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
     if not monthly_price_id or not yearly_price_id or not daily_price_id:
         return jsonify({'error':'Invalid Plan'}),400 
@@ -128,7 +146,8 @@ def create_checkout_session():
             cancel_url=f'{APP_DOMAIN}/checkout-result?canceled=true',
             metadata={
                 'plan': plan,
-                'ip_address': ip_address  # 👈 Custom metadata
+                'ip_address': ip_address,  # 👈 Custom metadata
+                'fingerprint': fingerprint
             }
         )
         if not session:
@@ -166,11 +185,12 @@ def stripe_webhook():
         reference_id = session.get('client_reference_id')
         plan = session.get('metadata', {}).get('plan')
         ip_address = session.get('metadata', {}).get('ip_address')
+        fingerprint = session.get('metadata', {}).get('fingerprint')
         receipt = session.get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
 
-        return mark_successful_payment(session_id,plan,ip_address,receipt)
+        return mark_successful_payment(session_id,plan,fingerprint,receipt)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])
@@ -186,7 +206,13 @@ def verify_payment():
 @cm_app_bp.route('/api/account-limits', methods=['GET'])
 def account_limits():
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    return get_account_limits(ip)
+    # Get fingerprint from request (sent by the frontend)
+    fingerprint = request.values.get('fp')
+
+    # Validate the fingerprint and usage limits
+    if not fingerprint:
+        return jsonify({'error': 'Fingerprint is required'}), 400
+    return get_account_limits(fingerprint=fingerprint)
 
 @cm_app_bp.route("/api/get-download-link", methods=["POST"])
 def get_download_link():

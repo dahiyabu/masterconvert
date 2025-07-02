@@ -3,6 +3,7 @@ import psycopg2
 import psycopg2.extras
 from psycopg2 import sql, OperationalError, Error
 import logging as logger
+from datetime import datetime, timedelta
 
 from datetime import date
 from flask import g,jsonify
@@ -90,6 +91,15 @@ def init_ip_log_db():
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS licenses (
+                id SERIAL PRIMARY KEY,
+                license_id TEXT NOT NULL UNIQUE,
+                key_data TEXT NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMPTZ NOT NULL
+            )
+        ''')
         conn.commit()
         logger.info("Successfully initialized database tables")
 
@@ -166,7 +176,7 @@ def log_user_payment(session_id, email, plan, client_reference_id, payment_statu
     conn.commit()
     return True
 
-def mark_successful_payment(session_id,plan,ip_address,receipt):
+def mark_successful_payment(session_id,plan,fingerprint,receipt):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -178,13 +188,13 @@ def mark_successful_payment(session_id,plan,ip_address,receipt):
             WHERE session_id = %s
         ''', ('success', receipt, session_id))
         # If this was a daily plan, mark is_paid=True for this IP and today's date
-        if plan == 'daily' and ip_address:
+        if plan == 'daily' and fingerprint:
             today = date.today().isoformat()
 
             # Check if the IP already has a record today
             cursor.execute('''
-                SELECT id FROM ip_log WHERE ip = %s AND log_date = %s
-            ''', (ip_address, today))
+                SELECT id FROM ip_log WHERE fingerprint = %s AND log_date = %s
+            ''', (fingerprint, today))
             existing = cursor.fetchone()
 
             if existing:
@@ -192,14 +202,14 @@ def mark_successful_payment(session_id,plan,ip_address,receipt):
                 cursor.execute('''
                     UPDATE ip_log
                     SET is_paid = TRUE
-                    WHERE ip = %s AND log_date = %s
-                ''', (ip_address, today))
+                    WHERE fingerprint = %s AND log_date = %s
+                ''', (fingerprint, today))
             else:
                 # Insert new log with is_paid=True
                 cursor.execute('''
-                    INSERT INTO ip_log (ip, log_date, request_count, is_paid)
+                    INSERT INTO ip_log (fingerprint, log_date, request_count, is_paid)
                     VALUES (%s, %s, %s, %s)
-                ''', (ip_address, today, 0, True))
+                ''', (fingerprint, today, 0, True))
         conn.commit()
         
         logger.info("Database updated for successful payment.")
@@ -268,7 +278,7 @@ def verify_user_payment(email, plan):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-def get_account_limits(ip):
+def get_account_limits(fingerprint):
     
     today = date.today().isoformat()
 
@@ -278,8 +288,8 @@ def get_account_limits(ip):
 
         cursor.execute('''
             SELECT request_count, is_paid FROM ip_log
-            WHERE ip = %s AND log_date = %s
-        ''', (ip, today))
+            WHERE fingerprint = %s AND log_date = %s
+        ''', (fingerprint, today))
         row = cursor.fetchone()
 
         if row:
@@ -301,3 +311,38 @@ def get_account_limits(ip):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+def store_license(license_id, key):
+    """Store license in database"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        # Assuming you have a licenses table
+        cursor.execute("""
+            INSERT INTO licenses (license_id, key_data, created_at, expires_at)
+            VALUES (?, ?, ?, ?)
+        """, (
+            license_id, 
+            key, 
+            datetime.now().isoformat(),
+            (datetime.now() + timedelta(hours=24)).isoformat()
+        ))
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Database error storing license: {str(e)}")
+
+def get_existing_license(license_id):
+    """Get license from database"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT key_data FROM licenses 
+            WHERE license_id = ? AND expires_at > ?
+        """, (license_id, datetime.now().isoformat()))
+        
+        result = cursor.fetchone()
+        return {'key': result[0]} if result else None
+    except Exception as e:
+        logger.error(f"Database error retrieving license: {str(e)}")
+        return None

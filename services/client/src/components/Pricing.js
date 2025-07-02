@@ -10,6 +10,7 @@ const PricingPage = ({ API_URL }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const location = useLocation();
+  const [fingerprint, setFingerprint] = useState(null);
 
   const plans = [
     {
@@ -114,6 +115,17 @@ const PricingPage = ({ API_URL }) => {
     }
   }, [location]);
   
+  // Initialize FingerprintJS and get the fingerprint
+  useEffect(() => {
+    const getFingerprint = async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      setFingerprint(result.visitorId);  // Store the fingerprint
+    };
+
+    getFingerprint();
+  }, []);
+  
   const handlePlanSelect = (plan) => {
     if (plan.id === 'free') {
       const event = new Event('open-free-plan');
@@ -136,7 +148,10 @@ const PricingPage = ({ API_URL }) => {
       setError('Please enter a valid email address');
       return;
     }
-
+    
+    if (!fingerprint) {
+      setError('Please retry, internal error');
+    }
     setIsLoading(true);
     setError('');
 
@@ -144,7 +159,7 @@ const PricingPage = ({ API_URL }) => {
       const res = await fetch(`${API_URL}/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, plan: selectedPlan.id }),
+        body: JSON.stringify({ email, plan: selectedPlan.id, fingerprint: fingerprint }),
       });
 
       if (!res.ok) {

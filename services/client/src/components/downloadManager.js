@@ -85,20 +85,27 @@ const DownloadManager = (function() {
         });
     }
 
-    async function generateLicense(durationInSeconds) {
+    async function generateLicense(durationInSeconds, existingLicenseId = null) {
         try {
             showStatus('Generating license...', 'info');
             
+            const requestBody = {
+                timestamp: new Date().toISOString(),
+                platform: 'web',
+                duration: durationInSeconds
+            };
+        
+            // If we have an existing license ID, request the same license
+            if (existingLicenseId) {
+            requestBody.licenseId = existingLicenseId;
+            requestBody.redownload = true;
+            }
             const response = await fetch(config.licenseApiEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    timestamp: new Date().toISOString(),
-                    platform: 'web',
-                    duration: durationInSeconds
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
@@ -106,9 +113,12 @@ const DownloadManager = (function() {
             }
 
             const licenseJson = await response.json();
-            const licenseKey = licenseJson.key;
+            //const licenseKey = licenseJson.key;
             showStatus('License generated successfully', 'success');
-            return licenseKey;
+            return {
+                key: licenseJson.key,
+                licenseId: licenseJson.licenseId || existingLicenseId
+            };
 
         } catch (error) {
             console.error('License generation error:', error);
@@ -336,47 +346,72 @@ Platform: ${platform}
         downloadPackage(platform,savePath);
     }
 
-    async function downloadPackage(platform, savePath) {
+    async function downloadPackage(platform, savePath, onProgress = null, onStatus = null, existingLicenseId = null) {
         if (!savePath) {
-            showStatus('Please select a save location first', 'error');
+            const message = 'Please select a save location first';
+            if (onStatus) onStatus(message, 'error');
+            else showStatus(message, 'error');
             return;
         }
         if (!platform) {
-            showStatus('Platform not selected. Please try again.', 'error');
+            const message = 'Platform not selected. Please try again.';
+            if (onStatus) onStatus(message, 'error');
+            else showStatus(message, 'error');
             return;
         }
 
         try {
             setButtonsState(true);
-            updateProgress(0);
-            
+            if (onProgress) onProgress(0);
+            else updateProgress(0);
+        
             // Step 1: Generate license and download software in parallel
-            updateProgress(10);
+            if (onProgress) onProgress(10);
+            else updateProgress(10);
             const [licenseData, softwareBlob] = await Promise.all([
                 generateLicense(60 * 60 * 24 * 30),
                 downloadSoftware(platform)
             ]);
-            
-            updateProgress(60);
+        
+            if (onProgress) onProgress(60)
+            else updateProgress(60);
             
             // Step 2: Create package
             const packageBlob = await createPackage(licenseData, softwareBlob, platform);
-            updateProgress(90);
+            if (onProgress) onProgress(90)
+            else updateProgress(90);
             
             // Step 3: Download the package
             const filename = savePath.endsWith('.zip') ? savePath : `${savePath}.zip`;
             downloadBlob(packageBlob, filename);
             
-            updateProgress(100);
-            showStatus(`Package downloaded successfully as ${filename}`, 'success');
+            if (onProgress) onProgress(100)
+            else updateProgress(100);
+            const successMessage = `Package downloaded successfully as ${filename}`;
+            if (onStatus) onStatus(successMessage, 'success');
+            else showStatus(successMessage, 'success');
             
             // Reset progress after 2 seconds
-            setTimeout(() => updateProgress(0), 2000);
+            setTimeout(() => {
+                if (onProgress) onProgress(0);
+                else updateProgress(0);
+            }, 2000);
 
+            // Return the license information for tracking
+            return {
+                success: true,
+                licenseId: licenseResult.licenseId,
+                filename: filename
+            };
         } catch (error) {
             console.error('Download package error:', error);
-            showStatus(`Error: ${error.message}`, 'error');
-            updateProgress(0);
+            const errorMessage = `Error: ${error.message}`;
+            if (onStatus) onStatus(errorMessage, 'error');
+            else showStatus(errorMessage, 'error');
+            
+            if (onProgress) onProgress(0);
+            else updateProgress(0);
+            throw error;
         } finally {
             setButtonsState(false);
         }

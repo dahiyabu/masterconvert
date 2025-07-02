@@ -56,17 +56,24 @@ def validate_license():
 
     return True
 
+def generate_unique_license_id():
+    """Generate a unique license ID"""
+    return f"lic_{uuid.uuid4().hex[:12]}_{int(datetime.now().timestamp())}"
 
-def generate_license_file(output_path='', expiry_days=30):
+def generate_license_file(output_path='', expiry_days=30, license_id=None):
+    license_id = license_id or generate_unique_license_id()  # Add license ID to the encrypted data
     license_data = {
         "expiry": (datetime.now(timezone.utc) + timedelta(days=expiry_days)).isoformat(),
         "device_id": "",  # Will be filled on first activation
-        "used": False
+        "used": False,
+        "license_id": license_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
+    
     encrypted = fernet.encrypt(json.dumps(license_data).encode())
     key_b64 = base64.b64encode(encrypted).decode('utf-8')
-
-    return key_b64
+    
+    return {'key': key_b64,'license_id':license_id}
     with open(output_path, "wb") as f:
         f.write(encrypted)
     print("License file generated:", output_path)
