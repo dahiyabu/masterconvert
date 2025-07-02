@@ -49,7 +49,7 @@ def merge_file_app():
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
         logger.info(f"ipddress={ip_address}")
         # Get fingerprint from request (sent by the frontend)
-        fingerprint = request.json.get('fingerprint')
+        fingerprint = request.form.get('fingerprint')
 
         # Validate the fingerprint and usage limits
         if not fingerprint:

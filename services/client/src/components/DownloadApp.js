@@ -83,6 +83,26 @@ const DownloadApp = () => {
     setIsConfirmEnabled(true);
   };
 
+  const handleBrowse = () => {
+    // Create a hidden file input for directory selection
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.webkitdirectory = true; // For directory selection
+    input.multiple = true;
+    
+    input.onchange = (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        // Get the directory path from the first file
+        const file = e.target.files[0];
+        const path = file.webkitRelativePath.split('/')[0];
+        setDownloadPath(path);
+        setIsConfirmEnabled(path.trim().length > 0);
+      }
+    };
+    
+    input.click();
+  };
+  
   const handleConfirmDownload = async () => {
     if (!downloadPath.trim()) {
       setStatusMessage('Please select a save location');
@@ -294,6 +314,12 @@ const DownloadApp = () => {
                   className="file-input"
                   placeholder="Enter filename..."
                 />
+                <button className="browse-button" onClick={handleBrowse}>
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Browse
+                </button>
               </div>
 
               <div className="quick-locations">
