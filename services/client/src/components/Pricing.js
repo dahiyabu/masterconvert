@@ -1,6 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { Check, Star, Zap, Shield, Download, Globe, Smartphone, X, Mail, CreditCard, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 const PricingPage = ({ API_URL }) => {
   const [hoveredCard, setHoveredCard] = useState(null);

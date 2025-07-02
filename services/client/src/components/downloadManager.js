@@ -377,7 +377,7 @@ Platform: ${platform}
             else updateProgress(60);
             
             // Step 2: Create package
-            const packageBlob = await createPackage(licenseData, softwareBlob, platform);
+            const packageBlob = await createPackage(licenseData.key, softwareBlob, platform);
             if (onProgress) onProgress(90)
             else updateProgress(90);
             
@@ -400,7 +400,7 @@ Platform: ${platform}
             // Return the license information for tracking
             return {
                 success: true,
-                licenseId: licenseResult.licenseId,
+                licenseId: licenseData.licenseId,
                 filename: filename
             };
         } catch (error) {
