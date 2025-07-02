@@ -96,6 +96,10 @@ def init_ip_log_db():
                 id SERIAL PRIMARY KEY,
                 license_id TEXT NOT NULL UNIQUE,
                 key_data TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                email TEXT,
+                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                platform TEXT CHECK(platform IN ('windows', 'macos', 'linux')) NOT NULL,
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMPTZ NOT NULL
             )
@@ -312,18 +316,22 @@ def get_account_limits(fingerprint):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-def store_license(license_id, key):
+def store_license(license_id, key,sessionId,email,plan,platform):
     """Store license in database"""
     try:
         conn = get_db()
         cursor = conn.cursor()
         # Assuming you have a licenses table
         cursor.execute("""
-            INSERT INTO licenses (license_id, key_data, created_at, expires_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO licenses (license_id, key_data, session_id,email,plan,platform,created_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             license_id, 
-            key, 
+            key,
+            sessionId,
+            email,
+            plan,
+            platform,
             datetime.now().isoformat(),
             (datetime.now() + timedelta(hours=24)).isoformat()
         ))
@@ -331,18 +339,18 @@ def store_license(license_id, key):
     except Exception as e:
         logger.error(f"Database error storing license: {str(e)}")
 
-def get_existing_license(license_id):
+def get_download_records(session_id, email, plan):
     """Get license from database"""
     try:
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT key_data FROM licenses 
-            WHERE license_id = ? AND expires_at > ?
-        """, (license_id, datetime.now().isoformat()))
+            SELECT * FROM licenses 
+            WHERE session_id = ? AND email = ? AND plan = ?
+        """, (session_id,email,plan))
         
         result = cursor.fetchone()
-        return {'key': result[0]} if result else None
+        return result if result else None
     except Exception as e:
         logger.error(f"Database error retrieving license: {str(e)}")
         return None

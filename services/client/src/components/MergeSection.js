@@ -29,6 +29,7 @@ export default function MergeSection({ API_URL }) {
   //Effects
   const fetchAccountLimits = useCallback(async () => {
       try {
+        if(!fingerprint) return;
         const response = await fetch(`${API_URL}/account-limits?fp=${fingerprint}`);
         const data = await response.json();
   

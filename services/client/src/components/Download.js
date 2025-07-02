@@ -50,6 +50,7 @@ const DownloadPage = ({API_URL}) => {
           duration: plan === 'yearly' ? 365 : 30,
           displayName: plan === 'yearly' ? 'Yearly Plan' : 'Monthly Plan'
         });
+        setSessionId(result.session_id)
         setVerificationStatus('success');
       } else {
         setVerificationStatus('failed');
@@ -522,7 +523,12 @@ Platform: ${platform}
       }
   // Success State - Download Page
   return (
-    <DownloadApp />
+    <DownloadApp 
+      sessionId={sessionId}
+      customerEmail={customerEmail}
+      planName={planName}
+      API_URL={API_URL}
+    />
   );
 };
 

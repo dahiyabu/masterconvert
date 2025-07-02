@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './DownloadApp.css';
 import DownloadManager from './downloadManager';
 
-const DownloadApp = () => {
+const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [downloadPath, setDownloadPath] = useState('');
   const [isConfirmEnabled, setIsConfirmEnabled] = useState(false);
@@ -35,12 +35,41 @@ const DownloadApp = () => {
       setDownloadedPlatforms(new Set(session.downloadedPlatforms || []));
       setLicenseId(session.licenseId || null);
     }
+    // Check server-side download status
+    if (sessionId && customerEmail && planName) {
+      checkDownloadStatus();
+    }
   }, []);
 
   const goToHomepage = () => {
     window.location.href = '/';
   };
 
+  const checkDownloadStatus = async () => {
+    try {
+      const response = await fetch(`${API_URL}/check-download-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          email: customerEmail,
+          plan: planName
+        })
+      });
+      
+      const result = await response.json();
+      if (result.hasDownloaded) {
+        setHasDownloaded(true);
+        setDownloadedPlatforms(new Set(result.downloadedPlatforms || []));
+        setLicenseId(result.licenseId);
+      }
+    } catch (error) {
+      console.error('Error checking download status:', error);
+    }
+  };
+  
   const handleWindowsDownload = () => {
     if (downloadedPlatforms.has('windows')) {
       setStatusMessage('You have already downloaded ConvertMaster for Windows. Use your existing download.');
@@ -83,25 +112,121 @@ const DownloadApp = () => {
     setIsConfirmEnabled(true);
   };
 
-  const handleBrowse = () => {
-    // Create a hidden file input for directory selection
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.webkitdirectory = true; // For directory selection
-    input.multiple = true;
-    
-    input.onchange = (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        // Get the directory path from the first file
-        const file = e.target.files[0];
-        const path = file.webkitRelativePath.split('/')[0];
-        setDownloadPath(path);
-        setIsConfirmEnabled(path.trim().length > 0);
+  
+  const handleBrowse = useCallback(async () => {
+    try {
+      // Modern File System Access API (Chrome 86+, Edge 86+)
+      if ('showDirectoryPicker' in window) {
+        try {
+          const directoryHandle = await window.showDirectoryPicker({
+            mode: 'readwrite'
+          });
+          
+          setDownloadPath(directoryHandle.name);
+          setIsConfirmEnabled(true);
+          return;
+        } catch (fsError) {
+          if (fsError.name !== 'AbortError') {
+            console.warn('File System Access API failed:', fsError);
+          }
+          // Continue to fallback
+        }
       }
+      
+      // Fallback: Directory picker using file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.webkitdirectory = true;
+      input.multiple = true;
+      input.style.display = 'none';
+      
+      // Add to DOM temporarily
+      document.body.appendChild(input);
+      
+      const handleFileSelect = (event) => {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+          const firstFile = files[0];
+          let directoryPath = '';
+          
+          if (firstFile.webkitRelativePath) {
+            // Extract directory name from path
+            const pathParts = firstFile.webkitRelativePath.split('/');
+            directoryPath = pathParts[0];
+          } else {
+            directoryPath = 'Selected Directory';
+          }
+          
+          setDownloadPath(directoryPath);
+          setIsConfirmEnabled(true);
+        }
+        
+        // Clean up
+        document.body.removeChild(input);
+        input.removeEventListener('change', handleFileSelect);
+      };
+      
+      const handleCancel = () => {
+        // Clean up on cancel
+        if (document.body.contains(input)) {
+          document.body.removeChild(input);
+        }
+        input.removeEventListener('change', handleFileSelect);
+      };
+      
+      // Add event listeners
+      input.addEventListener('change', handleFileSelect);
+      input.addEventListener('cancel', handleCancel);
+      
+      // Trigger file picker
+      input.click();
+      
+    } catch (error) {
+      console.error('Error in directory selection:', error);
+      // Final fallback - manual input with platform detection
+      showManualPathInput();
+    }
+}, [downloadPath, setDownloadPath, setIsConfirmEnabled]);
+
+// Helper function for manual path input
+const showManualPathInput = useCallback(() => {
+  const platform = getPlatformInfo();
+  const userPath = window.prompt(
+    `Please enter the full path where you want to save ConvertMaster:\n\nExample for ${platform.name}: ${platform.example}`,
+    downloadPath || ''
+  );
+  
+  if (userPath && userPath.trim()) {
+    setDownloadPath(userPath.trim());
+    setIsConfirmEnabled(true);
+  }
+}, [downloadPath, setDownloadPath, setIsConfirmEnabled]);
+
+// Platform detection helper
+const getPlatformInfo = useCallback(() => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const platform = navigator.platform.toLowerCase();
+  
+  if (platform.includes('mac') || userAgent.includes('macintosh')) {
+    return {
+      name: 'macOS',
+      example: '/Users/[your-username]/Downloads/ConvertMaster',
+      separator: '/'
     };
-    
-    input.click();
-  };
+  } else if (platform.includes('win') || userAgent.includes('windows')) {
+    return {
+      name: 'Windows',
+      example: 'C:\\Users\\[your-username]\\Downloads\\ConvertMaster',
+      separator: '\\'
+    };
+  } else {
+    return {
+      name: 'Linux',
+      example: '/home/[your-username]/Downloads/ConvertMaster',
+      separator: '/'
+    };
+  }
+}, []);
   
   const handleConfirmDownload = async () => {
     if (!downloadPath.trim()) {
@@ -120,7 +245,13 @@ const DownloadApp = () => {
     };
 
     try {
-      const result = await DownloadManager.downloadPackage(selectedPlatform, downloadPath, onProgress, onStatus,licenseId);
+      const result = await DownloadManager.downloadPackage(selectedPlatform, downloadPath, onProgress, onStatus,licenseId,
+      {
+        sessionId,
+        email: customerEmail,
+        plan: planName,
+        os: selectedPlatform
+      });
       // Update download tracking
       const newDownloadedPlatforms = new Set([...downloadedPlatforms, selectedPlatform]);
       setDownloadedPlatforms(newDownloadedPlatforms);

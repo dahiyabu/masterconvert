@@ -82,6 +82,10 @@ def generate_license():
     duration = data.get('duration', 30)
     license_id = data.get('licenseId')
     redownload = data.get('redownload', False)
+    sessionId = data.get('sessionId')
+    email = data.get('email')
+    plan = data.get('plan')
+    platform = data.get('os')
     
     logger.info(f"Duration: {duration}, LicenseId: {license_id}, Redownload: {redownload}")
     if isinstance(duration,str):
@@ -101,14 +105,52 @@ def generate_license():
                 }), 200
         lic = generate_license_file(expiry_days=duration)
         # Store the license for future redownloads
-        store_license(lic['license_id'], lic['key'])
+        store_license(lic['license_id'], lic['key'],sessionId,email,plan,platform)
         return jsonify({
             'key': lic['key'],
             'licenseId': lic['license_id']
         }), 200
     except:
         return jsonify({'message':'Internal License generarion Error'}), 400
+
+from flask import Flask, request, jsonify
+from your_database_module import get_download_records  # Assuming you have a database module to query
+
+app = Flask(__name__)
+
+@cm_app_bp.route('/api/check-download-status', methods=['POST'])
+def check_download_status():
+    try:
+        # Get data from the request
+        data = request.get_json()
+        session_id = data.get('sessionId')
+        email = data.get('email')
+        plan = data.get('plan')
+        
+        # Query your database for existing downloads
+        download_records = get_download_records(session_id=session_id, email=email, plan=plan)
+        
+        if download_records:
+            downloaded_platforms = [record['platform'] for record in download_records]
+            license_id = download_records[0]['licenseId']
+            return jsonify({
+                'hasDownloaded': True,
+                'downloadedPlatforms': downloaded_platforms,
+                'licenseId': license_id
+            })
+        else:
+            return jsonify({
+                'hasDownloaded': False,
+                'downloadedPlatforms': [],
+                'licenseId': None
+            })
     
+    except Exception as error:
+        return jsonify({'error': str(error)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 @cm_app_bp.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.json

@@ -85,7 +85,7 @@ const DownloadManager = (function() {
         });
     }
 
-    async function generateLicense(durationInSeconds, existingLicenseId = null) {
+    async function generateLicense(durationInSeconds, existingLicenseId = null,sessionData = null) {
         try {
             showStatus('Generating license...', 'info');
             
@@ -99,6 +99,12 @@ const DownloadManager = (function() {
             if (existingLicenseId) {
             requestBody.licenseId = existingLicenseId;
             requestBody.redownload = true;
+            }
+            if (sessionData) {
+                requestBody.sessionId = sessionData.sessionId;
+                requestBody.email = sessionData.email,
+                requestBody.plan = sessionData.plan,
+                requestBody.os = sessionData.os;
             }
             const response = await fetch(config.licenseApiEndpoint, {
                 method: 'POST',
@@ -346,7 +352,7 @@ Platform: ${platform}
         downloadPackage(platform,savePath);
     }
 
-    async function downloadPackage(platform, savePath, onProgress = null, onStatus = null, existingLicenseId = null) {
+    async function downloadPackage(platform, savePath, onProgress = null, onStatus = null, existingLicenseId = null, sessionData = null) {
         if (!savePath) {
             const message = 'Please select a save location first';
             if (onStatus) onStatus(message, 'error');
@@ -369,7 +375,7 @@ Platform: ${platform}
             if (onProgress) onProgress(10);
             else updateProgress(10);
             const [licenseData, softwareBlob] = await Promise.all([
-                generateLicense(60 * 60 * 24 * 30),
+                generateLicense(60 * 60 * 24 * 30,existingLicenseId,sessionData),
                 downloadSoftware(platform)
             ]);
         
