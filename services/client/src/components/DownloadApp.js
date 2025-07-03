@@ -115,47 +115,45 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
 
   
   const handleBrowse = useCallback(async () => {
-    try {
-      // Modern File System Access API (Chrome 86+, Edge 86+)
-      if ('showDirectoryPicker' in window) {
-        try {
-          const directoryHandle = await window.showDirectoryPicker({
-            mode: 'readwrite',
-            startIn: 'downloads' // Start in downloads folder by default
-          });
-          
-          // Store the directory handle for later use when saving files
-          setDirectoryHandle && setDirectoryHandle(directoryHandle);
-          const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
-          setDownloadPath(`${directoryHandle.name}/${filename}`);
-          setIsConfirmEnabled(true);
-          return;
-        } catch (fsError) {
-          if (fsError.name !== 'AbortError') {
-            console.warn('File System Access API failed:', fsError);
-          }
-          // Continue to fallback
+    // Only try File System Access API if it's available and supported
+    if ('showDirectoryPicker' in window) {
+      try {
+        const directoryHandle = await window.showDirectoryPicker({
+          mode: 'readwrite',
+          startIn: 'downloads'
+        });
+        
+        // Store the directory handle for later use when saving files
+        if (setDirectoryHandle) {
+          setDirectoryHandle(directoryHandle);
         }
+        
+        const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+        setDownloadPath(`${directoryHandle.name}/${filename}`);
+        setIsConfirmEnabled(true);
+        return;
+      } catch (fsError) {
+        if (fsError.name === 'AbortError') {
+          // User cancelled, do nothing
+          return;
+        }
+        console.warn('File System Access API failed:', fsError);
+        // Fall through to manual input
       }
-      
-      // If File System Access API is not available, show manual input
-      showManualPathInput();
-      
-    } catch (error) {
-      console.error('Error in directory selection:', error);
-      // Final fallback - manual input with platform detection
-      showManualPathInput();
     }
+    
+    // Fallback to manual input - no file pickers at all
+    showManualPathInput();
   }, [selectedPlatform, setDownloadPath, setIsConfirmEnabled, setDirectoryHandle]);
   
-  // Update the showManualPathInput function to include filename
+  // Simplified manual path input
   const showManualPathInput = useCallback(() => {
     const platform = getPlatformInfo();
     const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
     const fullPath = `${platform.defaultPath}${platform.separator}${filename}`;
     
     const userPath = window.prompt(
-      `Please enter the full path where you want to save your downloaded file:\n\nExample for ${platform.name}: ${platform.example}${platform.separator}${filename}`,
+      `Please enter the full path where you want to save your downloaded file:\n\nExample for ${platform.name}:\n${platform.example}${platform.separator}${filename}`,
       downloadPath || fullPath
     );
     
@@ -164,7 +162,7 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
       setIsConfirmEnabled(true);
     }
   }, [selectedPlatform, downloadPath, setDownloadPath, setIsConfirmEnabled]);
-
+  
 // Platform detection helper
 const getPlatformInfo = useCallback(() => {
   const userAgent = navigator.userAgent.toLowerCase();
