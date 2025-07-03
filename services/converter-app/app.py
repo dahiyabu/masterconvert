@@ -6,7 +6,7 @@ from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
-from models.ip_log_pg import get_download_records,store_license
+from models.ip_log_pg import get_download_records,store_license,insert_contact_data
 from models.s3 import generate_download_link
 from flask import Blueprint,request,jsonify
 
@@ -259,6 +259,32 @@ def get_download_link():
     if not key:
         return jsonify({"error": "Missing download key"}), 400
     return generate_download_link(key)
-    
-if __name__ == "__main__":
-    app.run(debug=True)
+
+# API route to handle "Contact Us" form submissions
+@cm_app_bp.route('/api/contact', methods=['POST'])
+def submit_contact():
+    try:
+        data = request.get_json()
+        
+        # Insert contact data into database
+        contact_id = insert_contact_data(
+            data['firstName'],
+            data['lastName'], 
+            data['email'],
+            data.get('phone', ''),
+            data['subject'],
+            data['message']
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Contact form submitted successfully',
+            'contact_id': contact_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': 'Error submitting contact form',
+            'error': str(e)
+        }), 500

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Contact.css'; // Externalize the CSS for better maintainability
 
-const ContactPage = () => {
+const ContactPage = ({API_URL}) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -23,7 +23,7 @@ const ContactPage = () => {
     // Show a basic loading state or disable the button if needed
   
     try {
-      const response = await fetch('https://yourdomain.com/api/contact', {
+      const response = await fetch(`${API_URL}/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

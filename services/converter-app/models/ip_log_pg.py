@@ -104,6 +104,20 @@ def init_ip_log_db():
                 expires_at TIMESTAMPTZ NOT NULL
             )
         ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS contacts (
+                id SERIAL PRIMARY KEY,
+                first_name VARCHAR(100) NOT NULL,
+                last_name VARCHAR(100) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                phone VARCHAR(20),
+                subject VARCHAR(50) NOT NULL,
+                message TEXT NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                status VARCHAR(20) DEFAULT 'new'
+            )
+        ''')
         conn.commit()
         logger.info("Successfully initialized database tables")
 
@@ -324,7 +338,7 @@ def store_license(license_id, key,sessionId,email,plan,platform):
         # Assuming you have a licenses table
         cursor.execute("""
             INSERT INTO licenses (license_id, key_data, session_id,email,plan,platform,created_at, expires_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             license_id, 
             key,
@@ -347,16 +361,36 @@ def get_download_records(session_id, email, plan,platform=None):
         if platform:
             cursor.execute("""
                 SELECT * FROM licenses 
-                WHERE session_id = ? AND email = ? AND plan = ? AND platform = ?
+                WHERE session_id = %s AND email = %s AND plan = %s AND platform = %s
                 """, (session_id,email,plan,platform))
         else:
             cursor.execute("""
                 SELECT * FROM licenses 
-                WHERE session_id = ? AND email = ? AND plan = ?
+                WHERE session_id = %s AND email = %s AND plan = %s
                 """, (session_id,email,plan))
         
         result = cursor.fetchone()
         return result if result else None
     except Exception as e:
         logger.error(f"Database error retrieving license: {str(e)}")
+        return None
+    
+# Insert contact data
+def insert_contact_data(first_name, last_name, email, phone, subject, message):
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO contacts (first_name, last_name, email, phone, subject, message)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        ''', (first_name, last_name, email, phone, subject, message))
+        
+        contact_id = cursor.fetchone()[0]
+        conn.commit()
+        
+        return contact_id
+    except Exception as e:
+        logger.error(f"Database error inserting contact info: {str(e)}")
         return None

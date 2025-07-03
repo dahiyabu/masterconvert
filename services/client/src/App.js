@@ -436,7 +436,7 @@ function AppContent() {
       )}
       {showContact && (
         <div id="contact" style={{ paddingTop: '90px' }}>
-          <ContactPage />
+          <ContactPage API_URL={API_URL}/>
         </div>
       )}
       {showPricing && (

@@ -15,6 +15,7 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
   const [hasDownloaded, setHasDownloaded] = useState(false);
   const [downloadedPlatforms, setDownloadedPlatforms] = useState(new Set());
   const [licenseId, setLicenseId] = useState(null);
+  const [directoryHandle, setDirectoryHandle] = useState(null);
 
   useEffect(() => {
     const platform = navigator.platform.toLowerCase();
@@ -119,9 +120,12 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
       if ('showDirectoryPicker' in window) {
         try {
           const directoryHandle = await window.showDirectoryPicker({
-            mode: 'readwrite'
+            mode: 'readwrite',
+            startIn: 'downloads' // Start in downloads folder by default
           });
           
+          // Store the directory handle for later use when saving files
+          setDirectoryHandle && setDirectoryHandle(directoryHandle);
           setDownloadPath(directoryHandle.name);
           setIsConfirmEnabled(true);
           return;
@@ -150,9 +154,10 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
           let directoryPath = '';
           
           if (firstFile.webkitRelativePath) {
-            // Extract directory name from path
+            // Extract the full directory path (not just the first folder)
             const pathParts = firstFile.webkitRelativePath.split('/');
-            directoryPath = pathParts[0];
+            pathParts.pop(); // Remove the filename
+            directoryPath = pathParts.join('/') || pathParts[0] || 'Selected Directory';
           } else {
             directoryPath = 'Selected Directory';
           }
@@ -162,16 +167,20 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
         }
         
         // Clean up
-        document.body.removeChild(input);
-        input.removeEventListener('change', handleFileSelect);
+        cleanup();
       };
       
       const handleCancel = () => {
         // Clean up on cancel
+        cleanup();
+      };
+      
+      const cleanup = () => {
         if (document.body.contains(input)) {
           document.body.removeChild(input);
         }
         input.removeEventListener('change', handleFileSelect);
+        input.removeEventListener('cancel', handleCancel);
       };
       
       // Add event listeners
@@ -186,14 +195,14 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
       // Final fallback - manual input with platform detection
       showManualPathInput();
     }
-}, [downloadPath, setDownloadPath, setIsConfirmEnabled]);
+}, [setDownloadPath, setIsConfirmEnabled]);
 
 // Helper function for manual path input
 const showManualPathInput = useCallback(() => {
   const platform = getPlatformInfo();
   const userPath = window.prompt(
-    `Please enter the full path where you want to save ConvertMaster:\n\nExample for ${platform.name}: ${platform.example}`,
-    downloadPath || ''
+    `Please enter the full path where you want to save your downloaded files:\n\nExample for ${platform.name}: ${platform.example}`,
+    downloadPath || platform.defaultPath
   );
   
   if (userPath && userPath.trim()) {
@@ -210,24 +219,27 @@ const getPlatformInfo = useCallback(() => {
   if (platform.includes('mac') || userAgent.includes('macintosh')) {
     return {
       name: 'macOS',
-      example: '/Users/[your-username]/Downloads/ConvertMaster',
+      example: '/Users/[your-username]/Downloads',
+      defaultPath: '/Users/' + (process.env.USER || 'user') + '/Downloads',
       separator: '/'
     };
   } else if (platform.includes('win') || userAgent.includes('windows')) {
     return {
       name: 'Windows',
-      example: 'C:\\Users\\[your-username]\\Downloads\\ConvertMaster',
+      example: 'C:\\Users\\[your-username]\\Downloads',
+      defaultPath: 'C:\\Users\\' + (process.env.USERNAME || 'user') + '\\Downloads',
       separator: '\\'
     };
   } else {
     return {
       name: 'Linux',
-      example: '/home/[your-username]/Downloads/ConvertMaster',
+      example: '/home/[your-username]/Downloads',
+      defaultPath: '/home/' + (process.env.USER || 'user') + '/Downloads',
       separator: '/'
     };
   }
 }, []);
-  
+
   const handleConfirmDownload = async () => {
     if (!downloadPath.trim()) {
       setStatusMessage('Please select a save location');
