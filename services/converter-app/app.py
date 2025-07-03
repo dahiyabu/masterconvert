@@ -6,9 +6,9 @@ from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
-from models.ip_log_pg import get_existing_license,store_license
+from models.ip_log_pg import get_download_records,store_license
 from models.s3 import generate_download_link
-from flask import Blueprint,request,jsonify,redirect
+from flask import Blueprint,request,jsonify
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
 
@@ -96,7 +96,7 @@ def generate_license():
     try:
         # If it's a redownload request with existing license ID
         if redownload and license_id:
-            existing_license = get_existing_license(license_id)
+            existing_license = get_download_records(session_id=sessionId, email=email, plan=plan,platform=platform)
             if existing_license:
                 logger.info(f"Returning existing license for ID: {license_id}")
                 return jsonify({
@@ -112,11 +112,6 @@ def generate_license():
         }), 200
     except:
         return jsonify({'message':'Internal License generarion Error'}), 400
-
-from flask import Flask, request, jsonify
-from your_database_module import get_download_records  # Assuming you have a database module to query
-
-app = Flask(__name__)
 
 @cm_app_bp.route('/api/check-download-status', methods=['POST'])
 def check_download_status():

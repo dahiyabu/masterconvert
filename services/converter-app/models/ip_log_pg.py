@@ -339,15 +339,21 @@ def store_license(license_id, key,sessionId,email,plan,platform):
     except Exception as e:
         logger.error(f"Database error storing license: {str(e)}")
 
-def get_download_records(session_id, email, plan):
+def get_download_records(session_id, email, plan,platform=None):
     """Get license from database"""
     try:
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM licenses 
-            WHERE session_id = ? AND email = ? AND plan = ?
-        """, (session_id,email,plan))
+        if platform:
+            cursor.execute("""
+                SELECT * FROM licenses 
+                WHERE session_id = ? AND email = ? AND plan = ? AND platform = ?
+                """, (session_id,email,plan,platform))
+        else:
+            cursor.execute("""
+                SELECT * FROM licenses 
+                WHERE session_id = ? AND email = ? AND plan = ?
+                """, (session_id,email,plan))
         
         result = cursor.fetchone()
         return result if result else None
