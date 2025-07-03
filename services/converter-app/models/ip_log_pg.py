@@ -369,8 +369,28 @@ def get_download_records(session_id, email, plan,platform=None):
                 WHERE session_id = %s AND email = %s AND plan = %s
                 """, (session_id,email,plan))
         
-        result = cursor.fetchone()
-        return result if result else None
+         # Fetch all records
+        result = cursor.fetchall()
+        
+        # If there are results, convert each row to a dictionary
+        if result:
+            download_records = []
+            for row in result:
+                download_record = {
+                    'id': row[0],
+                    'licenseId': row[1],
+                    'key': row[2],
+                    'sessionId':row[3],
+                    'email': row[4],
+                    'plan': row[5],
+                    'platform': row[6],
+                    'createdAt': row[7],
+                    'expiresAt': row[8]
+                }
+                download_records.append(download_record)
+            return download_records
+        else:
+            return None
     except Exception as e:
         logger.error(f"Database error retrieving license: {str(e)}")
         return None
