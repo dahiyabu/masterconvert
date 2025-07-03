@@ -38,8 +38,8 @@ const PricingPage = ({ API_URL }) => {
       id: 'daily',
       name: 'Daily Plan',
       description: 'Infrequent users',
-      originalPrice: '$1.99',
-      currentPrice: '$0.99',
+      originalPrice: '$0.99',
+      currentPrice: '$0.49',
       period: 'per day',
       discount: 'Save 50%',
       features: [
@@ -472,7 +472,7 @@ const PricingPage = ({ API_URL }) => {
         </div>
 
         {/* Trust Section */}
-        <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+        {/*<div style={{ marginTop: '4rem', textAlign: 'center' }}>
           <div style={{
             background: 'white',
             borderRadius: '1.5rem',
@@ -496,7 +496,7 @@ const PricingPage = ({ API_URL }) => {
               <span style={{
                 color: '#6b7280',
                 fontWeight: '500'
-              }}>4.9/5 from 10,000+ users</span>
+              }}></span>
             </div>
             <p style={{
               fontSize: '1.25rem',
@@ -513,8 +513,8 @@ const PricingPage = ({ API_URL }) => {
             }}>- Sarah Chen, Digital Marketing Manager</p>
           </div>
         </div>
+        */}
       </div>
-
       {/* Checkout Popup */}
       {showPopup && (
         <div style={{

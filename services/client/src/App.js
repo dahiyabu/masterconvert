@@ -392,7 +392,7 @@ function AppContent() {
                     <a href="#features">Features</a>
                     <a href="#formats">Formats</a>
                     <a href="#how-it-works">How It Works</a>
-                    <a href="#testimonials">Testimonials</a>
+                    {/*<a href="#testimonials">Testimonials</a>*/}
                   </>
                 )}
                 {(showContact || formats) && (
