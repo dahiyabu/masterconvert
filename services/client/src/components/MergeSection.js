@@ -42,12 +42,14 @@ export default function MergeSection({ API_URL }) {
         setMaxFileSizeMB(50); // fallback
         setConversionsLeft('N/A');
       }
-   }, []);
-
-   useEffect(() => {
-    fetchAccountLimits();
-  }, [fetchAccountLimits]);
-
+   },[fingerprint]);
+  
+  useEffect(() => {
+    if (fingerprint) {  // Ensure fingerprint is available before calling fetchAccountLimits
+      fetchAccountLimits();
+    }
+  }, [fingerprint]);  // Dependency on fingerprint
+  
   // Initialize FingerprintJS and get the fingerprint
   useEffect(() => {
     const getFingerprint = async () => {
