@@ -126,7 +126,8 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
           
           // Store the directory handle for later use when saving files
           setDirectoryHandle && setDirectoryHandle(directoryHandle);
-          setDownloadPath(directoryHandle.name);
+          const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+          setDownloadPath(`${directoryHandle.name}/${filename}`);
           setIsConfirmEnabled(true);
           return;
         } catch (fsError) {
@@ -137,79 +138,32 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
         }
       }
       
-      // Fallback: Directory picker using file input
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.webkitdirectory = true;
-      input.multiple = true;
-      input.style.display = 'none';
-      
-      // Add to DOM temporarily
-      document.body.appendChild(input);
-      
-      const handleFileSelect = (event) => {
-        const files = event.target.files;
-        if (files && files.length > 0) {
-          const firstFile = files[0];
-          let directoryPath = '';
-          
-          if (firstFile.webkitRelativePath) {
-            // Extract the full directory path (not just the first folder)
-            const pathParts = firstFile.webkitRelativePath.split('/');
-            pathParts.pop(); // Remove the filename
-            directoryPath = pathParts.join('/') || pathParts[0] || 'Selected Directory';
-          } else {
-            directoryPath = 'Selected Directory';
-          }
-          
-          setDownloadPath(directoryPath);
-          setIsConfirmEnabled(true);
-        }
-        
-        // Clean up
-        cleanup();
-      };
-      
-      const handleCancel = () => {
-        // Clean up on cancel
-        cleanup();
-      };
-      
-      const cleanup = () => {
-        if (document.body.contains(input)) {
-          document.body.removeChild(input);
-        }
-        input.removeEventListener('change', handleFileSelect);
-        input.removeEventListener('cancel', handleCancel);
-      };
-      
-      // Add event listeners
-      input.addEventListener('change', handleFileSelect);
-      input.addEventListener('cancel', handleCancel);
-      
-      // Trigger file picker
-      input.click();
+      // If File System Access API is not available, show manual input
+      showManualPathInput();
       
     } catch (error) {
       console.error('Error in directory selection:', error);
       // Final fallback - manual input with platform detection
       showManualPathInput();
     }
-}, [setDownloadPath, setIsConfirmEnabled]);
-
-// Helper function for manual path input
-const showManualPathInput = useCallback(() => {
-  const platform = getPlatformInfo();
-  const userPath = window.prompt(
-    `Please enter the full path where you want to save your downloaded files:\n\nExample for ${platform.name}: ${platform.example}`,
-    downloadPath || platform.defaultPath
-  );
+  }, [selectedPlatform, setDownloadPath, setIsConfirmEnabled, setDirectoryHandle]);
   
-  if (userPath && userPath.trim()) {
-    setDownloadPath(userPath.trim());
-    setIsConfirmEnabled(true);
-  }
-}, [downloadPath, setDownloadPath, setIsConfirmEnabled]);
+  // Update the showManualPathInput function to include filename
+  const showManualPathInput = useCallback(() => {
+    const platform = getPlatformInfo();
+    const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+    const fullPath = `${platform.defaultPath}${platform.separator}${filename}`;
+    
+    const userPath = window.prompt(
+      `Please enter the full path where you want to save your downloaded file:\n\nExample for ${platform.name}: ${platform.example}${platform.separator}${filename}`,
+      downloadPath || fullPath
+    );
+    
+    if (userPath && userPath.trim()) {
+      setDownloadPath(userPath.trim());
+      setIsConfirmEnabled(true);
+    }
+  }, [selectedPlatform, downloadPath, setDownloadPath, setIsConfirmEnabled]);
 
 // Platform detection helper
 const getPlatformInfo = useCallback(() => {
@@ -220,21 +174,21 @@ const getPlatformInfo = useCallback(() => {
     return {
       name: 'macOS',
       example: '/Users/[your-username]/Downloads',
-      defaultPath: '/Users/' + (process.env.USER || 'user') + '/Downloads',
+      defaultPath: '/Users/user/Downloads', // Remove process.env usage
       separator: '/'
     };
   } else if (platform.includes('win') || userAgent.includes('windows')) {
     return {
       name: 'Windows',
       example: 'C:\\Users\\[your-username]\\Downloads',
-      defaultPath: 'C:\\Users\\' + (process.env.USERNAME || 'user') + '\\Downloads',
+      defaultPath: 'C:\\Users\\user\\Downloads', // Remove process.env usage
       separator: '\\'
     };
   } else {
     return {
       name: 'Linux',
       example: '/home/[your-username]/Downloads',
-      defaultPath: '/home/' + (process.env.USER || 'user') + '/Downloads',
+      defaultPath: '/home/user/Downloads', // Remove process.env usage
       separator: '/'
     };
   }
