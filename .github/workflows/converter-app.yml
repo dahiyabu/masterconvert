@@ -115,5 +115,5 @@ jobs:
             fi
             echo "Container is up and running!"
             
-            #rm -rf ~/services/converter-app
+            rm -rf ~/services/converter-app
             rm -rf /var/tmp/upload-cm-app
