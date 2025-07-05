@@ -337,16 +337,17 @@ const PricingPage = ({ API_URL }) => {
         {/* Pricing Grid */}
         <div style={{
           display: 'grid',
-          gridAutoFlow: 'column',
-          gridAutoColumns: '320px',
+          //gridAutoFlow: 'column',
+          //gridAutoColumns: '320px',
           gap: '2rem',
           padding: '1rem',
-          justifyContent: 'flex-start',
+          //justifyContent: 'flex-start',
           overflowX: 'auto',
-          overflowY: 'hidden',
+          overflowY: 'visible',
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE/Edge
-          WebkitOverflowScrolling: 'touch' // iOS smooth scrolling
+          WebkitOverflowScrolling: 'touch', // iOS smooth scrolling
+          paddingBottom: '2rem' // Add space at bottom for shadows
          // width: 'max-content'
     /*      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '2rem',
@@ -357,6 +358,8 @@ const PricingPage = ({ API_URL }) => {
             <div
               key={plan.id}
               style={{
+                minWidth: '320px',
+                flexShrink: 0,
                 scrollSnapAlign: 'start',
                 position: 'relative',
                 background: plan.popular ? 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)' : 'white',
@@ -909,7 +912,7 @@ const PricingPage = ({ API_URL }) => {
         }
         
         /* Hide scrollbar for WebKit browsers */
-        div::-webkit-scrollbar {
+        *::-webkit-scrollbar {
           display: none;
         }
       `}</style>
