@@ -233,7 +233,7 @@ def stripe_webhook():
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
 
-        return mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt)
+        return mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])

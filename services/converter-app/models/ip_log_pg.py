@@ -204,7 +204,7 @@ def log_user_payment(session_id, email, plan, plan_type, client_reference_id, pa
     conn.commit()
     return True
 
-def mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt):
+def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -233,6 +233,7 @@ def mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt):
 
             if existing:
                 # Just update is_paid
+                logger.debug(f"Updating paid entry {plan} for {fingerprint}")
                 cursor.execute('''
                     UPDATE ip_log
                     SET is_paid = TRUE, expiry_time = %s
@@ -240,10 +241,11 @@ def mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt):
                 ''', (expiry_time,fingerprint, today))
             else:
                 # Insert new log with is_paid=True
+                logger.debug(f"Inserting paid entry {plan} for {fingerprint}")
                 cursor.execute('''
-                    INSERT INTO ip_log (fingerprint, log_date, request_count, is_paid, expiry_time)
-                    VALUES (%s, %s, %s, %s, %s)
-                ''', (fingerprint, today, 0, True, expiry_time))
+                    INSERT INTO ip_log (ip,fingerprint, log_date, request_count, is_paid, expiry_time)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                ''', (ip,fingerprint, today, 0, True, expiry_time))
         conn.commit()
         
         logger.info("Database updated for successful payment.")

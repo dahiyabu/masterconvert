@@ -339,6 +339,7 @@ const PricingPage = ({ API_URL }) => {
           display: 'grid',
           //gridAutoFlow: 'column',
           //gridAutoColumns: '320px',
+          flexDirection: 'row',
           gap: '2rem',
           padding: '1rem',
           //justifyContent: 'flex-start',
