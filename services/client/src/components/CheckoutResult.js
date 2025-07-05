@@ -20,6 +20,7 @@ const CheckoutResultPage = ({ API_URL }) => {
   const [sessionId, setSessionId] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [planName, setPlanName] = useState('');
+  const [planType, setPlanType] = useState('');
   const [amount, setAmount] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState('');
@@ -31,6 +32,7 @@ const CheckoutResultPage = ({ API_URL }) => {
     const sessionIdParam = urlParams.get('session_id');
     const emailParam = urlParams.get('email');
     const planParam = urlParams.get('plan');
+    const planTypeParam = urlParams.get('planType');
     const successParam = urlParams.get('success');
     const canceledParam = urlParams.get('canceled');
     
@@ -38,10 +40,11 @@ const CheckoutResultPage = ({ API_URL }) => {
       setSessionId(sessionIdParam || '');
       setCustomerEmail(emailParam || '');
       setPlanName(planParam || '');
+      setPlanType(planTypeParam || '');
       
       // Verify payment before showing success
-      if (emailParam && planParam) {
-        verifyPayment(emailParam, planParam, sessionIdParam);
+      if (emailParam && planParam && planTypeParam) {
+        verifyPayment(emailParam, planParam, planTypeParam, sessionIdParam);
       } else {
         // Fallback to fetch session details if email/plan not in URL
         fetchSessionDetails(sessionIdParam);
@@ -54,7 +57,7 @@ const CheckoutResultPage = ({ API_URL }) => {
     }
   }, []);
 
-  const verifyPayment = async (email, plan, sessionId) => {
+  const verifyPayment = async (email, plan, plan_type, sessionId) => {
     setIsVerifying(true);
     setVerificationError('');
     try {
@@ -66,6 +69,7 @@ const CheckoutResultPage = ({ API_URL }) => {
         body: JSON.stringify({
           email: email,
           plan: plan,
+          plan_type: plan_type,
           session_id: sessionId
         }),
       });
@@ -103,14 +107,15 @@ const CheckoutResultPage = ({ API_URL }) => {
         const data = await response.json();
         const email = data.customer_email || '';
         const plan = data.plan_name || '';
+        const plan_type = data.plan_type || '';
         
         setCustomerEmail(email);
         setPlanName(plan);
         setAmount(data.amount || '');
         
         // Verify payment with fetched details
-        if (email && plan) {
-          verifyPayment(email, plan, sessionId);
+        if (email && plan && plan_type) {
+          verifyPayment(email, plan, plan_type, sessionId);
         } else {
           setStatus('verification_failed'); // Fallback if verification data unavailable
         }
@@ -135,6 +140,7 @@ const CheckoutResultPage = ({ API_URL }) => {
     // Navigate to download.html with plan and email parameters
     const params = new URLSearchParams({
       plan: planName,
+      planType: planType,
       email: customerEmail
     });
     navigate(`/downloadapp?${params.toString()}`);
@@ -155,8 +161,8 @@ const CheckoutResultPage = ({ API_URL }) => {
   };
 
   const handleRetryVerification = () => {
-    if (customerEmail && planName && sessionId) {
-      verifyPayment(customerEmail, planName, sessionId);
+    if (customerEmail && planName && planType && sessionId) {
+      verifyPayment(customerEmail, planName, planType, sessionId);
     }
   };
 

@@ -15,31 +15,34 @@ const DownloadPage = ({API_URL}) => {
   
   const [sessionId, setSessionId] = useState('');
   const [planName, setPlanName] = useState('');
+  const [planType, setPlanType] = useState('');
   const [verificationError, setVerificationError] = useState('');
   
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const plan = urlParams.get('plan');
+    const planType = urlParams.get('planType');
     const email = urlParams.get('email');
-    setPlanName(plan);
-    if (!plan || !email) {
+    
+    if (!plan || !email || !planType) {
       setVerificationStatus('failed');
-      setVerificationError('Plan and Email are missing')
+      setVerificationError('Plan or Email or PlanType are missing')
       return;
     }
-
+    setPlanName(plan);
+    setPlanType(planType);
     setCustomerEmail(email);
-    verifyPayment(plan, email);
+    verifyPayment(plan, planType, email);
   }, []);
 
-  const verifyPayment = async (plan, email) => {
+  const verifyPayment = async (plan, plan_type,email) => {
     try {
       const response = await fetch(`${API_URL}/verifypayment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ plan, email }),
+        body: JSON.stringify({ plan, plan_type, email }),
       });
 
       const result = await response.json();
@@ -223,8 +226,8 @@ Platform: ${platform}
   };
 
   const handleRetryVerification = () => {
-    if (customerEmail && planName && sessionId) {
-      verifyPayment(customerEmail, planName, sessionId);
+    if (customerEmail && planName && planType && sessionId) {
+      verifyPayment(customerEmail, planName, planType, sessionId);
     }
   };
 

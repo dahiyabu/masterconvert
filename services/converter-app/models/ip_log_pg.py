@@ -49,18 +49,19 @@ def init_ip_log_db():
 
         if not row or row[0] < today:
             logger.info("Recreating ip_log table (first time or older than today)")
-            cursor.execute("DROP TABLE IF EXISTS ip_log")
             cursor.execute('''
-                CREATE TABLE ip_log (
+                CREATE TABLE IF NOT EXISTS ip_log (
                     id SERIAL PRIMARY KEY,
                     ip TEXT NOT NULL,
                     fingerprint TEXT NOT NULL,
                     log_date DATE NOT NULL,
                     request_count INTEGER NOT NULL DEFAULT 1,
-                    is_paid BOOLEAN NOT NULL DEFAULT FALSE
+                    is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+                    expiry_time TIMESTAMP
                 )
             ''')
-
+            cursor.execute("DELETE FROM ip_log WHERE is_paid = FALSE")
+            
             # Insert/update metadata
             if row:
                 cursor.execute("UPDATE schema_meta SET last_updated = %s WHERE table_name = 'ip_log'", (today,))
@@ -73,7 +74,8 @@ def init_ip_log_db():
                 id SERIAL PRIMARY KEY,
                 ip_address TEXT NOT NULL,
                 email TEXT,
-                plan_type TEXT CHECK(plan_type IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -84,6 +86,7 @@ def init_ip_log_db():
                 session_id TEXT NOT NULL UNIQUE,
                 email TEXT,
                 plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 client_reference_id TEXT,
                 payment_status TEXT CHECK(payment_status IN ('pending', 'success', 'failed')) NOT NULL DEFAULT 'pending',
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -99,6 +102,7 @@ def init_ip_log_db():
                 session_id TEXT NOT NULL,
                 email TEXT,
                 plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 platform TEXT CHECK(platform IN ('windows', 'macos', 'linux')) NOT NULL,
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMPTZ NOT NULL
@@ -152,11 +156,11 @@ def log_ip_address(ip,identifier):
 
 def recreate_ip_log_db():
     """Drop and recreate just the ip_log table."""
-    conn = psycopg2.connect(POSTGRES_DSN)
-    cursor = conn.cursor()
-    cursor.execute('DROP TABLE IF EXISTS ip_log')
-    conn.commit()
-    logger.info("Dropped ip_log table")
+    #conn = psycopg2.connect(POSTGRES_DSN)
+    #cursor = conn.cursor()
+    #cursor.execute('DELETE FROM ip_log WHERE is_paid = FALSE')
+    #conn.commit()
+    #logger.info("DELETED OLD RECORDS IN ip_log table")
     init_ip_log_db()
 
 def is_ip_under_limit(identifier):
@@ -170,8 +174,14 @@ def is_ip_under_limit(identifier):
     row = cursor.fetchone()
 
     if row:
-        logger.info(f'count={row['request_count']} and paid={row['is_paid']}')
+        logger.info(f'count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
         if 'is_paid' in row and  row['is_paid']:
+            if 'expiry_time' in row and row["expiry_time"] and row["expiry_time"] < datetime.now():
+                # If the expiry time has passed, revert the user to unpaid status
+                cursor.execute('''
+                    UPDATE ip_log SET is_paid = FALSE WHERE fingerprint = %s AND log_date = %s
+                ''', (identifier, today))
+                return False  # Paid status expired, revert to unpaid
             return True
         return'request_count' in row and row['request_count'] < MAX_DAILY_REQUESTS
     return True
@@ -183,18 +193,18 @@ def change_max_allowed_request(max_request):
         return True
     return False
 
-def log_user_payment(session_id, email, plan, client_reference_id, payment_status):
+def log_user_payment(session_id, email, plan, plan_type, client_reference_id, payment_status):
     # Save to database
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO checkout_sessions (session_id, email, plan, client_reference_id, payment_status)
-        VALUES (%s, %s, %s, %s, %s)
-    ''', (session_id, email, plan, client_reference_id, payment_status))
+        INSERT INTO checkout_sessions (session_id, email, plan, plan_type, client_reference_id, payment_status)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    ''', (session_id, email, plan, plan_type, client_reference_id, payment_status))
     conn.commit()
     return True
 
-def mark_successful_payment(session_id,plan,fingerprint,receipt):
+def mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -206,8 +216,14 @@ def mark_successful_payment(session_id,plan,fingerprint,receipt):
             WHERE session_id = %s
         ''', ('success', receipt, session_id))
         # If this was a daily plan, mark is_paid=True for this IP and today's date
-        if plan == 'daily' and fingerprint:
+        if plan in ['daily','monthly','yearly'] and plan_type == 'Online' and fingerprint:
             today = date.today().isoformat()
+            expiry_time = None  # No expiry time for daily plan
+
+            if plan == 'monthly':
+                expiry_time = datetime.now() + timedelta(days=30)
+            elif plan == 'yearly':
+                expiry_time = datetime.now() + timedelta(days=365)
 
             # Check if the IP already has a record today
             cursor.execute('''
@@ -219,15 +235,15 @@ def mark_successful_payment(session_id,plan,fingerprint,receipt):
                 # Just update is_paid
                 cursor.execute('''
                     UPDATE ip_log
-                    SET is_paid = TRUE
+                    SET is_paid = TRUE, expiry_time = %s
                     WHERE fingerprint = %s AND log_date = %s
-                ''', (fingerprint, today))
+                ''', (expiry_time,fingerprint, today))
             else:
                 # Insert new log with is_paid=True
                 cursor.execute('''
-                    INSERT INTO ip_log (fingerprint, log_date, request_count, is_paid)
-                    VALUES (%s, %s, %s, %s)
-                ''', (fingerprint, today, 0, True))
+                    INSERT INTO ip_log (fingerprint, log_date, request_count, is_paid, expiry_time)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (fingerprint, today, 0, True, expiry_time))
         conn.commit()
         
         logger.info("Database updated for successful payment.")
@@ -242,7 +258,7 @@ def get_session_info(session_id):
         cursor = conn.cursor()
 
         cursor.execute('''
-            SELECT session_id, email, plan, payment_status, created_at
+            SELECT session_id, email, plan, plan_type, payment_status, created_at
             FROM checkout_sessions
             WHERE session_id = %s
             LIMIT 1
@@ -256,8 +272,9 @@ def get_session_info(session_id):
             'session_id': row[0],
             'customer_email': row[1],
             'plan_name': row[2],
-            'payment_status': row[3],
-            'created_at': row[4].isoformat() if row[4] else None,
+            'plan_type': row[3],
+            'payment_status': row[4],
+            'created_at': row[5].isoformat() if row[5] else None,
             # Optional: add a dummy amount if needed
             'amount': 9900 if row[2] == 'yearly' else 990  # for example
         }
@@ -267,16 +284,16 @@ def get_session_info(session_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-def verify_user_payment(email, plan):
+def verify_user_payment(email, plan, plan_type):
     try:
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
             SELECT session_id, payment_status, created_at
             FROM checkout_sessions
-            WHERE email = %s AND plan = %s
+            WHERE email = %s AND plan = %s and plan_type = %s
             ORDER BY created_at DESC LIMIT 1
-        ''', (email, plan))
+        ''', (email, plan,plan_type))
         result = cursor.fetchone()
 
         if result:
@@ -285,6 +302,7 @@ def verify_user_payment(email, plan):
             return jsonify({
                 'email': email,
                 'plan': plan,
+                'plan_type': plan_type,
                 'payment_status': status,
                 'session_id': session_id,
                 'created_at': created_at,
@@ -305,17 +323,28 @@ def get_account_limits(fingerprint):
         cursor = conn.cursor()
 
         cursor.execute('''
-            SELECT request_count, is_paid FROM ip_log
+            SELECT request_count, is_paid, expiry_time FROM ip_log
             WHERE fingerprint = %s AND log_date = %s
         ''', (fingerprint, today))
         row = cursor.fetchone()
 
         if row:
-            request_count, is_paid = row
+            request_count, is_paid, expiry_time = row
         else:
-            request_count, is_paid = 0, False
+            request_count, is_paid, expiry_time = 0, False, None
 
         if is_paid:
+            if expiry_time and expiry_time < datetime.now():
+                # If the subscription has expired, revert the user to unpaid status
+                cursor.execute('''
+                    UPDATE ip_log SET is_paid = FALSE WHERE fingerprint = %s AND log_date = %s
+                ''', (fingerprint, today))
+                return jsonify({
+                    "max_file_size_mb": 100,
+                    "conversions_left": MAX_DAILY_REQUESTS - request_count
+                })
+
+            # Paid users have unlimited conversions
             return jsonify({
                 "max_file_size_mb": 1024,
                 "conversions_left": None  # Unlimited

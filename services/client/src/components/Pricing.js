@@ -12,11 +12,13 @@ const PricingPage = ({ API_URL }) => {
   const [error, setError] = useState('');
   const location = useLocation();
   const [fingerprint, setFingerprint] = useState(null);
+  const [activeTab, setActiveTab] = useState('Online');
 
   const plans = [
     {
       id: 'free',
       name: 'Free Plan',
+      type: 'Online',
       description: 'Perfect for occasional users',
       originalPrice: null,
       currentPrice: '$0',
@@ -37,6 +39,7 @@ const PricingPage = ({ API_URL }) => {
     {
       id: 'daily',
       name: 'Daily Plan',
+      type: 'Online',
       description: 'Infrequent users',
       originalPrice: '$0.99',
       currentPrice: '$0.49',
@@ -57,11 +60,36 @@ const PricingPage = ({ API_URL }) => {
       popular: false
     },
     {
+      id: 'monthly',
+      name: 'Monthly Plan',
+      type: 'Online',
+      description: 'Best value for regular users',
+      originalPrice: '$9.99',
+      currentPrice: '$4.99',
+      period: 'per month',
+      discount: 'Save 50%',
+      features: [
+        'Unlimited conversions & merges',
+        '200+ file formats supported',
+        'Desktop app download',
+        'Offline local processing',
+        'Advanced compression & encryption',
+        'Batch processing',
+        'Priority customer support',
+        'No advertisements',
+        'Free Upgrades'
+      ],
+      buttonText: 'Start Monthly Plan',
+      buttonStyle: 'secondary',
+      popular: false
+    },
+    {
       id: 'yearly',
       name: 'Yearly Plan',
+      type: 'Online',
       description: 'Maximum savings for power users',
-      originalPrice: '$49.99',
-      currentPrice: '$24.99',
+      originalPrice: '$59.99',
+      currentPrice: '$29.99',
       period: 'per year',
       discount: 'Save 50%',
       features: [
@@ -82,6 +110,7 @@ const PricingPage = ({ API_URL }) => {
     {
       id: 'monthly',
       name: 'Monthly Plan',
+      type: 'Offline',
       description: 'Best value for regular users',
       originalPrice: '$6.99',
       currentPrice: '$3.99',
@@ -101,6 +130,30 @@ const PricingPage = ({ API_URL }) => {
       buttonText: 'Start Monthly Plan',
       buttonStyle: 'secondary',
       popular: false
+    },
+    {
+      id: 'yearly',
+      name: 'Yearly Plan',
+      type: 'Offline',
+      description: 'Maximum savings for power users',
+      originalPrice: '$49.99',
+      currentPrice: '$24.99',
+      period: 'per year',
+      discount: 'Save 50%',
+      features: [
+        'Unlimited conversions & merges',
+        '200+ file formats supported',
+        'Desktop app download',
+        'Offline local processing',
+        'Advanced compression & encryption',
+        'Batch processing',
+        'Premium customer support',
+        'No advertisements',
+        'Free Upgrades'
+      ],
+      buttonText: 'Get Yearly Plan',
+      buttonStyle: 'primary',
+      popular: true
     }
   ];
 
@@ -127,6 +180,10 @@ const PricingPage = ({ API_URL }) => {
     getFingerprint();
   }, []);
   
+  const getFilteredPlans = () => {
+    return plans.filter(plan => plan.type === activeTab);
+  };
+
   const handlePlanSelect = (plan) => {
     if (plan.id === 'free') {
       const event = new Event('open-free-plan');
@@ -160,7 +217,7 @@ const PricingPage = ({ API_URL }) => {
       const res = await fetch(`${API_URL}/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, plan: selectedPlan.id, fingerprint: fingerprint }),
+        body: JSON.stringify({ email, plan: selectedPlan.id, plan_type: selectedPlan.type, fingerprint: fingerprint }),
       });
 
       if (!res.ok) {
@@ -229,6 +286,56 @@ const PricingPage = ({ API_URL }) => {
           </p>
         </div>
 
+        {/* Tab Navigation */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '3rem'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '1rem',
+            padding: '0.5rem',
+            display: 'flex',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb'
+          }}>
+            {['Online', 'Offline'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                  background: activeTab === tab 
+                    ? 'linear-gradient(135deg, #3b82f6, #06b6d4)'
+                    : 'transparent',
+                  color: activeTab === tab ? 'white' : '#6b7280',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab) {
+                    e.target.style.backgroundColor = '#f3f4f6';
+                    e.target.style.color = '#374151';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab) {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = '#6b7280';
+                  }
+                }}
+              >
+                {tab === 'Online' ? '🌐 Online Plans' : '💻 Offline Plans'}
+              </button>
+            ))}
+          </div>
+        </div>
         {/* Pricing Grid */}
         <div style={{
           display: 'grid',
@@ -236,13 +343,15 @@ const PricingPage = ({ API_URL }) => {
           gridAutoColumns: '320px',
           gap: '2rem',
           padding: '1rem',
+          justifyContent: 'center',
+          overflowX: 'auto'
          // width: 'max-content'
     /*      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '2rem',
           maxWidth: '90rem',
           margin: '0 auto'
       */  }}>
-          {plans.map((plan) => (
+          {getFilteredPlans().map((plan) => (
             <div
               key={plan.id}
               style={{
@@ -305,7 +414,7 @@ const PricingPage = ({ API_URL }) => {
                       textDecoration: 'line-through',
                       marginBottom: '0.5rem'
                     }}>
-                      {plan.originalPrice}{plan.id === 'daily' ? ' per day' : '/monthly'}
+                      {plan.originalPrice}{plan.id === 'daily' ? ' per day' : (plan.id === 'monthly' ? ' per month' : ' per year')}
                     </div>
                   )}
                   <div style={{

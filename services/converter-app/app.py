@@ -16,8 +16,10 @@ stripe.api_key = os.getenv("STRIPE_KEY",None)
 stripe.ca_bundle_path = '/etc/ssl/certs/ca-certificates.crt'
 APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080')
 
-monthly_price_id=os.getenv('MONTHLY_PRICE_ID', None)
-yearly_price_id=os.getenv('YEARLY_PRICE_ID', None)
+monthly_online_price_id=os.getenv('MONTHLY_ONLINE_PRICE_ID', None)
+yearly_online_price_id=os.getenv('YEARLY_ONLINE_PRICE_ID', None)
+monthly_offline_price_id=os.getenv('MONTHLY_OFFLINE_PRICE_ID', None)
+yearly_offline_price_id=os.getenv('YEARLY_OFFLINE_PRICE_ID', None)
 daily_price_id=os.getenv('DAILY_PRICE_ID', None)
 
 
@@ -151,21 +153,23 @@ def create_checkout_session():
     data = request.json
     email = data.get('email')
     plan = data.get('plan')  # 'monthly' or 'yearly'
+    plan_type = data.get('plan_type')
     fingerprint = data.get('fingerprint')
     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if not monthly_price_id or not yearly_price_id or not daily_price_id:
+    if not monthly_online_price_id or not yearly_online_price_id or not monthly_offline_price_id or not yearly_offline_price_id or not daily_price_id:
         return jsonify({'error':'Invalid Plan'}),400 
-    
+    if not plan or not plan_type:
+        return jsonify({'error':' Invalid Plan or PlanType'}),400
     price_id = {
-        'monthly': monthly_price_id,
-        'yearly': yearly_price_id,
-        'daily': daily_price_id
-    }.get(plan)
+        'monthly': { 'Online': monthly_online_price_id, 'Offline': monthly_offline_price_id},
+        'yearly': {'Online': yearly_online_price_id, 'Offline': yearly_offline_price_id},
+        'daily': { 'Online': daily_price_id}
+    }.get(plan[plan_type])
     logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
     if not price_id:
         return jsonify({'error': 'Invalid plan'}), 400
 
-    success_url=f'{APP_DOMAIN}/checkout-result?success=true&session_id={{CHECKOUT_SESSION_ID}}&plan={plan}'
+    success_url=f'{APP_DOMAIN}/checkout-result?success=true&session_id={{CHECKOUT_SESSION_ID}}&plan={plan}&planType={plan_type}'
     logger.info(success_url)
     try:
         client_ref_id = str(uuid.uuid4())
@@ -183,6 +187,7 @@ def create_checkout_session():
             cancel_url=f'{APP_DOMAIN}/checkout-result?canceled=true',
             metadata={
                 'plan': plan,
+                'plan_type':plan_type,
                 'ip_address': ip_address,  # 👈 Custom metadata
                 'fingerprint': fingerprint
             }
@@ -190,7 +195,7 @@ def create_checkout_session():
         if not session:
             return jsonify({'message':'Session Creation Error'}),400
         
-        if log_user_payment(session.id, email, plan, client_ref_id, 'pending'):
+        if log_user_payment(session.id, email, plan, plan_type, client_ref_id, 'pending'):
             return jsonify({'url': session.url})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -221,13 +226,14 @@ def stripe_webhook():
         email = session.get('customer_email')
         reference_id = session.get('client_reference_id')
         plan = session.get('metadata', {}).get('plan')
+        plan_type = session.get('metadata', {}).get('plan_type')
         ip_address = session.get('metadata', {}).get('ip_address')
         fingerprint = session.get('metadata', {}).get('fingerprint')
         receipt = session.get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
 
-        return mark_successful_payment(session_id,plan,fingerprint,receipt)
+        return mark_successful_payment(session_id,plan,plan_type,fingerprint,receipt)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])
@@ -235,10 +241,11 @@ def verify_payment():
     data = request.json
     email = data.get('email')
     plan = data.get('plan')
+    plan_type = data.get('plan_type')
 
-    if not email or not plan:
-        return jsonify({'error': 'Email and plan are required'}), 400
-    return verify_user_payment(email,plan)
+    if not email or not plan or not plan_type:
+        return jsonify({'error': 'Email and plan and plan_type are required'}), 400
+    return verify_user_payment(email,plan, plan_type)
 
 @cm_app_bp.route('/api/account-limits', methods=['GET'])
 def account_limits():

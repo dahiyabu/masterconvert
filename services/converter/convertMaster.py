@@ -61,7 +61,7 @@ ALLOWED_EXTENSIONS = {
 # Format compatibility mapping (same as frontend)
 FORMAT_COMPATIBILITY = {
     # Document formats
-    'pdf': ['docx', 'txt', 'rtf', 'odt', 'png', 'jpg','xlsx','xls','pdf'],
+    'pdf': ['docx', 'txt', 'rtf', 'odt', 'png', 'jpg','jpeg','xlsx','xls','pdf'],
     'docx': ['pdf', 'txt', 'rtf', 'odt','docx'],
     'txt': ['pdf', 'docx', 'rtf', 'odt','txt'],
     'rtf': ['pdf', 'docx', 'txt', 'odt','rtf'],
