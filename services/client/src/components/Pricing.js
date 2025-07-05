@@ -336,25 +336,20 @@ const PricingPage = ({ API_URL }) => {
         </div>
         {/* Pricing Grid */}
         <div style={{
-          display: 'grid',
-          //gridAutoFlow: 'column',
-          //gridAutoColumns: '320px',
+          display: 'flex',
           flexDirection: 'row',
+          flexWrap: 'nowrap',
           gap: '2rem',
           padding: '1rem',
-          //justifyContent: 'flex-start',
           overflowX: 'auto',
           overflowY: 'visible',
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE/Edge
           WebkitOverflowScrolling: 'touch', // iOS smooth scrolling
-          paddingBottom: '2rem' // Add space at bottom for shadows
-         // width: 'max-content'
-    /*      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '2rem',
-          maxWidth: '90rem',
-          margin: '0 auto'
-      */  }}>
+          paddingBottom: '2rem', // Add space at bottom for shadows
+          width: 'max-content',
+          minWidth: '100%'
+        }}>
           {getFilteredPlans().map((plan) => (
             <div
               key={plan.id}

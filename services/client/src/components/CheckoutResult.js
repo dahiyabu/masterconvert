@@ -169,7 +169,7 @@ const CheckoutResultPage = ({ API_URL }) => {
   // Check if download button should be shown (not for daily plan)
   const shouldShowDownloadButton = () => {
     const plan = planName.toLowerCase();
-    return plan !== 'daily' && plan !== 'day';
+    return plan !== 'daily' && plan !== 'day' && planType == 'Offline';
   };
 
   // Verification failed state

@@ -18,7 +18,7 @@ function AppContent() {
   const navigate = useNavigate();
   
   console.log("REACT_APP_URL in APP =");
-  console.log(window.env.REACT_APP_API_URL);
+  //console.log(window.env.REACT_APP_API_URL);
   const API_URL = window.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Check if we're on special routes
