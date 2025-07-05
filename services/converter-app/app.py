@@ -164,7 +164,7 @@ def create_checkout_session():
         'monthly': { 'Online': monthly_online_price_id, 'Offline': monthly_offline_price_id},
         'yearly': {'Online': yearly_online_price_id, 'Offline': yearly_offline_price_id},
         'daily': { 'Online': daily_price_id}
-    }.get(plan[plan_type])
+    }.get(plan, {}).get(plan_type)
     logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
     if not price_id:
         return jsonify({'error': 'Invalid plan'}), 400

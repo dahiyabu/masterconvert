@@ -71,8 +71,7 @@ const PricingPage = ({ API_URL }) => {
       features: [
         'Unlimited conversions & merges',
         '200+ file formats supported',
-        'Desktop app download',
-        'Offline local processing',
+        'Online processing',
         'Advanced compression & encryption',
         'Batch processing',
         'Priority customer support',
@@ -95,8 +94,7 @@ const PricingPage = ({ API_URL }) => {
       features: [
         'Unlimited conversions & merges',
         '200+ file formats supported',
-        'Desktop app download',
-        'Offline local processing',
+        'Online local processing',
         'Advanced compression & encryption',
         'Batch processing',
         'Premium customer support',
@@ -343,8 +341,12 @@ const PricingPage = ({ API_URL }) => {
           gridAutoColumns: '320px',
           gap: '2rem',
           padding: '1rem',
-          justifyContent: 'center',
-          overflowX: 'auto'
+          justifyContent: 'flex-start',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none', // IE/Edge
+          WebkitOverflowScrolling: 'touch' // iOS smooth scrolling
          // width: 'max-content'
     /*      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '2rem',
@@ -904,6 +906,11 @@ const PricingPage = ({ API_URL }) => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        
+        /* Hide scrollbar for WebKit browsers */
+        div::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </div>
