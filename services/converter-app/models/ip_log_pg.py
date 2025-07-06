@@ -170,18 +170,23 @@ def is_ip_under_limit(identifier):
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
-    cursor.execute('SELECT request_count, is_paid, expiry_time FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
+    cursor.execute('SELECT request_count, is_paid, log_date, expiry_time FROM ip_log WHERE fingerprint = %s', (identifier))
     row = cursor.fetchone()
 
     if row:
         logger.info(f'count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
-        if 'is_paid' in row and  row['is_paid']:
-            if 'expiry_time' in row and row["expiry_time"] and row["expiry_time"] < datetime.now():
+        if row.get('is_paid', False):
+            if row.get('expiry_time') and row['expiry_time'] < datetime.now():
                 # If the expiry time has passed, revert the user to unpaid status
                 cursor.execute('''
                     UPDATE ip_log SET is_paid = FALSE WHERE fingerprint = %s AND log_date = %s
                 ''', (identifier, today))
                 return False  # Paid status expired, revert to unpaid
+            return True
+        if row.get('log_date') != today:
+            cursor.execute('''
+                UPDATE ip_log SET request_count = 0, log_date = %s WHERE fingerprint = %s
+            ''', (today, identifier))
             return True
         return'request_count' in row and row['request_count'] < MAX_DAILY_REQUESTS
     return True

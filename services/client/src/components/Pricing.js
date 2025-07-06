@@ -336,6 +336,10 @@ const PricingPage = ({ API_URL }) => {
         </div>
         {/* Pricing Grid */}
         <div style={{
+          width: '100%',
+          padding: '2rem 0' // Add vertical padding to prevent cut-off
+        }}>
+        <div style={{
           display: 'flex',
           flexDirection: 'row',
           flexWrap: 'nowrap',
@@ -346,9 +350,10 @@ const PricingPage = ({ API_URL }) => {
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE/Edge
           WebkitOverflowScrolling: 'touch', // iOS smooth scrolling
-          paddingBottom: '2rem', // Add space at bottom for shadows
-          width: 'max-content',
-          minWidth: '100%'
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start',
+          height: 'auto',
+          minHeight: 'max-content'
         }}>
           {getFilteredPlans().map((plan) => (
             <div
@@ -578,6 +583,7 @@ const PricingPage = ({ API_URL }) => {
                 }}>{feature.text}</p>
               </div>
             ))}
+            </div>
           </div>
         </div>
 
