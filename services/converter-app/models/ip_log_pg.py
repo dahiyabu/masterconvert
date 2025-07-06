@@ -170,7 +170,7 @@ def is_ip_under_limit(identifier):
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
-    cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
+    cursor.execute('SELECT request_count, is_paid, expiry_time FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
     row = cursor.fetchone()
 
     if row:
