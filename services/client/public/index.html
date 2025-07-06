@@ -62,6 +62,75 @@ header .nav-links a {
 header .btn {
   margin-left: 15px;
 }
+/* Service Cards */
+.services {
+            padding: 6rem 0;
+            background: white;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .service-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .service-card p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        /*.......*/
         .container {
             width: 90%;
             max-width: 1200px;
@@ -459,6 +528,50 @@ header .btn {
             color: var(--gray);
         }
         
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-section ul li a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-section ul li a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--dark-light);
+            color: var(--gray);
+        }
         @media (max-width: 768px) {
             .hero-content {
                 flex-direction: column;
@@ -560,6 +673,130 @@ header .btn {
             .modern-formats-btn:hover .btn-glow {
             left: 100%;
             }
+
+            .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background: white;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .popup-header h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .popup-header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-body {
+            padding: 40px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .popup-body h3 {
+            color: #764ba2;
+            margin: 30px 0 15px 0;
+            font-size: 1.4em;
+        }
+
+        .popup-body h4 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .popup-body p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .popup-body ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .popup-body li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        .last-updated {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: center;
+            color: #666;
+        }
             #formats {scroll-margin-top: 100px; }
     </style>
 </head>
@@ -570,8 +807,8 @@ header .btn {
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1>Convert Any File Format Securely & Offline</h1>
-                    <p>ConvertMaster is your all-in-one file conversion solution. Convert between documents, images, video, audio and more - all on your own device with complete privacy.</p>
+                    <h1>Convert Any File Format Instantly</h1>
+                    <p>The ultimate file conversion solution. Convert online for free or download our secure offline app. Support for 200+ formats including PDF, DOCX, MP4, PNG, and more.</p>
                     <div class="hero-buttons">
                         <a href="#download" class="btn">Download Free</a>
                         <a href="#try-free" class="btn btn-outline" id ="try-free-btn">Try It Free Online</a>
@@ -584,6 +821,37 @@ header .btn {
         </div>
     </section>
 
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Choose Your Conversion Method</h2>
+                <p>Whether you need quick online conversion or secure offline processing, we've got you covered</p>
+            </div>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🌐</div>
+                    <h3>Online Converter</h3>
+                    <p>Convert files instantly in your browser. No downloads required, works on any device. Perfect for quick conversions and mobile users.</p>
+                    <a href="#try-free" class="btn btn-primary">Try Online Now</a>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">💾</div>
+                    <h3>Desktop Application</h3>
+                    <p>Download our powerful desktop app for unlimited conversions, batch processing, and advanced features. Works completely offline.</p>
+                    <a href="#download" class="btn btn-secondary">Download Free</a>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">🔧</div>
+                    <h3>API Integration</h3>
+                    <p>Integrate our conversion API into your applications. Perfect for developers and businesses who need automated file processing.</p>
+                    <a href="#api" class="btn btn-outline">View API Docs</a>
+                </div>
+            </div>
+        </div>
+    </section>
     <section class="features" id="features">
         <div class="container">
             <div class="section-title">
@@ -891,7 +1159,285 @@ header .btn {
         
       </div>
     </section>
+
+    <!-- Privacy Policy Popup -->
+    <div id="privacy-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h2>Privacy Policy</h2>
+                <p>Your privacy is important to us</p>
+                <button class="close-btn" onclick="closePopup('privacy')">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="last-updated">
+                    <strong>Last Updated:</strong> July 2025
+                </div>
+
+                <h3>1. Information We Collect</h3>
+                <h4>Files You Convert</h4>
+                <p>Our file converter app processes <span class="highlight">200+ file formats</span> both online and offline. When you use our service:</p>
+                <ul>
+                    <li><strong>Online Mode:</strong> Files are temporarily processed on our secure servers and automatically deleted after conversion</li>
+                    <li><strong>Offline Mode:</strong> All processing happens locally on your device - no files are uploaded to our servers</li>
+                    <li>We do not store, access, or retain the content of your files</li>
+                    <li>Conversion history is stored locally on your device only</li>
+                </ul>
+
+                <h4>Technical Information</h4>
+                <p>We may collect non-personal technical information to improve our service:</p>
+                <ul>
+                    <li>File format types being converted (without file content)</li>
+                    <li>Conversion success/failure rates</li>
+                    <li>Device type and operating system</li>
+                    <li>App version and performance metrics</li>
+                </ul>
+
+                <h3>2. How We Use Your Information</h3>
+                <p>We use collected information to:</p>
+                <ul>
+                    <li>Provide file conversion services</li>
+                    <li>Improve app performance and reliability</li>
+                    <li>Add support for new file formats</li>
+                    <li>Troubleshoot technical issues</li>
+                    <li>Enhance user experience</li>
+                </ul>
+
+                <h3>3. Data Security</h3>
+                <p>We implement industry-standard security measures:</p>
+                <ul>
+                    <li>SSL/TLS encryption for all online communications</li>
+                    <li>Automatic file deletion after conversion (online mode)</li>
+                    <li>No permanent storage of user files</li>
+                    <li>Local processing option for sensitive files</li>
+                    <li>Regular security audits and updates</li>
+                </ul>
+
+                <h3>4. Third-Party Services</h3>
+                <p>Our app may integrate with third-party services for:</p>
+                <ul>
+                    <li>Cloud storage providers (optional)</li>
+                    <li>Analytics and crash reporting</li>
+                    <li>Payment processing (for premium features)</li>
+                </ul>
+                <p>These services have their own privacy policies, and we encourage you to review them.</p>
+
+                <h3>5. Your Rights</h3>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Use offline mode for complete privacy</li>
+                    <li>Request information about data we collect</li>
+                    <li>Delete your account and associated data</li>
+                    <li>Opt out of analytics and tracking</li>
+                </ul>
+
+                <h3>6. Children's Privacy</h3>
+                <p>Our service is not intended for children under 13. We do not knowingly collect personal information from children under 13.</p>
+
+                <h3>7. Changes to This Policy</h3>
+                <p>We may update this privacy policy periodically. We will notify users of significant changes through the app or email.</p>
+<!--
+                <h3>8. Contact Us</h3>
+                <p>If you have questions about this privacy policy, please contact us at:</p>
+                <p><strong>Email:</strong> privacy@fileconverter.app<br>
+                <strong>Website:</strong> www.fileconverter.app/privacy</p>
+                -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Popup -->
+    <div id="terms-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h2>Terms of Service</h2>
+                <p>Please read these terms carefully</p>
+                <button class="close-btn" onclick="closePopup('terms')">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="last-updated">
+                    <strong>Last Updated:</strong> January 2025
+                </div>
+
+                <h3>1. Acceptance of Terms</h3>
+                <p>By using our File Converter App, you agree to these Terms of Service. If you do not agree with any part of these terms, please do not use our service.</p>
+
+                <h3>2. Description of Service</h3>
+                <p>Our File Converter App provides:</p>
+                <ul>
+                    <li>Conversion between <span class="highlight">200+ file formats</span></li>
+                    <li>Online and offline conversion capabilities</li>
+                    <li>Batch file processing</li>
+                    <li>Cloud storage integration (optional)</li>
+                    <li>Mobile and desktop applications</li>
+                </ul>
+
+                <h3>3. User Responsibilities</h3>
+                <p>You agree to:</p>
+                <ul>
+                    <li>Use the service only for lawful purposes</li>
+                    <li>Not upload malicious files or malware</li>
+                    <li>Respect intellectual property rights</li>
+                    <li>Not attempt to reverse engineer the software</li>
+                    <li>Not overload or disrupt our servers</li>
+                    <li>Provide accurate information when required</li>
+                </ul>
+
+                <h3>4. Prohibited Content</h3>
+                <p>You may not use our service to convert files that contain:</p>
+                <ul>
+                    <li>Illegal, harmful, or offensive content</li>
+                    <li>Copyrighted material without permission</li>
+                    <li>Viruses, malware, or malicious code</li>
+                    <li>Personal information of others without consent</li>
+                    <li>Content that violates applicable laws</li>
+                </ul>
+
+                <h3>5. File Handling and Privacy</h3>
+                <p>Regarding your files:</p>
+                <ul>
+                    <li><strong>Online Mode:</strong> Files are processed and automatically deleted within an hour</li>
+                    <li><strong>Offline Mode:</strong> All processing happens on your device</li>
+                    <li>We do not claim ownership of your files</li>
+                    <li>You retain all rights to your original content</li>
+                    <li>We are not responsible for file content or quality</li>
+                </ul>
+
+                <h3>6. Service Availability</h3>
+                <p>We strive to provide reliable service, but:</p>
+                <ul>
+                    <li>Service may be temporarily unavailable for maintenance</li>
+                    <li>We do not guarantee 100% uptime</li>
+                    <li>Some features may be limited in free versions</li>
+                    <li>We may discontinue features with notice</li>
+                </ul>
+
+                <h3>7. Premium Features and Payments</h3>
+                <p>For premium features:</p>
+                <ul>
+                    <li>Payment is required for certain advanced features</li>
+                    <li>Subscriptions auto-renew unless cancelled</li>
+                    <li>Refunds are available according to our refund policy</li>
+                    <li>Prices may change with notice</li>
+                </ul>
+
+                <h3>8. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by law:</p>
+                <ul>
+                    <li>We provide the service "as is" without warranties</li>
+                    <li>We are not liable for data loss or corruption</li>
+                    <li>Our liability is limited to the amount you paid for the service</li>
+                    <li>We are not responsible for third-party integrations</li>
+                </ul>
+
+                <h3>9. Intellectual Property</h3>
+                <p>Our app and its content are protected by:</p>
+                <ul>
+                    <li>Copyright, trademark, and other intellectual property laws</li>
+                    <li>You receive a limited license to use the app</li>
+                    <li>You may not copy, modify, or distribute our software</li>
+                    <li>All rights not expressly granted are reserved</li>
+                </ul>
+
+                <h3>10. Account Termination</h3>
+                <p>We may terminate or suspend your account if:</p>
+                <ul>
+                    <li>You violate these terms</li>
+                    <li>You engage in prohibited activities</li>
+                    <li>Your account is inactive for extended periods</li>
+                    <li>Required by law or legal process</li>
+                </ul>
+
+                <h3>11. Changes to Terms</h3>
+                <p>We may modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.</p>
+<!--
+                <h3>12. Governing Law</h3>
+                <p>These terms are governed by the laws of the jurisdiction where our company is incorporated, without regard to conflict of law principles.</p>
+
+                <h3>13. Contact Information</h3>
+                <p>For questions about these terms, contact us at:</p>
+                <p><strong>Email:</strong> legal@fileconverter.app<br>
+                <strong>Website:</strong> www.fileconverter.app/terms<br>-->
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>ConvertMaster</h4>
+                    <p>The ultimate file conversion solution for individuals and businesses worldwide.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#try-free">Online Converter</a></li>
+                        <li><a href="#download">Desktop App</a></li>
+                        <li><a href="#api">API Integration</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Formats</h4>
+                    <ul>
+                        <li><a href="#formats">PDF Converter</a></li>
+                        <li><a href="#formats">Image Converter</a></li>
+                        <li><a href="#formats">Video Converter</a></li>
+                        <li><a href="#formats">Audio Converter</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#contact">Help Center</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#" onclick="openPopup('privacy')">Privacy Policy</a></li>
+                        <li><a href="#" onclick="openPopup('terms')">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 ConvertMaster. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
   </div>
   <script src="%PUBLIC_URL%/env.js"></script>
   <script src="/static/js/main.[hash].js"></script>
+  <script>
+    function openPopup(type) {
+            const popup = document.getElementById(type + '-popup');
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePopup(type) {
+            const popup = document.getElementById(type + '-popup');
+            popup.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('popup-overlay')) {
+                event.target.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const activePopup = document.querySelector('.popup-overlay.active');
+                if (activePopup) {
+                    activePopup.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        });
+  </script>
 </body>

@@ -25,11 +25,12 @@ const PricingPage = ({ API_URL }) => {
       period: 'Forever free',
       discount: null,
       features: [
-        '5 conversions/merges per day',
+        '3 conversions/merges per day',
         '200+ file format support',
         'Advanced compression',
         'Password encryption',
         'Online processing',
+        'Delete File every hour',
         'Basic customer support'
       ],
       buttonText: 'Get Started Free',
@@ -51,34 +52,12 @@ const PricingPage = ({ API_URL }) => {
         'Online processing',
         'Advanced compression & encryption',
         'Batch processing',
+        'Delete File every hour',
         'Premium customer support',
         'No advertisements',
         'Free Upgrades'
       ],
       buttonText: 'Get Daily Plan',
-      buttonStyle: 'secondary',
-      popular: false
-    },
-    {
-      id: 'monthly',
-      name: 'Monthly Plan',
-      type: 'Online',
-      description: 'Best value for regular users',
-      originalPrice: '$9.99',
-      currentPrice: '$4.99',
-      period: 'per month',
-      discount: 'Save 50%',
-      features: [
-        'Unlimited conversions & merges',
-        '200+ file formats supported',
-        'Online processing',
-        'Advanced compression & encryption',
-        'Batch processing',
-        'Priority customer support',
-        'No advertisements',
-        'Free Upgrades'
-      ],
-      buttonText: 'Start Monthly Plan',
       buttonStyle: 'secondary',
       popular: false
     },
@@ -97,6 +76,7 @@ const PricingPage = ({ API_URL }) => {
         'Online local processing',
         'Advanced compression & encryption',
         'Batch processing',
+        'Delete File every hour',
         'Premium customer support',
         'No advertisements',
         'Free Upgrades'
@@ -104,6 +84,30 @@ const PricingPage = ({ API_URL }) => {
       buttonText: 'Get Yearly Plan',
       buttonStyle: 'primary',
       popular: true
+    },
+    {
+      id: 'monthly',
+      name: 'Monthly Plan',
+      type: 'Online',
+      description: 'Best value for regular users',
+      originalPrice: '$9.99',
+      currentPrice: '$4.99',
+      period: 'per month',
+      discount: 'Save 50%',
+      features: [
+        'Unlimited conversions & merges',
+        '200+ file formats supported',
+        'Online processing',
+        'Advanced compression & encryption',
+        'Batch processing',
+        'Delete File every hour',
+        'Priority customer support',
+        'No advertisements',
+        'Free Upgrades'
+      ],
+      buttonText: 'Start Monthly Plan',
+      buttonStyle: 'secondary',
+      popular: false
     },
     {
       id: 'monthly',
@@ -337,31 +341,30 @@ const PricingPage = ({ API_URL }) => {
         {/* Pricing Grid */}
         <div style={{
           width: '100%',
-          padding: '2rem 0' // Add vertical padding to prevent cut-off
+          padding: '2rem 0', // Add vertical padding to prevent cut-off
+          overflow: 'visible'
         }}>
         <div style={{
           display: 'flex',
           flexDirection: 'row',
-          flexWrap: 'nowrap',
           gap: '2rem',
-          padding: '1rem',
-          overflowX: 'auto',
-          overflowY: 'visible',
-          scrollbarWidth: 'none', // Firefox
-          msOverflowStyle: 'none', // IE/Edge
-          WebkitOverflowScrolling: 'touch', // iOS smooth scrolling
-          justifyContent: 'flex-start',
+          width: '100%',
+          justifyContent: 'center',
           alignItems: 'flex-start',
-          height: 'auto',
-          minHeight: 'max-content'
+          padding: '0 2rem',
+          margin: '0 auto',
+          overflow: 'visible'
         }}>
           {getFilteredPlans().map((plan) => (
             <div
               key={plan.id}
               style={{
-                minWidth: '320px',
-                flexShrink: 0,
-                scrollSnapAlign: 'start',
+                width: '300px',
+                flex: '0 0 300px',
+                minHeight: '600px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
                 position: 'relative',
                 background: plan.popular ? 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)' : 'white',
                 borderRadius: '1.5rem',
@@ -460,7 +463,8 @@ const PricingPage = ({ API_URL }) => {
               <ul style={{
                 listStyle: 'none',
                 padding: '0',
-                margin: '0 0 2rem 0'
+                margin: '0 0 2rem 0',
+                flexgrow: 1
               }}>
                 {plan.features.map((feature, index) => (
                   <li key={index} style={{
