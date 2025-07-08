@@ -6,6 +6,7 @@ import ContactPage from './components/Contact';
 import PricingPage from './components/Pricing';
 import CheckoutResultPage from './components/CheckoutResult'; // Add your checkout result component
 import DownloadPage from './components/Download'; // Add your download page component
+import LoginPopup from './components/Login';
 
 // Wrapper component to handle existing logic
 function AppContent() {
@@ -14,6 +15,7 @@ function AppContent() {
   const [showContact, setShowContact] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [scrollTarget, setScrollTarget] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -169,6 +171,13 @@ function AppContent() {
     }
   }, [showApp, formats, showContact, showPricing, scrollTarget]);
 
+  const handleLoginSuccess = () => {
+    console.log('Login successful! Redirect to FileConvert component');
+    setShowPopup(false);
+    setShowApp(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleBack = () => {
     setShowApp(false);
     setFormats(false);
@@ -294,6 +303,81 @@ function AppContent() {
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }} style={{ color: '#007bff', textDecoration: 'none' }}>
                   ← Back to Home
                 </a>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <button
+                    onClick={() => setShowPopup(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      borderRadius: '25px',
+                      padding: '12px 24px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      marginLeft: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                      transform: 'translateY(0)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                      // Show tooltip
+                      const tooltip = e.target.nextElementSibling;
+                      tooltip.style.opacity = '1';
+                      tooltip.style.visibility = 'visible';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                      // Hide tooltip
+                      const tooltip = e.target.nextElementSibling;
+                      tooltip.style.opacity = '0';
+                      tooltip.style.visibility = 'hidden';
+                    }}
+                  >
+                  Pro Poral
+                  </button>
+                  
+                  {/* Tooltip */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-40px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      backgroundColor: '#2d3748',
+                      color: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      whiteSpace: 'nowrap',
+                      opacity: '0',
+                      visibility: 'hidden',
+                      transition: 'all 0.3s ease',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    }}
+                  >
+                    Portal Access for Paid Online Users
+                    {/* Tooltip arrow */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-5px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '0',
+                        height: '0',
+                        borderLeft: '5px solid transparent',
+                        borderRight: '5px solid transparent',
+                        borderBottom: '5px solid #2d3748',
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </nav>
           </div>
@@ -402,6 +486,81 @@ function AppContent() {
                 {!showContact && (
                   <a href="#contact" onClick={handleContactClick}>Contact Us</a>
                 )}
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <button
+                    onClick={() => setShowPopup(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      borderRadius: '25px',
+                      padding: '12px 24px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      marginLeft: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                      transform: 'translateY(0)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                      // Show tooltip
+                      const tooltip = e.target.nextElementSibling;
+                      tooltip.style.opacity = '1';
+                      tooltip.style.visibility = 'visible';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                      // Hide tooltip
+                      const tooltip = e.target.nextElementSibling;
+                      tooltip.style.opacity = '0';
+                      tooltip.style.visibility = 'hidden';
+                    }}
+                  >
+                    Pro Portal
+                  </button>
+                  
+                  {/* Tooltip */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-40px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      backgroundColor: '#2d3748',
+                      color: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      whiteSpace: 'nowrap',
+                      opacity: '0',
+                      visibility: 'hidden',
+                      transition: 'all 0.3s ease',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    }}
+                  >
+                    Portal Access for Paid Online Users
+                    {/* Tooltip arrow */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-5px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '0',
+                        height: '0',
+                        borderLeft: '5px solid transparent',
+                        borderRight: '5px solid transparent',
+                        borderBottom: '5px solid #2d3748',
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -445,6 +604,12 @@ function AppContent() {
         </div>
       )}
       </main>
+        <LoginPopup
+    isOpen={showPopup}
+    onClose={() => setShowPopup(false)}
+    onSuccess={handleLoginSuccess}
+    API_URL={API_URL}
+  />
     </>
   );
 }

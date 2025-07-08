@@ -22,6 +22,7 @@ const CheckoutResultPage = ({ API_URL }) => {
   const [planName, setPlanName] = useState('');
   const [planType, setPlanType] = useState('');
   const [amount, setAmount] = useState('');
+  const [license, setLicense] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const navigate = useNavigate();
@@ -81,7 +82,9 @@ const CheckoutResultPage = ({ API_URL }) => {
           // Update with verified data
           setCustomerEmail(data.customer_email || email);
           setPlanName(data.plan_name || plan);
+          setPlanType(data.plan_type || plan_type);
           setAmount(data.amount || '');
+          setLicense(data.license_id || '');
         } else {
           setStatus('verification_failed');
           setVerificationError(data.message || 'Payment verification failed');
@@ -169,7 +172,7 @@ const CheckoutResultPage = ({ API_URL }) => {
   // Check if download button should be shown (not for daily plan)
   const shouldShowDownloadButton = () => {
     const plan = planName.toLowerCase();
-    return plan !== 'daily' && plan !== 'day' && planType == 'Offline';
+    return plan !== 'daily' && plan !== 'day' && planType === 'Offline';
   };
 
   // Verification failed state
@@ -315,6 +318,21 @@ const CheckoutResultPage = ({ API_URL }) => {
                   }}>
                     {sessionId.substring(0, 20)}...
                   </div>
+                </div>
+              )}
+
+              {license && planType === 'Online' && (
+                <div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280',
+                    fontWeight: '600',
+                    marginBottom: '0.5rem'
+                  }}>License</div>
+                  <div style={{
+                    fontSize: '1rem',
+                    color: '#111827'
+                  }}>{license}</div>
                 </div>
               )}
             </div>

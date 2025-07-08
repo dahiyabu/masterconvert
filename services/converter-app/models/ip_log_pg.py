@@ -54,6 +54,8 @@ def init_ip_log_db():
                     id SERIAL PRIMARY KEY,
                     ip TEXT NOT NULL,
                     fingerprint TEXT NOT NULL,
+                    license_id TEXT,
+                    email VARCHAR(255),
                     log_date DATE NOT NULL,
                     request_count INTEGER NOT NULL DEFAULT 1,
                     is_paid BOOLEAN NOT NULL DEFAULT FALSE,
@@ -88,6 +90,7 @@ def init_ip_log_db():
                 plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 client_reference_id TEXT,
+                license_id TEXT,
                 payment_status TEXT CHECK(payment_status IN ('pending', 'success', 'failed')) NOT NULL DEFAULT 'pending',
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 receipt TEXT
@@ -135,6 +138,17 @@ def init_ip_log_db():
         if conn:
             conn.close()
             logger.info("PostgreSQL connection closed after init_ip_log_db()")
+
+def validate_online_user(lic,ip,identifier,email):
+    conn = get_db()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    logger.info(f"Validating  {lic},{ip}")
+    cursor.execute('SELECT fingerprint FROM ip_log WHERE license_id = %s AND email = %s', (lic,email))
+    row = cursor.fetchone()
+    if row:
+        cursor.execute('UPDATE ip_log SET fingerprint=%s,ip=%s WHERE license_id = %s AND email = %s', (identifier,ip,lic,email))
+        return True
+    return False
 
 def log_ip_address(ip,identifier):
     """Insert or update IP usage log for today."""
@@ -209,7 +223,7 @@ def log_user_payment(session_id, email, plan, plan_type, client_reference_id, pa
     conn.commit()
     return True
 
-def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt):
+def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic,email):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -217,9 +231,10 @@ def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt):
         cursor.execute('''
             UPDATE checkout_sessions
             SET payment_status = %s,
-                       receipt = %s
+                       receipt = %s,
+                       license_id = %s
             WHERE session_id = %s
-        ''', ('success', receipt, session_id))
+        ''', ('success', receipt, lic, session_id))
         # If this was a daily plan, mark is_paid=True for this IP and today's date
         if plan in ['daily','monthly','yearly'] and plan_type == 'Online' and fingerprint:
             today = date.today().isoformat()
@@ -241,16 +256,16 @@ def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt):
                 logger.debug(f"Updating paid entry {plan} for {fingerprint}")
                 cursor.execute('''
                     UPDATE ip_log
-                    SET is_paid = TRUE, expiry_time = %s
+                    SET is_paid = TRUE, expiry_time = %s,license_id = %s, email = %s
                     WHERE fingerprint = %s AND log_date = %s
-                ''', (expiry_time,fingerprint, today))
+                ''', (expiry_time,lic,email,fingerprint, today))
             else:
                 # Insert new log with is_paid=True
-                logger.debug(f"Inserting paid entry {plan} for {fingerprint}")
+                logger.debug(f"Inserting paid entry {plan} for {fingerprint} and {lic}")
                 cursor.execute('''
-                    INSERT INTO ip_log (ip,fingerprint, log_date, request_count, is_paid, expiry_time)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                ''', (ip,fingerprint, today, 0, True, expiry_time))
+                    INSERT INTO ip_log (ip,fingerprint, log_date, request_count, is_paid, expiry_time,license_id,email)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ''', (ip,fingerprint, today, 0, True, expiry_time, lic,email))
         conn.commit()
         
         logger.info("Database updated for successful payment.")
@@ -296,7 +311,7 @@ def verify_user_payment(email, plan, plan_type):
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT session_id, payment_status, created_at
+            SELECT session_id, payment_status,license_id,created_at
             FROM checkout_sessions
             WHERE email = %s AND plan = %s and plan_type = %s
             ORDER BY created_at DESC LIMIT 1
@@ -304,7 +319,7 @@ def verify_user_payment(email, plan, plan_type):
         result = cursor.fetchone()
 
         if result:
-            session_id, status, created_at = result
+            session_id, status, license_id, created_at = result
             paid = status == 'success'
             return jsonify({
                 'email': email,
@@ -312,6 +327,7 @@ def verify_user_payment(email, plan, plan_type):
                 'plan_type': plan_type,
                 'payment_status': status,
                 'session_id': session_id,
+                'license_id': license_id,
                 'created_at': created_at,
                 'paid': paid
             }), 200 if paid else 402  # 402 Payment Required for failed

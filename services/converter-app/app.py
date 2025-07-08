@@ -6,7 +6,7 @@ from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
-from models.ip_log_pg import get_download_records,store_license,insert_contact_data
+from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user
 from models.s3 import generate_download_link
 from flask import Blueprint,request,jsonify
 
@@ -64,6 +64,15 @@ def merge_file_app():
         return jsonify({'error': 'Merge process failed'}), 500
     return common_merge_handler(request)
 
+@cm_app_bp.route('/api/validateUser', methods=['POST'])
+def login_online_user():
+    data = request.get_json()
+    license_id = data.get('licenseId')
+    fingerprint = data.get('fingerprint')
+    email = data.get('email')
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    return validate_online_user(license_id,ip_address,fingerprint,email)
+    
 @cm_app_bp.route('/api/changeMaxReqest', methods=['POST'])
 def max_request():
     try:
@@ -79,7 +88,6 @@ def max_request():
 
 @cm_app_bp.route('/api/generateLicense',methods=['POST'])
 def generate_license():
-    print(request)
     data = request.get_json()
     duration = data.get('duration', 30)
     license_id = data.get('licenseId')
@@ -145,9 +153,6 @@ def check_download_status():
     except Exception as error:
         return jsonify({'error': str(error)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
 @cm_app_bp.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.json
@@ -174,6 +179,14 @@ def create_checkout_session():
     try:
         client_ref_id = str(uuid.uuid4())
         stripe_mode = 'payment' if plan == 'daily' else 'subscription'
+        plan_metadata={
+                'plan': plan,
+                'plan_type':plan_type,
+                'ip_address': ip_address,  # 👈 Custom metadata
+                'fingerprint': fingerprint
+        }
+        if plan_type == 'Online':
+            plan_metadata['license_id']=generate_unique_license_id()
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             mode=stripe_mode,
@@ -185,12 +198,7 @@ def create_checkout_session():
             }],
             success_url=success_url,
             cancel_url=f'{APP_DOMAIN}/checkout-result?canceled=true',
-            metadata={
-                'plan': plan,
-                'plan_type':plan_type,
-                'ip_address': ip_address,  # 👈 Custom metadata
-                'fingerprint': fingerprint
-            }
+            metadata=plan_metadata
         )
         if not session:
             return jsonify({'message':'Session Creation Error'}),400
@@ -229,11 +237,14 @@ def stripe_webhook():
         plan_type = session.get('metadata', {}).get('plan_type')
         ip_address = session.get('metadata', {}).get('ip_address')
         fingerprint = session.get('metadata', {}).get('fingerprint')
+        license_id = None
+        if plan_type == 'Online':
+            license_id = session.get('metadata', {}).get('license_id')
         receipt = session.get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
 
-        return mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt)
+        return mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])
