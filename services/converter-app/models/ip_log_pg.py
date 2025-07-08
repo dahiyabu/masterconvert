@@ -184,11 +184,11 @@ def is_ip_under_limit(identifier):
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
-    cursor.execute('SELECT request_count, is_paid, log_date, expiry_time FROM ip_log WHERE fingerprint = %s', (identifier))
+    cursor.execute('SELECT request_count, is_paid, log_date, expiry_time FROM ip_log WHERE fingerprint = %s', (identifier,))
     row = cursor.fetchone()
 
     if row:
-        logger.info(f'count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
+        #logger.info(f'count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
         if row.get('is_paid', False):
             if row.get('expiry_time') and row['expiry_time'] < datetime.now():
                 # If the expiry time has passed, revert the user to unpaid status
