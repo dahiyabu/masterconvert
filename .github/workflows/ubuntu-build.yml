@@ -1,12 +1,6 @@
 name: Build Ubuntu Software
 
 on:
-  push:
-    branches: 
-      - "main"
-    paths:
-      - services/converter-sw/**
-      - services/converter/**
   workflow_dispatch:
 
 jobs:
