@@ -9,9 +9,9 @@ from datetime import date
 from flask import g,jsonify
 
 # Environment-based PostgreSQL DSN (customize as needed)
-POSTGRES_DSN = os.getenv("POSTGRES_DSN", None)
+POSTGRES_DSN = os.getenv("POSTGRES_DSN",None)
 
-MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 2))
+MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 3))
 
 def get_db():
     """Return a persistent DB connection for the current request context."""
@@ -147,6 +147,7 @@ def validate_online_user(lic,ip,identifier,email):
     row = cursor.fetchone()
     if row:
         cursor.execute('UPDATE ip_log SET fingerprint=%s,ip=%s WHERE license_id = %s AND email = %s', (identifier,ip,lic,email))
+        conn.commit()
         return True
     return False
 
@@ -156,12 +157,8 @@ def log_ip_address(ip,identifier):
         today = date.today().isoformat()
         conn = get_db()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-        #cursor.execute('SELECT request_count FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
         cursor.execute('SELECT request_count FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
         row = cursor.fetchone()
-        logger.info(row)
-        logger.info(today)
         #if row:
         #    cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE ip = %s AND log_date = %s', (ip, today))
         #else:
@@ -170,6 +167,7 @@ def log_ip_address(ip,identifier):
             cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
         else:
             cursor.execute('INSERT INTO ip_log (ip,fingerprint, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
+        conn.commit()
     except Exception as e:
         logger.error(f"Error logging ip:{e}")
         
@@ -191,21 +189,25 @@ def is_ip_under_limit(identifier):
     #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
     cursor.execute('SELECT request_count, is_paid, log_date, expiry_time FROM ip_log WHERE fingerprint = %s', (identifier,))
     row = cursor.fetchone()
-
     if row:
-        #logger.info(f'count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
+        #logger.info(f'log_Date={type(row['log_date'])},today={today},count={row['request_count']} and paid={row['is_paid']} and expiry_time={row["expiry_time"]}')
         if row.get('is_paid', False):
             if row.get('expiry_time') and row['expiry_time'] < datetime.now():
                 # If the expiry time has passed, revert the user to unpaid status
                 cursor.execute('''
                     UPDATE ip_log SET is_paid = FALSE WHERE fingerprint = %s AND log_date = %s
                 ''', (identifier, today))
+                conn.commit()
                 return False  # Paid status expired, revert to unpaid
             return True
-        if row.get('log_date') != today:
+        row_date=row.get('log_date')
+        if isinstance(row_date, date):
+            row_date=row_date.strftime('%Y-%m-%d')
+        if row_date != today:
             cursor.execute('''
                 UPDATE ip_log SET request_count = 0, log_date = %s WHERE fingerprint = %s
             ''', (today, identifier))
+            conn.commit()
             return True
         return'request_count' in row and row['request_count'] < MAX_DAILY_REQUESTS
     return True
@@ -360,7 +362,7 @@ def get_account_limits(fingerprint):
             request_count, is_paid, expiry_time = row
         else:
             request_count, is_paid, expiry_time = 0, False, None
-
+        #logger.info(f"request-count={request_count},is_pai={is_paid},expiry={expiry_time},max_request={MAX_DAILY_REQUESTS}")
         if is_paid:
             if expiry_time and expiry_time < datetime.now():
                 # If the subscription has expired, revert the user to unpaid status
