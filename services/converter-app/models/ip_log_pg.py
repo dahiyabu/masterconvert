@@ -148,8 +148,8 @@ def validate_online_user(lic,ip,identifier,email):
     if row:
         cursor.execute('UPDATE ip_log SET fingerprint=%s,ip=%s WHERE license_id = %s AND email = %s', (identifier,ip,lic,email))
         conn.commit()
-        return True
-    return False
+        return jsonify({"message":"Valid Account"}),200
+    return jsonify({"message":"Invalid Account"}),400
 
 def log_ip_address(ip,identifier):
     """Insert or update IP usage log for today."""
