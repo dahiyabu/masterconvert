@@ -1,6 +1,6 @@
 import base64
 from pathlib import Path
-import cairosvg
+#import cairosvg
 import io
 from PIL import Image
 import logging as logger

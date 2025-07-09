@@ -28,7 +28,7 @@ def convert_file_app():
     try:
         # Log caller IP (once per day)
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-        logger.info(f"ipddress={ip_address}")
+        #logger.info(f"ipddress={ip_address}")
         # Get fingerprint from request (sent by the frontend)
         fingerprint = request.json.get('fingerprint')
 

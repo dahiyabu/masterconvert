@@ -786,8 +786,9 @@ def convert_archive(input_path, output_path, source_format, target_format, optio
             return True
         elif target_format == 'rar':
 
-            parent_temp_dir = tempfile.gettempdir()
-            temp_dir = os.path.join(parent_temp_dir, "temp_extract")
+            #parent_temp_dir = tempfile.gettempdir()
+            temp_dir = os.path.join(get_lib_path(CURR_DIR),"temp_extract")
+            #temp_dir = os.path.join(parent_temp_dir, "temp_extract")
             #temp_dir = os.path.join(get_lib_path(),"temp_extract")
             os.makedirs(temp_dir, exist_ok=True)
 

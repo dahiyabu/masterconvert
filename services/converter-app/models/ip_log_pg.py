@@ -152,22 +152,27 @@ def validate_online_user(lic,ip,identifier,email):
 
 def log_ip_address(ip,identifier):
     """Insert or update IP usage log for today."""
-    today = date.today().isoformat()
-    conn = get_db()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        today = date.today().isoformat()
+        conn = get_db()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    #cursor.execute('SELECT request_count FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
-    cursor.execute('SELECT request_count FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
-    row = cursor.fetchone()
-    #if row:
-    #    cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE ip = %s AND log_date = %s', (ip, today))
-    #else:
-    #    cursor.execute('INSERT INTO ip_log (ip, log_date, request_count) VALUES (%s, %s, %s)', (ip, today, 1))
-    if row:
-        cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
-    else:
-        cursor.execute('INSERT INTO ip_log (ip,fingerprint, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
-
+        #cursor.execute('SELECT request_count FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
+        cursor.execute('SELECT request_count FROM ip_log WHERE fingerprint = %s AND log_date = %s', (identifier, today))
+        row = cursor.fetchone()
+        logger.info(row)
+        logger.info(today)
+        #if row:
+        #    cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE ip = %s AND log_date = %s', (ip, today))
+        #else:
+        #    cursor.execute('INSERT INTO ip_log (ip, log_date, request_count) VALUES (%s, %s, %s)', (ip, today, 1))
+        if row:
+            cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
+        else:
+            cursor.execute('INSERT INTO ip_log (ip,fingerprint, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
+    except Exception as e:
+        logger.error(f"Error logging ip:{e}")
+        
 def recreate_ip_log_db():
     """Drop and recreate just the ip_log table."""
     #conn = psycopg2.connect(POSTGRES_DSN)

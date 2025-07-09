@@ -116,9 +116,8 @@ def convert_pdf_to_docx(input_path,output_path):
             logger.info("📄 Detected scanned PDF – using OCR method for DOCX.")
             return convert_smart_scanned_pdf_to_docx(input_path=input_path,output_path=output_path)
             return convert_scanned_pdf_to_docx(input_path, output_path)
-
         cv = Converter(input_path)
-        cv.convert(output_path, start=0, end=None)
+        cv.convert(output_path, start=0, end=None, layout=True)
         cv.close()
         logger.info(f"✅ PDF converted to DOCX at: {output_path}")
         return True
