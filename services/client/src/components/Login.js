@@ -230,7 +230,7 @@ export default function LoginPopup({ isOpen, onClose, onSuccess, API_URL }) {
           <div style={headerStyle}>
             <h2 style={titleStyle}>Access Pro Portal</h2>
             <button 
-              onClick={onClose}
+              onClick={() => {handleRetry();onClose();}}
               style={closeButtonStyle}
               onMouseEnter={(e) => {
                 e.target.style.backgroundColor = '#f3f4f6';

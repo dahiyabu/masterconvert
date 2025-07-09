@@ -16,6 +16,7 @@ function AppContent() {
   const [showPricing, setShowPricing] = useState(false);
   const [scrollTarget, setScrollTarget] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -232,7 +233,7 @@ function AppContent() {
           padding: '1rem 2rem'
         }}>
           <div className="container">
-            <nav>
+            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="logo" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <div className="logo-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -248,9 +249,17 @@ function AppContent() {
                 </div>
                 ConvertMaster
               </div>
+              <button 
+                className="mobile-menu-toggle"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+                style={{ display: 'none' }} // Add this line
+              >
+                {isMobileMenuOpen ? '×' : '☰'}
+              </button>
               
               {/* Show back to home link on download page */}
-              <div className="nav-links">
+              <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }} style={{ color: '#007bff', textDecoration: 'none' }}>
                   ← Back to Home
                 </a>
@@ -281,7 +290,7 @@ function AppContent() {
           padding: '1rem 2rem'
         }}>
           <div className="container">
-            <nav>
+            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="logo" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <div className="logo-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -298,12 +307,21 @@ function AppContent() {
                 ConvertMaster
               </div>
               
+              {/* Add hamburger menu button */}
+              <button 
+                className="mobile-menu-toggle"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+                style={{ display: 'none' }} // Add this line
+              >
+                {isMobileMenuOpen ? '×' : '☰'}
+              </button>
               {/* Show back to home link on checkout result page */}
-              <div className="nav-links">
+              <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }} style={{ color: '#007bff', textDecoration: 'none' }}>
                   ← Back to Home
                 </a>
-                <div style={{ position: 'relative', display: 'inline-block' }}>
+                <div className="desktop-buttons" style={{ position: 'relative', display: 'inline-block' }}>
                   <button
                     onClick={() => setShowPopup(true)}
                     style={{
@@ -405,7 +423,7 @@ function AppContent() {
           padding: '1rem 2rem'
         }}>
           <div className="container">
-            <nav>
+            <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="logo" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <div className="logo-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -421,11 +439,19 @@ function AppContent() {
                 </div>
                 ConvertMaster
               </div>
-              
+              <button 
+                className="mobile-menu-toggle"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+                style={{ display: 'none' }} // Add this line
+              >
+                {isMobileMenuOpen ? '×' : '☰'}
+              </button>
+      
               {/* Show navigation links on pricing page */}
-              <div className="nav-links">
+              <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }}>Home</a>
-                <a href="#contact" onClick={handleContactClick}>Contact</a>
+                <a href="#contact" onClick={(e) => { handleContactClick(e); setIsMobileMenuOpen(false); }}>Contact</a>
               </div>
             </nav>
           </div>
@@ -452,7 +478,7 @@ function AppContent() {
         padding: '1rem 2rem'
       }}>
         <div className="container">
-          <nav>
+          <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="logo"  onClick={handleBack}  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <div className="logo-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -468,27 +494,36 @@ function AppContent() {
               </div>
               ConvertMaster
             </div>
+            <button 
+                className="mobile-menu-toggle"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+                style={{ display: 'none' }} // Add this line
+              >
+                {isMobileMenuOpen ? '×' : '☰'}
+              </button>
 
             {!showApp && (
-              <div className="nav-links">
+              <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {!showContact && !formats && (
                   <>
-                    <a href="#features">Features</a>
-                    <a href="#formats">Formats</a>
-                    <a href="#how-it-works">How It Works</a>
+                    <a href="#features" onClick={(e) => { setIsMobileMenuOpen(false); }}>Features</a>
+                    <a href="#formats" onClick={(e) => { setIsMobileMenuOpen(false); }}>Formats</a>
+                    <a href="#how-it-works" onClick={(e) => { setIsMobileMenuOpen(false); }}>How It Works</a>
+
                     {/*<a href="#testimonials">Testimonials</a>*/}
                   </>
                 )}
                 {(showContact || formats) && (
-                  <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }}>Home</a>
+                  <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); setIsMobileMenuOpen(false); }}>Home</a>
                 )}
-                <a href="#pricing" onClick={handlePricingClick}>Pricing</a>
+                <a href="#pricing" onClick={(e) => { handlePricingClick(e); setIsMobileMenuOpen(false); }}>Pricing</a>
                 {!showContact && (
-                  <a href="#contact" onClick={handleContactClick}>Contact Us</a>
+                  <a href="#contact" onClick={(e) => { handleContactClick(e); setIsMobileMenuOpen(false); }}>Contact Us</a>
                 )}
-                <div style={{ position: 'relative', display: 'inline-block' }}>
+                <div className="desktop-buttons" style={{ position: 'relative', display: 'inline-block' }}>
                   <button
-                    onClick={() => setShowPopup(true)}
+                    onClick={() => {setShowPopup(true); setIsMobileMenuOpen(false);}}
                     style={{
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       border: 'none',
@@ -568,11 +603,11 @@ function AppContent() {
               {!showApp && (
                 <>
                   <a href="#try-free" className="btn btn-secondary" onClick={(e) => {e.preventDefault();setScrollTarget('#try-free');
-                    setShowApp(false);setFormats(false);setShowContact(false);setShowPricing(false);}}>
+                    setShowApp(false);setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                     Try It Free
                   </a>
                   <a href="#download" className="btn" onClick={(e) => {e.preventDefault();setScrollTarget('#download');setShowApp(false);
-                    setFormats(false);setShowContact(false);setShowPricing(false);}}>
+                    setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                       Download Now
                   </a>
                 </>
