@@ -11,6 +11,7 @@ import LoginPopup from './components/Login';
 // Wrapper component to handle existing logic
 function AppContent() {
   const [showApp, setShowApp] = useState(false);
+  const isMobile = useIsMobile();
   const [formats, setFormats] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
@@ -172,6 +173,46 @@ function AppContent() {
     }
   }, [showApp, formats, showContact, showPricing, scrollTarget]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const navLinks = document.querySelector('.nav-links');
+      const menuButton = document.querySelector('.mobile-menu-toggle');
+      
+      if (isMobileMenuOpen && navLinks && !navLinks.contains(event.target) && !menuButton.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Outside AppContent
+function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(
+      typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+    );
+  
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768);
+      };
+  
+      handleResize(); // Run on mount
+  
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+  
+    return isMobile;
+  }
+  
+  
+  
+
+  
   const handleLoginSuccess = () => {
     console.log('Login successful! Redirect to FileConvert component');
     setShowPopup(false);
@@ -249,14 +290,15 @@ function AppContent() {
                 </div>
                 ConvertMaster
               </div>
-              <button 
+              {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setIsMobileMenuOpen(prev => !prev)}
                 aria-label="Toggle menu"
-                style={{ display: 'none' }} // Add this line
+                //style={{ display: 'none' }} // Add this line
               >
                 {isMobileMenuOpen ? '×' : '☰'}
               </button>
+              )}
               
               {/* Show back to home link on download page */}
               <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -308,21 +350,21 @@ function AppContent() {
               </div>
               
               {/* Add hamburger menu button */}
-              <button 
+              {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setIsMobileMenuOpen(prev => !prev)}
                 aria-label="Toggle menu"
-                style={{ display: 'none' }} // Add this line
               >
                 {isMobileMenuOpen ? '×' : '☰'}
               </button>
+              )}
               {/* Show back to home link on checkout result page */}
               <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }} style={{ color: '#007bff', textDecoration: 'none' }}>
                   ← Back to Home
                 </a>
                 <div className="desktop-buttons" style={{ position: 'relative', display: 'inline-block' }}>
-                  <button
+                  <button className='pro-portal-btn'
                     onClick={() => setShowPopup(true)}
                     style={{
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -439,15 +481,16 @@ function AppContent() {
                 </div>
                 ConvertMaster
               </div>
-              <button 
+              {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setIsMobileMenuOpen(prev => !prev)}
                 aria-label="Toggle menu"
-                style={{ display: 'none' }} // Add this line
+                //style={{ display: 'none' }} // Add this line
               >
                 {isMobileMenuOpen ? '×' : '☰'}
-              </button>
-      
+              </button>)
+              }
+              
               {/* Show navigation links on pricing page */}
               <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <a href="/" onClick={(e) => { e.preventDefault(); handleBack(); }}>Home</a>
@@ -458,7 +501,7 @@ function AppContent() {
         </header>
         <main className="pt-24 w-full min-h-screen bg-gray-50">
           <div style={{ paddingTop: '90px' }}>
-            <PricingPage API_URL={API_URL}/>
+            <PricingPage isMobile={isMobile} API_URL={API_URL}/>
           </div>
         </main>
       </>
@@ -494,22 +537,23 @@ function AppContent() {
               </div>
               ConvertMaster
             </div>
-            <button 
+            {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setIsMobileMenuOpen(prev => !prev)}
                 aria-label="Toggle menu"
-                style={{ display: 'none' }} // Add this line
+                //style={{ display: 'none' }} // Add this line
               >
                 {isMobileMenuOpen ? '×' : '☰'}
               </button>
+            )}
 
             {!showApp && (
               <div className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {!showContact && !formats && (
                   <>
-                    <a href="#features" onClick={(e) => { setIsMobileMenuOpen(false); }}>Features</a>
-                    <a href="#formats" onClick={(e) => { setIsMobileMenuOpen(false); }}>Formats</a>
-                    <a href="#how-it-works" onClick={(e) => { setIsMobileMenuOpen(false); }}>How It Works</a>
+                    <a href="#features" onClick={(e) => { e.preventDefault(); navigate('#features'); setIsMobileMenuOpen(false); }}>Features</a>
+                    <a href="#formats" onClick={(e) => { e.preventDefault(); navigate('#formats'); setIsMobileMenuOpen(false); }}>Formats</a>
+                    <a href="#how-it-works" onClick={(e) => { e.preventDefault(); navigate('#how-it-works'); setIsMobileMenuOpen(false); }}>How It Works</a>
 
                     {/*<a href="#testimonials">Testimonials</a>*/}
                   </>
@@ -521,9 +565,10 @@ function AppContent() {
                 {!showContact && (
                   <a href="#contact" onClick={(e) => { handleContactClick(e); setIsMobileMenuOpen(false); }}>Contact Us</a>
                 )}
-                <div className="desktop-buttons" style={{ position: 'relative', display: 'inline-block' }}>
+                <div style={{ position: 'relative', display: 'inline-block'}}>
                   <button
                     onClick={() => {setShowPopup(true); setIsMobileMenuOpen(false);}}
+                    className='pro-portal-btn'
                     style={{
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       border: 'none',
@@ -537,6 +582,8 @@ function AppContent() {
                       transition: 'all 0.3s ease',
                       boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
                       transform: 'translateY(0)',
+                      width: '100%', // Add this for mobile
+                      margin: '1rem 0', // Add this for mobile
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.transform = 'translateY(-2px)';
@@ -601,7 +648,7 @@ function AppContent() {
 
             <div>
               {!showApp && (
-                <>
+                <div className='desktop-buttons'>
                   <a href="#try-free" className="btn btn-secondary" onClick={(e) => {e.preventDefault();setScrollTarget('#try-free');
                     setShowApp(false);setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                     Try It Free
@@ -610,7 +657,7 @@ function AppContent() {
                     setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                       Download Now
                   </a>
-                </>
+                </div>
               )}
             </div>
           </nav>

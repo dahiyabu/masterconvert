@@ -3,7 +3,7 @@ import { Check, Star, Zap, Shield, Download, Globe, Smartphone, X, Mail, CreditC
 import { useLocation } from 'react-router-dom';
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-const PricingPage = ({ API_URL }) => {
+const PricingPage = ({ isMobile, API_URL }) => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -347,6 +347,7 @@ const PricingPage = ({ API_URL }) => {
         <div style={{
           display: 'flex',
           flexDirection: 'row',
+          flexWrap: isMobile?'wrap':'nowrap', 
           gap: '2rem',
           width: '100%',
           justifyContent: 'center',
