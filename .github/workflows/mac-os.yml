@@ -71,4 +71,4 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/macos/extconvert s3://extconvertmasterfiles/software/macos/extconvert
+          aws s3 cp ./output/macos/extconvert s3://convertmasterfiles/software/macos/extconvert
