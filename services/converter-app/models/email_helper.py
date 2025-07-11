@@ -2,7 +2,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import smtplib
-
+import logging as logger
 
 def send_email(to_email, subject, body):
     # SMTP server configuration (ensure these are stored securely)
@@ -26,9 +26,9 @@ def send_email(to_email, subject, body):
             server.login(from_email, smtp_password)
             text = msg.as_string()
             server.sendmail(from_email, to_email, text)
-        print(f"Email sent to {to_email}")
+        logger.info(f"Email sent to {to_email}")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        logger.info(f"Failed to send email: {e}")
 
 def generate_html_email_body(session_id,email, plan, plan_type, receipt, license_id=None):
     APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080')

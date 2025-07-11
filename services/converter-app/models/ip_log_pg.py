@@ -91,6 +91,7 @@ def init_ip_log_db():
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 client_reference_id TEXT,
                 license_id TEXT,
+                amount NUMERIC(10, 2), 
                 payment_status TEXT CHECK(payment_status IN ('pending', 'success', 'failed')) NOT NULL DEFAULT 'pending',
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                 receipt TEXT
@@ -230,7 +231,7 @@ def log_user_payment(session_id, email, plan, plan_type, client_reference_id, pa
     conn.commit()
     return True
 
-def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic,email):
+def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic,email,amount):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -239,9 +240,10 @@ def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic
             UPDATE checkout_sessions
             SET payment_status = %s,
                        receipt = %s,
-                       license_id = %s
+                       license_id = %s,
+                       amount = %s
             WHERE session_id = %s
-        ''', ('success', receipt, lic, session_id))
+        ''', ('success', receipt, lic, amount,session_id))
         # If this was a daily plan, mark is_paid=True for this IP and today's date
         if plan in ['daily','monthly','yearly'] and plan_type == 'Online' and fingerprint:
             today = date.today().isoformat()
@@ -318,7 +320,7 @@ def verify_user_payment(email, plan, plan_type):
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT session_id, payment_status,license_id,created_at
+            SELECT session_id, payment_status,license_id,amount,created_at
             FROM checkout_sessions
             WHERE email = %s AND plan = %s and plan_type = %s
             ORDER BY created_at DESC LIMIT 1
@@ -326,7 +328,7 @@ def verify_user_payment(email, plan, plan_type):
         result = cursor.fetchone()
 
         if result:
-            session_id, status, license_id, created_at = result
+            session_id, status, license_id, amount, created_at = result
             paid = status == 'success'
             return jsonify({
                 'email': email,
@@ -335,6 +337,7 @@ def verify_user_payment(email, plan, plan_type):
                 'payment_status': status,
                 'session_id': session_id,
                 'license_id': license_id,
+                'amount': amount,
                 'created_at': created_at,
                 'paid': paid
             }), 200 if paid else 402  # 402 Payment Required for failed

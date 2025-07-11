@@ -320,21 +320,6 @@ const CheckoutResultPage = ({ API_URL }) => {
                   </div>
                 </div>
               )}
-
-              {license && planType === 'Online' && (
-                <div>
-                  <div style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280',
-                    fontWeight: '600',
-                    marginBottom: '0.5rem'
-                  }}>License</div>
-                  <div style={{
-                    fontSize: '1rem',
-                    color: '#111827'
-                  }}>{license}</div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -555,6 +540,21 @@ const CheckoutResultPage = ({ API_URL }) => {
                   }}>${amount}</div>
                 </div>
               )}
+
+              {license && planType === 'Online' && (
+                <div>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280',
+                    fontWeight: '600',
+                    marginBottom: '0.5rem'
+                  }}>License</div>
+                  <div style={{
+                    fontSize: '1rem',
+                    color: '#111827'
+                  }}>{license}</div>
+                </div>
+              )}
             </div>
 
             {/* Email Confirmation Notice */}
@@ -573,7 +573,7 @@ const CheckoutResultPage = ({ API_URL }) => {
                 fontSize: '0.875rem',
                 color: '#0c4a6e'
               }}>
-                A confirmation email with your receipt and download instructions has been sent to your email address.
+                A confirmation email with your receipt and instructions has been sent to your email address.
               </span>
             </div>
           </div>

@@ -233,6 +233,7 @@ def stripe_webhook():
         session = event['data']['object']
         session_id = session.get('id')
         email = session.get('customer_email')
+        amount = session.get('amount')
         reference_id = session.get('client_reference_id')
         plan = session.get('metadata', {}).get('plan')
         plan_type = session.get('metadata', {}).get('plan_type')
@@ -241,17 +242,19 @@ def stripe_webhook():
         license_id = None
         if plan_type == 'Online':
             license_id = session.get('metadata', {}).get('license_id')
-        receipt = session.get('receipt_url')
+        receipt = session.get('receipt_url') if session.get('receipt_url') else session.get('payment_intent', {}).get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
-        # Email subject and body generation
-        email_subject = "Thank you for your purchase!"
-        email_body = generate_html_email_body(session_id,email, plan, plan_type, receipt,license_id)
 
-        # Send the email
-        send_email(email, email_subject, email_body)
-
-        return mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email)
+        (msg,status) = mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email,amount)
+        if (status == 200):
+            # Email subject and body generation
+            email_subject = "Thank you for your purchase!"
+            email_body = generate_html_email_body(session_id,email, plan, plan_type, receipt,license_id)
+            logger.info(f"Sending email=\n{email_body}")
+            # Send the email
+            send_email(email, email_subject, email_body)
+        return (msg,status)
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])
