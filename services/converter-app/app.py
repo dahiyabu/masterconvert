@@ -8,6 +8,7 @@ from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
 from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user
 from models.s3 import generate_download_link
+from models.email_helper import send_email,generate_html_email_body
 from flask import Blueprint,request,jsonify
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
@@ -243,6 +244,12 @@ def stripe_webhook():
         receipt = session.get('receipt_url')
 
         logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
+        # Email subject and body generation
+        email_subject = "Thank you for your purchase!"
+        email_body = generate_html_email_body(session_id,email, plan, plan_type, receipt,license_id)
+
+        # Send the email
+        send_email(email, email_subject, email_body)
 
         return mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email)
     return '',400
