@@ -66,7 +66,7 @@ jobs:
       - name: Build launcher
         run: |
           cd build_app
-          pyinstaller --onefile --windowed --name convertMaster \
+          pyinstaller --onefile --windowed --name extconvert \
             --icon=resources/logo.jpg \
             --add-data "resources/logo.jpg:resources" \
             --add-data "../proc/app:." \
@@ -82,4 +82,4 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/linux/convertMaster s3://convertmasterfiles/software/linux/convertMaster
+          aws s3 cp ./output/linux/extconvert s3://convertmasterfiles/software/linux/extconvert

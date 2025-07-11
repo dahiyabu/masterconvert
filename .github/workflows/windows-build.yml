@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           cd build_app
-          pyinstaller --onefile --windowed  --name convertMaster \
+          pyinstaller --onefile --windowed  --name extconvert \
           --icon=resources/logo.ico \
           --version-file=resources/version.txt \
           --add-data "resources/logo.jpg;resources" \
@@ -114,7 +114,7 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/windows/convertMaster.exe s3://convertmasterfiles/software/windows/convertMaster.exe
+          aws s3 cp ./output/windows/extconvert.exe s3://convertmasterfiles/software/windows/extconvert.exe
         #--acl public-read
       
       #- name: Upload Windows build artifact

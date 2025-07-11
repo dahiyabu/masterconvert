@@ -1,4 +1,4 @@
-name: Build and Deploy to CM-Client
+name: Build and Deploy to EC-Client
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
         with:
           context: services/client
           file: services/client/Dockerfile
-          tags: cmclient:latest
+          tags: ecclient:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           load: true  # needed if you want to use the image in later steps locally
@@ -39,10 +39,10 @@ jobs:
  #       run: docker build -f services/client/Dockerfile -t cmclient:latest services/client
 
       - name: Save Docker image to tarball
-        run: docker save cmclient:latest -o cmclient.tar
+        run: docker save ecclient:latest -o ecclient.tar
 
       - name: Move image to temporary directory
-        run: mkdir -p upload-cm && mv cmclient.tar upload-cm/ && chmod -R 755 upload-cm
+        run: mkdir -p upload-ec && mv ecclient.tar upload-ec/ && chmod -R 755 upload-ec
 
       - name: Copy Docker image to server
         uses: appleboy/scp-action@v0.1.7
@@ -51,7 +51,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_HOST_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          source: "upload-cm/*"
+          source: "upload-ec/*"
           target: "/var/tmp/"
           port: 22
           timeout: 30s
@@ -82,25 +82,25 @@ jobs:
           script: |
             docker network create converter-network || echo "converter-network already exists"
             
-            if [[ `docker ps|grep cmclient` ]]; then
-             container_id=`docker ps |grep cmclient|awk '{print $1}'`
+            if [[ `docker ps|grep ecclient` ]]; then
+             container_id=`docker ps |grep ecclient|awk '{print $1}'`
              docker stop $container_id
              docker rm $container_id
             fi
-            docker rmi cmclient:latest || echo "No old dev image found to remove"
+            docker rmi ecclient:latest || echo "No old dev image found to remove"
             
-            docker load -i /var/tmp/upload-cm/cmclient.tar
+            docker load -i /var/tmp/upload-ec/ecclient.tar
             
-            sed "s/CM_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081\/api/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
-            mkdir -p /var/tmp/convertMaster/logs
+            sed "s/EC_APP_API_URL_VALUE/http:\/\/178.16.143.20:9081\/api/g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
+            mkdir -p /var/tmp/extconvert/logs
 
             
-            docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/convertMaster/logs/cmclient_stderr.log 1>/var/tmp/convertMaster/logs/cmclient_stdout.log
+            docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/extconvert/logs/ecclient_stderr.log 1>/var/tmp/extconvert/logs/ecclient_stdout.log
             
             elapsed_time=0
 
-            while ! docker ps | grep -q cmclient && [ $elapsed_time -lt 300 ]; do
-              echo "Waiting for cmclient container to start..."
+            while ! docker ps | grep -q ecclient && [ $elapsed_time -lt 300 ]; do
+              echo "Waiting for ecclient container to start..."
               sleep 20
               elapsed_time=$((elapsed_time + 20))
             done
@@ -108,10 +108,10 @@ jobs:
             if [ $elapsed_time -ge 300 ]; then
               echo "Timeout reached! Container did not start after 300 seconds."
               rm -rf ~/services/client
-              rm -rf /var/tmp/upload-cm
+              rm -rf /var/tmp/upload-ec
               exit 1  # Fail the job if the container did not start
             fi
             echo "Container is up and running!"
             
             rm -rf ~/services/client
-            rm -rf /var/tmp/upload-cm
+            rm -rf /var/tmp/upload-ec
