@@ -42,7 +42,7 @@ if __name__ == '__main__':
     initialize()
     cleanup_files(get_base_folder())
     create_timed_rotating_log()
-    set_console_title("ConvertMaster")
+    set_console_title("ExtConvert")
     ready_file=os.path.join(get_base_folder(),'app_ready.tmp')
     with open(ready_file, "w") as f:
         f.write("ready")

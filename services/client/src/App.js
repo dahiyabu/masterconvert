@@ -288,7 +288,7 @@ function useIsMobile() {
                              0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708l3 3z" />
                   </svg>
                 </div>
-                ConvertMaster
+                ExtConvert
               </div>
               {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
@@ -346,7 +346,7 @@ function useIsMobile() {
                              0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708l3 3z" />
                   </svg>
                 </div>
-                ConvertMaster
+                ExtConvert
               </div>
               
               {/* Add hamburger menu button */}
@@ -479,7 +479,7 @@ function useIsMobile() {
                              0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708l3 3z" />
                   </svg>
                 </div>
-                ConvertMaster
+                ExtConvert
               </div>
               {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"
@@ -535,7 +535,7 @@ function useIsMobile() {
                            0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708l3 3z" />
                 </svg>
               </div>
-              ConvertMaster
+              ExtConvert
             </div>
             {isMobile && !showApp && (<button 
                 className="mobile-menu-toggle"

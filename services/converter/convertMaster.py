@@ -326,10 +326,10 @@ def convert_doc_to_pdf(input_path, output_path, source_format):
             ], check=True)
             if os.path.exists(generated_pdf):
                 shutil.move(generated_pdf, output_path)
-            logger.info(f"✅ Converted to PDF: {output_path}")
+            logger.info(f"Converted to PDF: {output_path}")
             logger.info(f"PDF conversion successful! Saved at {output_path}")
         except subprocess.CalledProcessError as e:
-            logger.error(f"❌ Error: {e}")
+            logger.error(f"Error: {e}")
         return True
         #else:
          #   raise Exception("Conversion failed during the process.")
@@ -392,7 +392,7 @@ def convert_document(input_path, output_path, source_format, target_format, opti
     """Convert document files"""
     try:
         # PDF to image conversion
-        if source_format == 'pdf' and target_format in ['png', 'jpg']:
+        if source_format == 'pdf' and target_format in ['png', 'jpg', 'jpeg']:
             # In a real app, use pdf2image
             conversion_success = convert_pdf_to_image(input_path, output_path, target_format)
             if conversion_success:

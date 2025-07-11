@@ -96,9 +96,9 @@ const DownloadPage = ({API_URL}) => {
 
   const downloadSoftware = async (platform) => {
     const s3Keys = {
-      windows: 'software/windows/convertMaster.exe',
-      macos: 'software/macos/convertMaster',
-      linux: 'software/linux/convertMaster'
+      windows: 'software/windows/extconvert.exe',
+      macos: 'software/macos/extconvert',
+      linux: 'software/linux/extconvert'
     };
   
     try {
@@ -142,15 +142,15 @@ const DownloadPage = ({API_URL}) => {
       linux: '.AppImage'
     };
     
-    const softwareFileName = `ConvertMaster-${platform}${extensions[platform]}`;
+    const softwareFileName = `ExtConvert-${platform}${extensions[platform]}`;
     zip.file(softwareFileName, softwareBlob);
     
-    const readmeContent = `ConvertMaster ${platform.charAt(0).toUpperCase() + platform.slice(1)} Package
+    const readmeContent = `ExtConvert ${platform.charAt(0).toUpperCase() + platform.slice(1)} Package
 
 Installation Instructions:
 1. Extract this package to your desired location
 2. The license.lic file must remain in the same directory as the software
-3. Run the ConvertMaster executable
+3. Run the ExtConvert executable
 
 License: ${planDetails.displayName} - Valid for ${planDetails.duration} days
 Email: ${customerEmail}
@@ -175,7 +175,7 @@ Platform: ${platform}
 
   const handlePlatformSelect = (platform) => {
     setSelectedPlatform(platform);
-    setSavePath(`ConvertMaster-${platform}-Package.zip`);
+    setSavePath(`ExtConvert-${platform}-Package.zip`);
     setShowModal(true);
   };
 

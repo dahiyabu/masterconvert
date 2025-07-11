@@ -43,7 +43,7 @@ const PricingPage = ({ isMobile, API_URL }) => {
       type: 'Online',
       description: 'Infrequent users',
       originalPrice: '$0.99',
-      currentPrice: '$0.49',
+      currentPrice: '$0.50',
       period: 'per day',
       discount: 'Save 50%',
       features: [
@@ -537,13 +537,16 @@ const PricingPage = ({ isMobile, API_URL }) => {
 
         {/* Feature Highlights */}
         <div style={{ marginTop: '5rem', textAlign: 'center' }}>
+          <p className="text-center text-sm text-gray-500 mt-8 mb-12 italic">
+            <em>Note: All plans are one-time payments. No auto-renewal will occur.</em>
+          </p>
           <h2 style={{
             fontSize: '1.875rem',
             fontWeight: '700',
             color: '#111827',
             marginBottom: '3rem'
           }}>
-            Why Choose ConvertMaster?
+            Why Choose ExtConvert?
           </h2>
           <div style={{
             display: 'grid',

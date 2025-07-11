@@ -1,12 +1,12 @@
 version: "3.9"
 services:
-  distService:
-    image: convertmaster:latest
-    container_name: convertmaster
+  extConvertService:
+    image: extconvert:latest
+    container_name: extconvert
     restart: unless-stopped
     environment:
       - PORT=9081
-      - TEMPPATH=/var/tmp/convertMaster
+      - TEMPPATH=/var/tmp/extconvert
       - MAX_REQUESTS=3
       - APP_DOMAIN=APP_DOMAIN_VALUE
       - POSTGRES_DSN=POSTGRES_DSN_VALUE
@@ -24,8 +24,8 @@ services:
     ports:
       - "9081:9081"
     volumes:
-      - /var/tmp/convertMaster:/var/tmp/convertMaster
-    command: ./dist/app -l /var/tmp/convertMaster/logs/converter.log
+      - /var/tmp/extconvert:/var/tmp/extconvert
+    command: ./dist/app -l /var/tmp/extconvert/logs/converter.log
     networks:
       - converter-network
 networks:

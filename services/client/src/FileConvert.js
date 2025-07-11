@@ -74,7 +74,7 @@ export default function FileConvertApp() {
         {/* Footer */}
         <div style={styles.footer}>
           <p style={styles.footerText}>
-            Powered by ConvertMaster
+            Powered by ExtConvert
           </p>
         </div>
       </div>

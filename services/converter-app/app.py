@@ -178,7 +178,7 @@ def create_checkout_session():
     logger.info(success_url)
     try:
         client_ref_id = str(uuid.uuid4())
-        stripe_mode = 'payment' if plan == 'daily' else 'subscription'
+        stripe_mode = 'payment' #if plan == 'daily' else 'subscription'
         plan_metadata={
                 'plan': plan,
                 'plan_type':plan_type,

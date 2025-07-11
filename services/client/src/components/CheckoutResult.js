@@ -457,7 +457,7 @@ const CheckoutResultPage = ({ API_URL }) => {
             marginBottom: '3rem',
             lineHeight: '1.6'
           }}>
-            Welcome to ConvertMaster Premium! Your subscription is now active and ready to use.
+            Welcome to ExtConvert Premium! Your subscription is now active and ready to use.
           </p>
 
           {/* Order Details Card */}
@@ -952,7 +952,7 @@ const CheckoutResultPage = ({ API_URL }) => {
                             color: '#111827',
                             margin: '0'
                           }}>
-                            Try ConvertMaster Free
+                            Try ExtConvert Free
                           </h3>
                         </div>
                         <p style={{
@@ -960,7 +960,7 @@ const CheckoutResultPage = ({ API_URL }) => {
                           marginBottom: '1.5rem',
                           lineHeight: '1.6'
                         }}>
-                          Not ready to commit? Start with our free plan and experience the power of ConvertMaster with no strings attached.
+                          Not ready to commit? Start with our free plan and experience the power of ExtConvert with no strings attached.
                         </p>
                         <div style={{
                           display: 'flex',

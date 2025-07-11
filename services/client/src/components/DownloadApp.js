@@ -29,7 +29,7 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
     setDetectedPlatform(detected);
 
     // Check session storage for previous downloads
-    const downloadSession = sessionStorage.getItem('convertmaster_download_session');
+    const downloadSession = sessionStorage.getItem('extconvert_download_session');
     if (downloadSession) {
       const session = JSON.parse(downloadSession);
       setHasDownloaded(session.hasDownloaded || false);
@@ -73,42 +73,42 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
   
   const handleWindowsDownload = () => {
     if (downloadedPlatforms.has('windows')) {
-      setStatusMessage('You have already downloaded ConvertMaster for Windows. Use your existing download.');
+      setStatusMessage('You have already downloaded ExtConvert for Windows. Use your existing download.');
       setStatusType('info');
       return;
     }
     setSelectedPlatform('windows');
-    setDownloadPath('ConvertMaster-windows-Package.zip');
+    setDownloadPath('ExtConvert-windows-Package.zip');
     setIsConfirmEnabled(true);
     setShowSaveModal(true);
   };
 
   const handleMacDownload = () => {
     if (downloadedPlatforms.has('macos')) {
-      setStatusMessage('You have already downloaded ConvertMaster for MacOS. Use your existing download.');
+      setStatusMessage('You have already downloaded ExtConvert for MacOS. Use your existing download.');
       setStatusType('info');
       return;
     }
     setSelectedPlatform('macos');
-    setDownloadPath('ConvertMaster-macos-Package.zip');
+    setDownloadPath('ExtConvert-macos-Package.zip');
     setIsConfirmEnabled(true);
     setShowSaveModal(true);
   };
 
   const handleLinuxDownload = () => {
     if (downloadedPlatforms.has('linux')) {
-      setStatusMessage('You have already downloaded ConvertMaster for Linux. Use your existing download.');
+      setStatusMessage('You have already downloaded ExtConvert for Linux. Use your existing download.');
       setStatusType('info');
       return;
     }
     setSelectedPlatform('linux');
-    setDownloadPath('ConvertMaster-linux-Package.zip');
+    setDownloadPath('ExtConvert-linux-Package.zip');
     setIsConfirmEnabled(true);
     setShowSaveModal(true);
   };
 
   const handleQuickLocation = (location) => {
-    const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+    const filename = `ExtConvert-${selectedPlatform}-Package.zip`;
     setDownloadPath(`${location}/${filename}`);
     setIsConfirmEnabled(true);
   };
@@ -128,7 +128,7 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
           setDirectoryHandle(directoryHandle);
         }
         
-        const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+        const filename = `ExtConvert-${selectedPlatform}-Package.zip`;
         setDownloadPath(`${directoryHandle.name}/${filename}`);
         setIsConfirmEnabled(true);
         return;
@@ -149,7 +149,7 @@ const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
   // Simplified manual path input
   const showManualPathInput = useCallback(() => {
     const platform = getPlatformInfo();
-    const filename = `ConvertMaster-${selectedPlatform}-Package.zip`;
+    const filename = `ExtConvert-${selectedPlatform}-Package.zip`;
     const fullPath = `${platform.defaultPath}${platform.separator}${filename}`;
     
     const userPath = window.prompt(
@@ -223,7 +223,7 @@ const getPlatformInfo = useCallback(() => {
       setLicenseId(result.licenseId);
 
       // Save to session storage
-      sessionStorage.setItem('convertmaster_download_session', JSON.stringify({
+      sessionStorage.setItem('extconvert_download_session', JSON.stringify({
         hasDownloaded: true,
         downloadedPlatforms: Array.from(newDownloadedPlatforms),
         licenseId: result.licenseId,
@@ -254,7 +254,7 @@ const getPlatformInfo = useCallback(() => {
               <path d="M16 16l-4 4-4-4h3V9h2v7h3zm-4-14a7 7 0 00-7 7c0 .19.01.38.03.57A5.507 5.507 0 000 15.5C0 18.537 2.463 21 5.5 21h13a5.5 5.5 0 100-11c-.279 0-.553.022-.821.064A7.002 7.002 0 0012 2z" />
             </svg>
           </div>
-          <span className="brand-name">ConvertMaster</span>
+          <span className="brand-name">ExtConvert</span>
         </div>
       </header>
 
@@ -273,12 +273,12 @@ const getPlatformInfo = useCallback(() => {
           {/* Title */}
           <h1 className="success-title">Thank You for Your Purchase!</h1>
           <p className="success-subtitle">
-            Your payment has been processed successfully. Download ConvertMaster now and start converting your files with ease.
+            Your payment has been processed successfully. Download ExtConvert now and start converting your files with ease.
           </p>
 
           {/* Download Section */}
           <div className="download-section">
-            <h2 className="download-title">Download ConvertMaster</h2>
+            <h2 className="download-title">Download ExtConvert</h2>
             <p className="download-subtitle">Choose your platform below to download the software:</p>
 
             <div className="download-buttons">
@@ -354,7 +354,7 @@ const getPlatformInfo = useCallback(() => {
                 <h3>What's Included</h3>
               </div>
               <ul className="info-list">
-                <li>Complete ConvertMaster software package</li>
+                <li>Complete ExtConvert software package</li>
                 <li>Installation instructions included in the zip file</li>
                 <li>Pre-configured license.lic file for instant activation</li>
                 <li>Simply extract and run - no additional setup required!</li>
@@ -369,7 +369,7 @@ const getPlatformInfo = useCallback(() => {
               <div className="info-content">
                 <p>Your license.lic file is included in the download package and contains all necessary activation data.</p>
                 <p>Your subscription includes free updates and premium support based on your chosen plan (monthly or yearly).</p>
-                <p><strong>Important:</strong> Keep the license.lic file in the same directory as the ConvertMaster executable.</p>
+                <p><strong>Important:</strong> Keep the license.lic file in the same directory as the ExtConvert executable.</p>
               </div>
             </div>
           </div>
@@ -396,7 +396,7 @@ const getPlatformInfo = useCallback(() => {
             </div>
 
             <div className="modal-body">
-              <p className="modal-description">Select where to save your ConvertMaster package:</p>
+              <p className="modal-description">Select where to save your ExtConvert package:</p>
               
               <div className="file-input-container">
                 <input

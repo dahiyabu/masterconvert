@@ -1,15 +1,15 @@
 version: "3.9"
 services:
-  cmClient:
-    image: cmclient:latest
+  ecClient:
+    image: ecclient:latest
     restart: always
     ports:
       - "9080:80"
     environment:
-      - REACT_APP_API_URL=CM_APP_API_URL_VALUE
+      - REACT_APP_API_URL=EC_APP_API_URL_VALUE
 
     volumes:
-      - /var/tmp/convertMaster/logs:/var/tmp/convertMaster/logs
+      - /var/tmp/extconvert/logs:/var/tmp/extconvert/logs
     networks:
       - converter-network
 networks:

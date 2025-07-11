@@ -40,7 +40,7 @@ function App() {
             fontWeight: 'bold',
             color: '#4F46E5'
           }}>
-            ConvertMaster
+            ExtConvert
           </span>
         </div>
       </header>

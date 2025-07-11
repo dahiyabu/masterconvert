@@ -125,7 +125,7 @@ const ContactPage = ({API_URL}) => {
 
         <div className="contact-info">
           <h3><span className="emoji">📞</span>Get in Touch</h3>
-          <p><strong>Email:</strong> support@theConvertMaster.com</p>
+          <p><strong>Email:</strong> support@extConvert.com</p>
           {/*<p><strong>Phone:</strong> +1 (555) 123-4567</p>
           <p><strong>Address:</strong> 123 Business St, Suite 100, City, State 12345</p>
           <p><strong>Business Hours:</strong> Monday - Friday, 9:00 AM - 6:00 PM EST</p>*/}

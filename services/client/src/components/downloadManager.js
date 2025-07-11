@@ -7,7 +7,7 @@ import JSZip from 'jszip';
 const DownloadManager = (function() {
     'use strict';
     console.log("REACT_APP_URL in DOWNLOAD =");
-    console.log(window.env.REACT_APP_API_URL);
+    //console.log(window.env.REACT_APP_API_URL);
     
     const API_URL = window.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     // Configuration
@@ -135,9 +135,9 @@ const DownloadManager = (function() {
 
     async function downloadSoftware(platform) {
         const s3Keys = {
-            windows: 'software/windows/convertMaster.exe',
-            macos: 'software/macos/convertMaster',
-            linux: 'software/linux/convertMaster'
+            windows: 'software/windows/extconvert.exe',
+            macos: 'software/macos/extconvert',
+            linux: 'software/linux/extconvert'
         };
 
         try {
@@ -197,16 +197,16 @@ const DownloadManager = (function() {
                 linux: '.AppImage'
             };
             
-            const softwareFileName = `ConvertMaster-${platform}${extensions[platform]}`;
+            const softwareFileName = `ExtConvert-${platform}${extensions[platform]}`;
             zip.file(softwareFileName, softwareBlob);
             
             // Add readme file
-            const readmeContent = `ConvertMaster ${platform.charAt(0).toUpperCase() + platform.slice(1)} Package
+            const readmeContent = `ExtConvert ${platform.charAt(0).toUpperCase() + platform.slice(1)} Package
 
 Installation Instructions:
 1. Extract this package to your desired location
 2. The license.lic file must remain in the same directory as the software
-3. Run the ConvertMaster executable
+3. Run the ExtConvert executable
 
 License: The license.lic file contains encrypted license data required for software activation.
 
@@ -281,7 +281,7 @@ Platform: ${platform}
         }
         
         // Set default filename based on platform
-        const defaultFilename = `ConvertMaster-${platform}-Package.zip`;
+        const defaultFilename = `ExtConvert-${platform}-Package.zip`;
         savePathInput.value = defaultFilename;
         
         modal.style.display = 'block';
@@ -327,7 +327,7 @@ Platform: ${platform}
 
     function setQuickLocation(location) {
         const platform = selectedPlatform || 'Package';
-        const filename = `ConvertMaster-${platform}-Package.zip`;
+        const filename = `ExtConvert-${platform}-Package.zip`;
         const fullPath = `${location}/${filename}`;
         
         const savePathInput = document.querySelector(selectors.savePath);

@@ -26,7 +26,7 @@ app.teardown_appcontext(close_db)
 def initialize_args():
     #Prevent multiple instantiations pf DistManager and logger
     logfile = ''
-    parser = argparse.ArgumentParser(description="ConvertMaster")
+    parser = argparse.ArgumentParser(description="ExtConvert")
     # Adding optional argument
     parser.add_argument("-l", "--log", help = "Log File")
     # Read arguments from command line

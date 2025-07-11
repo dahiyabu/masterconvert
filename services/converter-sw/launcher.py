@@ -96,7 +96,7 @@ font = ("Arial", 10)
 
 # Create splash window
 root = tk.Tk()
-root.title("ConvertMaster")
+root.title("ExtConvert")
 root.overrideredirect(True)
 root.configure(bg="white")
 

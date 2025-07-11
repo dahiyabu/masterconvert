@@ -52,11 +52,11 @@ def convert_scanned_pdf_to_docx(input_path, output_path):
                     doc.add_paragraph(line_text.strip())
 
         doc.save(output_path)
-        logger.info(f"✅ OCR-based DOCX saved at {output_path}")
+        logger.info(f"OCR-based DOCX saved at {output_path}")
         return True
 
     except Exception as e:
-        logger.error(f"❌ OCR conversion failed: {e}")
+        logger.error(f"OCR conversion failed: {e}")
         return False
 
 def convert_smart_scanned_pdf_to_docx(input_path, output_path, min_text_length=20, min_avg_conf=70):
@@ -113,16 +113,16 @@ def convert_from_pdf(input_path, output_path, dest_format):
 def convert_pdf_to_docx(input_path,output_path):
     try:
         if is_scanned_pdf(input_path):
-            logger.info("📄 Detected scanned PDF – using OCR method for DOCX.")
+            logger.info("Detected scanned PDF – using OCR method for DOCX.")
             return convert_smart_scanned_pdf_to_docx(input_path=input_path,output_path=output_path)
             return convert_scanned_pdf_to_docx(input_path, output_path)
         cv = Converter(input_path)
         cv.convert(output_path, start=0, end=None, layout=True)
         cv.close()
-        logger.info(f"✅ PDF converted to DOCX at: {output_path}")
+        logger.info(f"PDF converted to DOCX at: {output_path}")
         return True
     except Exception as e:
-        logger.error(f"❌ Error: {e}")
+        logger.error(f"Error: {e}")
         return False
     
 def convert_docx_to_odt(docx_path, odt_path):
@@ -136,8 +136,8 @@ def convert_docx_to_odt(docx_path, odt_path):
             '--outdir', output_dir,
             docx_path
         ], check=True)
-        logger.info(f"✅ DOCX converted to ODT at {odt_path}")
+        logger.info(f"DOCX converted to ODT at {odt_path}")
         return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"❌ LibreOffice error: {e}")
+        logger.error(f"LibreOffice error: {e}")
         return False

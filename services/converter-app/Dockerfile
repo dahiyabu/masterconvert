@@ -1,7 +1,7 @@
 # Base image with Python and essential build tools
 FROM python:3.13-slim
 
-LABEL description="Build environment for convertMaster app with PyInstaller and system dependencies."
+LABEL description="Build environment for extconvert app with PyInstaller and system dependencies."
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
