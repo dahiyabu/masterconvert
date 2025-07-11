@@ -47,6 +47,6 @@ if __name__ == '__main__':
     with open(ready_file, "w") as f:
         f.write("ready")
     setup()
-    print("Enjoy Convert Master at http://localhost:5000 in your browser")
+    print("Enjoy ExtConvert at http://localhost:5000 in your browser")
     print("To Exit, Close the window")
     app.run(debug=False,use_reloader=False, host='0.0.0.0', port=5000)
