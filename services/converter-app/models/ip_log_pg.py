@@ -266,15 +266,24 @@ def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_in
 
 def payment_received(payment_intent):
     try:
+        if not payment_intent:
+            logger.error("Payment intent is required")
+            return (None,False)
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute('''
                 SELECT client_ip,session_id, plan, plan_type, fingerprint, license_id, email, receipt_url FROM checkout_sessions WHERE payment_intent = %s
             ''', (payment_intent,))
         row = cursor.fetchone()
-        (ip,session_id,plan,plan_type,fingerprint,lic,email,receipt_url)=row
-        if ip and session_id and plan and plan_type and fingerprint and email and receipt_url:
-            return (row,True)
+        if row:
+            ip, session_id, plan, plan_type, fingerprint, lic, email, receipt_url = row
+            if ip and session_id and plan and plan_type and fingerprint and email and receipt_url:
+                return (row, True)
+            else:
+                return (None, False)
+        else:
+            # No row found, return None
+            return (None, False)
     except Exception as e:
         logger.error("DB query failed = {e}")
         return (None,False)
@@ -285,7 +294,7 @@ def mark_successful_payment(row,payment_intent):
         cursor = conn.cursor()
         cursor.execute('''
                 UPDATE checkout_sessions
-                SET payment_status = %s,
+                SET payment_status = %s
                 WHERE payment_intent = %s
             ''', ('success', payment_intent))
         conn.commit()
