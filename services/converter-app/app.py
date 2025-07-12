@@ -6,7 +6,8 @@ from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
-from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user,save_successful_payment
+from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user
+from models.ip_log_pg import save_successful_payment,payment_received
 from models.s3 import generate_download_link
 from flask import Blueprint,request,jsonify
 
@@ -246,8 +247,13 @@ def stripe_webhook():
             amount = amount / 100.0  # Dividing by 100 to convert cents to dollars
         else:
             amount = 0.0 
-        return save_successful_payment(session_id,None,license_id,fingerprint,amount,payment_intent,'pending')
-        #(msg,status) = mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email,amount)
+        (msg,status) = save_successful_payment(session_id,None,license_id,fingerprint,amount,payment_intent)
+        if status!=200:
+            return (msg,status)
+        (row,status) = payment_received(payment_intent)
+        if status:
+            # Save the payment details and send the email
+            return mark_successful_payment(row,payment_intent)
     elif event['type'] == 'charge.updated':
             logger.info(f"charge.succeed {event}")
             session = event['data']['object']
@@ -256,11 +262,13 @@ def stripe_webhook():
             receipt = session.get('receipt_url')  # Directly get the receipt_url from the payment_intent object
 
             if receipt:
-                (msg,status) = save_successful_payment(None,receipt,None,None,None,payment_intent,'success')
+                (msg,status) = save_successful_payment(None,receipt,None,None,None,payment_intent)
                 if status!=200:
                     return (msg,status)
-                # Save the payment details and send the email
-                return mark_successful_payment(payment_intent)
+                (row,status) = payment_received(payment_intent)
+                if status:
+                    # Save the payment details and send the email
+                    return mark_successful_payment(row,payment_intent)
     #else:
      #   logger.info(f"other {event}")
     

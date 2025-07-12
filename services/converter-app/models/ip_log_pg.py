@@ -234,7 +234,7 @@ def log_user_payment(ip,session_id, email, plan, plan_type, client_reference_id,
     conn.commit()
     return True
 
-def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_intent,status):
+def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_intent):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
@@ -248,17 +248,15 @@ def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_in
                 SET license_id = %s,
                     amount = %s,
                     payment_intent = %s,
-                    fingerprint = %s,
-                    payment_status = %s
+                    fingerprint = %s
                 WHERE session_id = %s
-            ''', (lic, amount,payment_intent,fingerprint,status,session_id))
+            ''', (lic, amount,payment_intent,fingerprint,session_id))
         else:
             cursor.execute('''
                 UPDATE checkout_sessions
-                SET payment_status = %s,
-                    receipt_url = %s
+                SET receipt_url = %s
                 WHERE payment_intent = %s
-            ''', (status,receipt, payment_intent))
+            ''', (receipt, payment_intent))
         conn.commit()
         return ('Success',200)
     except Exception as db_err:
@@ -266,7 +264,7 @@ def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_in
         return ('Database error', 500)
 
 
-def mark_successful_payment(payment_intent):
+def payment_received(payment_intent):
     try:
         conn = get_db()
         cursor = conn.cursor()
@@ -274,6 +272,23 @@ def mark_successful_payment(payment_intent):
                 SELECT client_ip,session_id, plan, plan_type, fingerprint, license_id, email, receipt_url FROM checkout_sessions WHERE payment_intent = %s
             ''', (payment_intent,))
         row = cursor.fetchone()
+        (ip,session_id,plan,plan_type,fingerprint,lic,email,receipt_url)=row
+        if ip and session_id and plan and plan_type and fingerprint and email and receipt_url:
+            return (row,True)
+    except Exception as e:
+        logger.error("DB query failed = {e}")
+        return (None,False)
+    
+def mark_successful_payment(row,payment_intent):
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+                UPDATE checkout_sessions
+                SET payment_status = %s,
+                WHERE payment_intent = %s
+            ''', ('success', payment_intent))
+        conn.commit()
         (ip,session_id,plan,plan_type,fingerprint,lic,email,receipt_url)=row
         # If this was a daily plan, mark is_paid=True for this IP and today's date
         if plan in ['daily','monthly','yearly'] and plan_type == 'Online' and fingerprint:

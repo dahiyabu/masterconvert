@@ -975,7 +975,7 @@ const CheckoutResultPage = ({ API_URL }) => {
                             borderRadius: '9999px',
                             fontSize: '0.875rem',
                             fontWeight: '600'
-                          }}>✓ 5 conversions per day</span>
+                          }}>✓ 3 conversions per day</span>
                           <span style={{
                             background: '#dbeafe',
                             color: '#1e40af',
