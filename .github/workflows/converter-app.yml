@@ -116,4 +116,4 @@ jobs:
             echo "Container is up and running!"
             
             rm -rf ~/services/converter-app
-            rm -rf /var/tmp/upload-ec-app
+            #rm -rf /var/tmp/upload-ec-app
