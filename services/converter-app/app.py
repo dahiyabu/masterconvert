@@ -6,16 +6,15 @@ from converter.license import generate_license_file,generate_unique_license_id
 from converter.handlers import common_conversion_handler,common_merge_handler
 from models.ip_log_pg import is_ip_under_limit,log_ip_address,change_max_allowed_request,log_user_payment
 from models.ip_log_pg import verify_user_payment,mark_successful_payment,get_session_info,get_account_limits
-from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user
+from models.ip_log_pg import get_download_records,store_license,insert_contact_data,validate_online_user,save_successful_payment
 from models.s3 import generate_download_link
-from models.email_helper import send_email,generate_html_email_body
 from flask import Blueprint,request,jsonify
 
 cm_app_bp = Blueprint('cm_app_bp', __name__)
 
 stripe.api_key = os.getenv("STRIPE_KEY",None)
 stripe.ca_bundle_path = '/etc/ssl/certs/ca-certificates.crt'
-APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080')
+APP_DOMAIN = os.getenv("APP_DOMAIN",'http://localhost:3000')
 
 monthly_online_price_id=os.getenv('MONTHLY_ONLINE_PRICE_ID', None)
 yearly_online_price_id=os.getenv('YEARLY_ONLINE_PRICE_ID', None)
@@ -171,7 +170,7 @@ def create_checkout_session():
         'yearly': {'Online': yearly_online_price_id, 'Offline': yearly_offline_price_id},
         'daily': { 'Online': daily_price_id}
     }.get(plan, {}).get(plan_type)
-    logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
+    #logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
     if not price_id:
         return jsonify({'error': 'Invalid plan'}), 400
 
@@ -204,7 +203,7 @@ def create_checkout_session():
         if not session:
             return jsonify({'message':'Session Creation Error'}),400
         
-        if log_user_payment(session.id, email, plan, plan_type, client_ref_id, 'pending'):
+        if log_user_payment(ip_address,session.id, email, plan, plan_type, client_ref_id, 'pending'):
             return jsonify({'url': session.url})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -228,33 +227,43 @@ def stripe_webhook():
     except stripe.error.SignatureVerificationError:
         logger.error("Signature verification failed")
         return 'Signature verification failed.', 400
-    logger.info(event)
     if 'type' in event and event['type'] == 'checkout.session.completed':
+        logger.info(f"checkout_session.complete {event}")
         session = event['data']['object']
         session_id = session.get('id')
         email = session.get('customer_email')
-        amount = session.get('amount')
-        reference_id = session.get('client_reference_id')
-        plan = session.get('metadata', {}).get('plan')
+        amount = session.get('amount_total')
+        payment_intent = session.get('payment_intent')
+        #reference_id = session.get('client_reference_id')
+        #plan = session.get('metadata', {}).get('plan')
         plan_type = session.get('metadata', {}).get('plan_type')
-        ip_address = session.get('metadata', {}).get('ip_address')
+        #ip_address = session.get('metadata', {}).get('ip_address')
         fingerprint = session.get('metadata', {}).get('fingerprint')
         license_id = None
         if plan_type == 'Online':
             license_id = session.get('metadata', {}).get('license_id')
-        receipt = session.get('receipt_url') if session.get('receipt_url') else session.get('payment_intent', {}).get('receipt_url')
+        if amount is not None:
+            amount = amount / 100.0  # Dividing by 100 to convert cents to dollars
+        else:
+            amount = 0.0 
+        return save_successful_payment(session_id,None,license_id,fingerprint,amount,payment_intent,'pending')
+        #(msg,status) = mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email,amount)
+    elif event['type'] == 'charge.updated':
+            logger.info(f"charge.succeed {event}")
+            session = event['data']['object']
+            payment_intent = session.get('payment_intent')
+            amount = session.get('amount')
+            receipt = session.get('receipt_url')  # Directly get the receipt_url from the payment_intent object
 
-        logger.debug(f"Payment completion process started for {email} ref: {reference_id}")
-
-        (msg,status) = mark_successful_payment(ip_address,session_id,plan,plan_type,fingerprint,receipt,license_id,email,amount)
-        if (status == 200):
-            # Email subject and body generation
-            email_subject = "Thank you for your purchase!"
-            email_body = generate_html_email_body(session_id,email, plan, plan_type, receipt,license_id)
-            logger.info(f"Sending email=\n{email_body}")
-            # Send the email
-            send_email(email, email_subject, email_body)
-        return (msg,status)
+            if receipt:
+                (msg,status) = save_successful_payment(None,receipt,None,None,None,payment_intent,'success')
+                if status!=200:
+                    return (msg,status)
+                # Save the payment details and send the email
+                return mark_successful_payment(payment_intent)
+    #else:
+     #   logger.info(f"other {event}")
+    
     return '',400
 
 @cm_app_bp.route('/api/verifypayment', methods=['POST'])

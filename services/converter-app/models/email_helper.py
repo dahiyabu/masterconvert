@@ -6,10 +6,10 @@ import logging as logger
 
 def send_email(to_email, subject, body):
     # SMTP server configuration (ensure these are stored securely)
-    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_server = os.getenv("SMTP_SERVER","smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", 587))  # Default is 587 for TLS
-    smtp_password = os.getenv("EMAIL_SECRET")
-    from_email = os.getenv("SENDER_EMAIL")  # The email address you're sending from
+    smtp_password = os.getenv("EMAIL_SECRET",None)
+    from_email = os.getenv("SENDER_EMAIL",None)  # The email address you're sending from
 
     # Create the MIME message
     msg = MIMEMultipart()
@@ -31,7 +31,7 @@ def send_email(to_email, subject, body):
         logger.info(f"Failed to send email: {e}")
 
 def generate_html_email_body(session_id,email, plan, plan_type, receipt, license_id=None):
-    APP_DOMAIN = os.getenv("APP_DOMAIN",'http://178.16.143.20:9080')
+    APP_DOMAIN = os.getenv("APP_DOMAIN",'http://localhost:3000')
     html_body = f"""
     <html>
     <body style="font-family: Arial, sans-serif; color: #333;">
@@ -76,3 +76,11 @@ def generate_html_email_body(session_id,email, plan, plan_type, receipt, license
     </html>
     """
     return html_body
+
+def create_email(session_id,email,plan,plan_type,receipt,license_id):
+    # Email subject and body generation
+    email_subject = "Thank you for your purchase!"
+    email_body = generate_html_email_body(session_id,email, plan, plan_type, receipt,license_id)
+    #logger.info(f"Sending email={email_body}")
+    # Send the email
+    send_email(email, email_subject, email_body)

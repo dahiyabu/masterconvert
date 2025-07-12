@@ -4,7 +4,7 @@ import psycopg2.extras
 from psycopg2 import sql, OperationalError, Error
 import logging as logger
 from datetime import datetime, timedelta
-
+from models.email_helper import create_email
 from datetime import date
 from flask import g,jsonify
 
@@ -85,16 +85,19 @@ def init_ip_log_db():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS checkout_sessions (
                 id SERIAL PRIMARY KEY,
+                client_ip TEXT,
                 session_id TEXT NOT NULL UNIQUE,
                 email TEXT,
                 plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
+                fingerprint TEXT,
                 client_reference_id TEXT,
                 license_id TEXT,
                 amount NUMERIC(10, 2), 
                 payment_status TEXT CHECK(payment_status IN ('pending', 'success', 'failed')) NOT NULL DEFAULT 'pending',
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-                receipt TEXT
+                receipt_url TEXT,
+                payment_intent TEXT
             )
         ''')
 
@@ -220,30 +223,58 @@ def change_max_allowed_request(max_request):
         return True
     return False
 
-def log_user_payment(session_id, email, plan, plan_type, client_reference_id, payment_status):
+def log_user_payment(ip,session_id, email, plan, plan_type, client_reference_id, payment_status):
     # Save to database
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO checkout_sessions (session_id, email, plan, plan_type, client_reference_id, payment_status)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    ''', (session_id, email, plan, plan_type, client_reference_id, payment_status))
+        INSERT INTO checkout_sessions (client_ip,session_id, email, plan, plan_type, client_reference_id, payment_status)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    ''', (ip,session_id, email, plan, plan_type, client_reference_id, payment_status))
     conn.commit()
     return True
 
-def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic,email,amount):
+def save_successful_payment(session_id,receipt,lic,fingerprint,amount,payment_intent,status):
     # ✅ Update payment status in DB
     try:
         conn = get_db()
         cursor = conn.cursor()
+        if not payment_intent:
+            logger.error("Payment Intent is required")
+            return ("Payment intent is required",400)
+        if session_id:
+            cursor.execute('''
+                UPDATE checkout_sessions
+                SET license_id = %s,
+                    amount = %s,
+                    payment_intent = %s,
+                    fingerprint = %s,
+                    payment_status = %s
+                WHERE session_id = %s
+            ''', (lic, amount,payment_intent,fingerprint,status,session_id))
+        else:
+            cursor.execute('''
+                UPDATE checkout_sessions
+                SET payment_status = %s,
+                    receipt_url = %s
+                WHERE payment_intent = %s
+            ''', (status,receipt, payment_intent))
+        conn.commit()
+        return ('Success',200)
+    except Exception as db_err:
+        logger.info(f"DB update failed: {db_err}")
+        return ('Database error', 500)
+
+
+def mark_successful_payment(payment_intent):
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
         cursor.execute('''
-            UPDATE checkout_sessions
-            SET payment_status = %s,
-                       receipt = %s,
-                       license_id = %s,
-                       amount = %s
-            WHERE session_id = %s
-        ''', ('success', receipt, lic, amount,session_id))
+                SELECT client_ip,session_id, plan, plan_type, fingerprint, license_id, email, receipt_url FROM checkout_sessions WHERE payment_intent = %s
+            ''', (payment_intent,))
+        row = cursor.fetchone()
+        (ip,session_id,plan,plan_type,fingerprint,lic,email,receipt_url)=row
         # If this was a daily plan, mark is_paid=True for this IP and today's date
         if plan in ['daily','monthly','yearly'] and plan_type == 'Online' and fingerprint:
             today = date.today().isoformat()
@@ -273,14 +304,14 @@ def mark_successful_payment(ip,session_id,plan,plan_type,fingerprint,receipt,lic
                 logger.debug(f"Inserting paid entry {plan} for {fingerprint} and {lic}")
                 cursor.execute('''
                     INSERT INTO ip_log (ip,fingerprint, log_date, request_count, is_paid, expiry_time,license_id,email)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (ip,fingerprint, today, 0, True, expiry_time, lic,email))
         conn.commit()
-        
+        create_email(session_id,email,plan,plan_type,receipt_url,lic)
         logger.info("Database updated for successful payment.")
         return ('Success',200)
     except Exception as db_err:
-        logger.info(f"❌ DB update failed: {db_err}")
+        logger.info(f"DB update failed: {db_err}")
         return ('Database error', 500)
 
 def get_session_info(session_id):
