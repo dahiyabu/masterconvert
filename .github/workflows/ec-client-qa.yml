@@ -33,14 +33,14 @@ jobs:
           source: "/var/tmp/ecclient.tar"
           target: "/tmp/ecclient.tar"
           port: 22
-          timeout: 30s
-          command_timeout: 10m
-          use_insecure_cipher: false
-          rm: false
-          debug: false
-          strip_components: 0
-          overwrite: true
-          tar_dereference: false
+      #    timeout: 30s
+       #   command_timeout: 10m
+       #   use_insecure_cipher: false
+       #   rm: false
+          debug: true
+        #  strip_components: 0
+        #  overwrite: true
+        #  tar_dereference: false
 
       - name: Delete temp docker image from dev Server
         uses: appleboy/ssh-action@v1.0.3
