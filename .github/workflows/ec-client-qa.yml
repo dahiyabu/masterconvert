@@ -23,24 +23,23 @@ jobs:
             chmod 666 /var/tmp/ecclient.tar
             echo "Docker image saved successfully."
 
-      - name: Copy Docker image from Dev Server to GitHub Actions
+      - name: Copy file from remote server to GitHub Actions
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_HOST_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          source: "/var/tmp/ecclient.tar"
-          target: "/tmp/ecclient.tar"
-          port: 22
-      #    timeout: 30s
-       #   command_timeout: 10m
-       #   use_insecure_cipher: false
-       #   rm: false
-          debug: true
-        #  strip_components: 0
-        #  overwrite: true
-        #  tar_dereference: false
+          host: ${{ secrets.DEPLOY_HOST }}       # Remote server IP or domain
+          username: ${{ secrets.DEPLOY_USER }}   # Username on remote server
+          key: ${{ secrets.DEPLOY_HOST_KEY }}    # Private SSH key to authenticate
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}  # Passphrase if your key is encrypted
+          source: "/var/tmp/ecclient.tar"           # Path on the remote server
+          target: ""${{ github.workspace }}/ecclient.tar"              # Local path on the GitHub Actions runner (where it will be saved)
+          port: 22                             # SSH port
+          timeout: 30s                          # Timeout for the SCP connection
+          command_timeout: 10m                 # Timeout for the command execution
+          use_insecure_cipher: false           # Whether to use insecure ciphers
+          rm: false                            # Don't remove the file after copying (set to true to remove it remotely)
+          debug: true                           # Enable debug for troubleshooting
+          strip_components: 0
+          overwrite: true    
 
       - name: Delete temp docker image from dev Server
         uses: appleboy/ssh-action@v1.0.3
@@ -60,7 +59,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER_PROD }}
           key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
-          source: "/tmp/ecclient.tar"
+          source: ""${{ github.workspace }}/ecclient.tar"
           target: "/var/tmp/"
           port: 22
           timeout: 30s
