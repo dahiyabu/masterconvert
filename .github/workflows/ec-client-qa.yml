@@ -23,15 +23,19 @@ jobs:
             chmod 666 /var/tmp/ecclient.tar
             echo "Docker image saved successfully."
 
-      - name: Copy file from remote server to GitHub Actions
+      # Step 2: Copy the saved tar file to GitHub Actions runner
+      - name: Copy Docker image tar file to GitHub Actions runner
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.DEPLOY_HOST }}       # Remote server IP or domain
-          username: ${{ secrets.DEPLOY_USER }}   # Username on remote server
-          key: ${{ secrets.DEPLOY_HOST_KEY }}    # Private SSH key to authenticate
-          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}  # Passphrase if your key is encrypted
-          source: "/var/tmp/ecclient.tar"           # Path on the remote server
-          target: "${{ github.workspace }}/ecclient.tar"              # Local path on the GitHub Actions runner (where it will be saved)
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          source: "/var/tmp/ecclient.tar"  # Path to the tar file on the source server
+          target: "./ecclient.tar"  # Path on the GitHub Actions runner
+          port: 22
+          timeout: 30s
+          debug: true              # Local path on the GitHub Actions runner (where it will be saved)
           #port: 22                             # SSH port
           #timeout: 30s                          # Timeout for the SCP connection
           #command_timeout: 10m                 # Timeout for the command execution
