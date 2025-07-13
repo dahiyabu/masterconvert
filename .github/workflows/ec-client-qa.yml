@@ -31,7 +31,7 @@ jobs:
           key: ${{ secrets.DEPLOY_HOST_KEY }}    # Private SSH key to authenticate
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}  # Passphrase if your key is encrypted
           source: "/var/tmp/ecclient.tar"           # Path on the remote server
-          target: ""${{ github.workspace }}/ecclient.tar"              # Local path on the GitHub Actions runner (where it will be saved)
+          target: "${{ github.workspace }}/ecclient.tar"              # Local path on the GitHub Actions runner (where it will be saved)
           port: 22                             # SSH port
           timeout: 30s                          # Timeout for the SCP connection
           command_timeout: 10m                 # Timeout for the command execution
@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER_PROD }}
           key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
-          source: ""${{ github.workspace }}/ecclient.tar"
+          source: "${{ github.workspace }}/ecclient.tar"
           target: "/var/tmp/"
           port: 22
           timeout: 30s
