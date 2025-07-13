@@ -21,59 +21,26 @@ jobs:
           script: |
             docker save ecclient:latest -o /var/tmp/ecclient.tar
             chmod 666 /var/tmp/ecclient.tar
+            # Set up SSH key and agent for the target server with passphrase
+            mkdir -p ~/.ssh
+            echo "${{ secrets.DEPLOY_HOST_PROD_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+
+            # Start the SSH agent and add the private key with passphrase
+            eval $(ssh-agent -s)
+            ssh-add <(echo "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}")
+            
+            # Automatically add target server's SSH key to known hosts
+            ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
+
+            # Now SCP the tar file to the target server
+            scp -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLOY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
+
             echo "Docker image saved successfully."
 
-      # Step 2: Copy the saved tar file to GitHub Actions runner
-      - name: Copy Docker image tar file to GitHub Actions runner
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_HOST_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          source: "/var/tmp/ecclient.tar"  # Path to the tar file on the source server
-          target: "./ecclient.tar"  # Path on the GitHub Actions runner
-          port: 22
-          timeout: 30s
-          debug: true              # Local path on the GitHub Actions runner (where it will be saved)
-          #port: 22                             # SSH port
-          #timeout: 30s                          # Timeout for the SCP connection
-          #command_timeout: 10m                 # Timeout for the command execution
-          #use_insecure_cipher: false           # Whether to use insecure ciphers
-          #rm: false                            # Don't remove the file after copying (set to true to remove it remotely)
-          #debug: true                           # Enable debug for troubleshooting
-          #strip_components: 0
-          #overwrite: true    
-
-      - name: Delete temp docker image from dev Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_HOST_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
-          script: |
             rm -rf /var/tmp/ecclient.tar
             echo "Removed Temperary Docker image from dev."
 
-      - name: Copy Docker image to PROD Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST_PROD }}
-          username: ${{ secrets.DEPLOY_USER_PROD }}
-          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
-          source: "${{ github.workspace }}/ecclient.tar"
-          target: "/var/tmp/"
-          port: 22
-          timeout: 30s
-          command_timeout: 10m
-          use_insecure_cipher: false
-          rm: false
-          debug: false
-          strip_components: 0
-          overwrite: true
-          tar_dereference: false
       - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
