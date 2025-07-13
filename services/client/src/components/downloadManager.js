@@ -184,46 +184,79 @@ const DownloadManager = (function() {
     async function createPackage(licenseData, softwareBlob, platform) {
         try {
             showStatus('Creating package...', 'info');
-            
+    
             const zip = new JSZip();
-            
+    
             // Add license file
             zip.file('license.lic', licenseData);
-            
+    
             // Add software file with appropriate extension
             const extensions = {
                 windows: '.exe',
                 macos: '.dmg',
                 linux: '.AppImage'
             };
-            
+    
+            // Ensure platform is valid
+            if (!extensions[platform]) {
+                throw new Error('Unsupported platform: ' + platform);
+            }
+    
             const softwareFileName = `ExtConvert-${platform}${extensions[platform]}`;
             zip.file(softwareFileName, softwareBlob);
-            
-            // Add readme file
-            const readmeContent = `ExtConvert ${platform.charAt(0).toUpperCase() + platform.slice(1)} Package
-
-Installation Instructions:
-1. Extract this package to your desired location
-2. The license.lic file must remain in the same directory as the software
-3. Run the ExtConvert executable
-
-License: The license.lic file contains encrypted license data required for software activation.
-
-Generated: ${new Date().toISOString()}
-Platform: ${platform}
-`;
-            
-            zip.file('README.txt', readmeContent);
-            
+    
+            // Create PDF using jsPDF
+            const { jsPDF } = require('jspdf');
+            const doc = new jsPDF();
+    
+            // Add title
+            doc.setFontSize(18);
+            doc.text('ExtConvert - Installation Instructions', 20, 20);
+    
+            // Add content
+            doc.setFontSize(12);
+            doc.text('Welcome to ExtConvert!', 20, 30);
+            doc.text('Thank you for choosing ExtConvert. Follow these steps to install and start using the software.\n\n', 20, 40);
+    
+            // Installation Instructions
+            doc.text('Installation Instructions:', 20, 60);
+            doc.text('1. Extract the downloaded package to a location of your choice on your computer.', 20, 70);
+            doc.text('2. Ensure the `license.lic` file remains in the same folder as the software.', 20, 80);
+            doc.text('3. Double-click on the `ExtConvert` executable to start the software.', 20, 90);
+            doc.text('4. Bypass any security warnings that may appear.', 20, 100);
+            doc.text('5. Open your browser and go to http://localhost:5000 to access the app.', 20, 110);
+    
+            // Additional Info
+            doc.text('\nWhy Choose ExtConvert?', 20, 130);
+            doc.text('• All your data is processed locally.', 20, 140);
+            doc.text('• No data is uploaded to the cloud.', 20, 150);
+            doc.text('• Easy setup with clear instructions.', 20, 160);
+    
+            // Footer
+            doc.text('\nSupport & Contact:', 20, 180);
+            doc.text('For any issues, contact us at support@extconvert.com', 20, 190);
+    
+            // License information and Platform
+            doc.text('\nGenerated on: ' + new Date().toISOString(), 20, 210);
+            doc.text('Platform: ' + platform, 20, 220);
+    
+            // Save the document as a PDF (as a byte array)
+            const pdfBytes = doc.output('arraybuffer');
+    
+            // Add the generated PDF to the ZIP file
+            zip.file('README.pdf', pdfBytes);
+    
             showStatus('Package created successfully', 'success');
+    
+            // Generate the ZIP file as a Blob and return it
             return await zip.generateAsync({ type: 'blob' });
-
+    
         } catch (error) {
             console.error('Package creation error:', error);
             throw new Error('Failed to create package: ' + error.message);
         }
     }
+    
 
     function downloadBlob(blob, filename) {
         const url = URL.createObjectURL(blob);

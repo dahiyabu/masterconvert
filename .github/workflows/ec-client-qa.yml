@@ -1,0 +1,124 @@
+name: Deploy EC-Client to PROD
+
+on:
+  workflow_dispatch: # Trigger manually from GitHub UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Copy running Docker image from Dev Server to GitHub Actions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          script: |
+            docker save ecclient:latest -o /var/tmp/ecclient.tar
+            echo "Docker image saved successfully."
+
+      - name: Copy Docker image from Dev Server to GitHub Actions
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          source: "/var/tmp/ecclient.tar"
+          target: "./ecclient.tar"
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: true
+          tar_dereference: false
+
+      - name: Delete temp docker image from dev Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          script: |
+            rm -rf /var/tmp/ecclient.tar
+            echo "Removed Temperary Docker image from dev."
+
+      - name: Copy Docker image to PROD Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          source: "./ecclient.tar"
+          target: "/var/tmp/"
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: true
+          tar_dereference: false
+      - name: Copy compose file to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          source: "./services/client/docker-compose.yml"
+          target: "~/"
+      - name: Deploy Docker image on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          script: |
+            docker network create converter-network || echo "converter-network already exists"
+            
+            if [[ `docker ps|grep ecclient` ]]; then
+             container_id=`docker ps |grep ecclient|awk '{print $1}'`
+             docker stop $container_id
+             docker rm $container_id
+            fi
+            docker rmi ecclient:latest || echo "No old dev image found to remove"
+            
+            docker load -i /var/tmp/ecclient.tar
+            
+            sed "s#EC_APP_API_URL_VALUE#https://extconvert/api#g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
+            mkdir -p /var/tmp/extconvert/logs
+
+            
+            docker compose -f ~/services/client/compose.yml up -d 2>/var/tmp/extconvert/logs/ecclient_stderr.log 1>/var/tmp/extconvert/logs/ecclient_stdout.log
+            
+            elapsed_time=0
+
+            while ! docker ps | grep -q ecclient && [ $elapsed_time -lt 300 ]; do
+              echo "Waiting for ecclient container to start..."
+              sleep 20
+              elapsed_time=$((elapsed_time + 20))
+            done
+
+            if [ $elapsed_time -ge 300 ]; then
+              echo "Timeout reached! Container did not start after 300 seconds."
+              rm -rf ~/services/client
+              rm -rf /var/tmp/upload-ec
+              exit 1  # Fail the job if the container did not start
+            fi
+            echo "Container is up and running!"
+            
+            rm -rf ~/services/client
+            rm -rf /var/tmp/ecclient.tar

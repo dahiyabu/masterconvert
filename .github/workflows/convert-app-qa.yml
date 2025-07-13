@@ -1,0 +1,147 @@
+name: Deploy convert-app to PROD
+
+on:
+  workflow_dispatch: # Trigger manually from GitHub UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Copy running Docker image from Dev Server to GitHub Actions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          script: |
+            docker save extconvert:latest -o /var/tmp/extconvert.tar
+            echo "Docker image saved successfully."
+
+      - name: Copy Docker image from Dev Server to GitHub Actions
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          source: "/var/tmp/extconvert.tar"
+          target: "./extconvert.tar"
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: true
+          tar_dereference: false
+
+      - name: Copy running Docker image from Dev Server to GitHub Actions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          script: |
+            rm -rf /var/tmp/extconvert.tar
+            echo "Removed Temperary Docker image from dev."
+
+      - name: Copy Docker image to QA Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          source: "./extconvert.tar"
+          target: "/var/tmp/"
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: true
+          tar_dereference: false
+      - name: Copy compose file to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          source: "./services/converter-app/docker-compose.yml"
+          target: "~/"
+      
+      - name: Deploy Docker image on QA Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          script: |
+            # Ensure the Docker network exists on the QA server
+            docker network create converter-network || echo "converter-network already exists"
+            
+            # If there's a container already running with the same name, stop and remove it
+            if [[ `docker ps | grep extconvert` ]]; then
+              container_id=`docker ps | grep extconvert | awk '{print $1}'`
+              docker stop $container_id
+              docker rm $container_id
+            fi
+
+            # Remove any old image, if it exists
+            docker rmi extconvert:latest || echo "No old image found to remove"
+            
+            # Load the Docker image from the tar file
+            docker load -i /var/tmp/extconvert.tar
+
+            # Deploy the container using the existing docker-compose file
+            mkdir -p /var/tmp/extconvert/logs
+            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN_PROD }}/g" ~/services/converter-app/docker-compose.yml | 
+            sed "s/MONTHLY_OFFLINE_PRICE_ID_VALUE/${{ secrets.MONTHLY_PROD_OFFLINE_PRICE_ID }}/g" | 
+            sed "s/YEARLY_OFFLINE_PRICE_ID_VALUE/${{ secrets.YEARLY_PROD_OFFLINE_PRICE_ID }}/g" | 
+            sed "s/MONTHLY_ONLINE_PRICE_ID_VALUE/${{ secrets.MONTHLY_PROD_ONLINE_PRICE_ID }}/g" | 
+            sed "s/YEARLY_ONLINE_PRICE_ID_VALUE/${{ secrets.YEARLY_PROD_ONLINE_PRICE_ID }}/g" | 
+            sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PROD_PRICE_ID }}/g" | 
+            sed "s/STRIPE_KEY_VALUE/${{ secrets.STRIPE_KEY }}/g" | 
+            sed "s/STRIPE_ENDPOINT_SECRET_VALUE/${{ secrets.STRIPE_ENDPOINT_SECRET }}/g" | 
+            sed "s/AWS_ACCESS_KEY_VALUE/${{ secrets.AWS_ACCESS_KEY }}/g" | 
+            sed "s/AWS_REGION_VALUE/${{ secrets.AWS_REGION }}/g" | 
+            sed "s/AWS_BUCKET_VALUE/${{ secrets.AWS_CM_BUCKET }}/g" | 
+            sed "s/AWS_SECRET_ACCESS_KEY_VALUE/${{ secrets.AWS_SECRET_ACCESS_KEY }}/g" | 
+            sed "s/SENDER_EMAIL_VALUE/${{ secrets.SENDER_EMAIL }}/g" | 
+            sed "s/EMAIL_SECRET_VALUE/${{ secrets.EMAIL_SECRET }}/g" | 
+            sed "s#APP_DOMAIN_VALUE#https://extconvert.com#g" > ~/services/converter-app/compose.yml
+
+            # Run the container in detached mode
+            docker compose -f ~/services/converter-app/compose.yml up -d 2>/var/tmp/extconvert/logs/converter-app_stderr.log 1>/var/tmp/extconvert/logs/converter-app_stdout.log
+
+            # Wait for the container to start and check for errors
+            elapsed_time=0
+            while ! docker ps | grep -q extconvert && [ $elapsed_time -lt 300 ]; do
+              echo "Waiting for extconvert container to start..."
+              sleep 20
+              elapsed_time=$((elapsed_time + 20))
+            done
+
+            if [ $elapsed_time -ge 300 ]; then
+              echo "Timeout reached! Container did not start after 300 seconds."
+              rm -rf ~/services/converter-app
+              rm -rf /var/tmp/extconvert.tar
+              exit 1
+            fi
+
+            echo "Container is up and running!"
+            
+            # Clean up
+            rm -rf /var/tmp/extconvert.tar
+            rm -rf ~/services/convert-app

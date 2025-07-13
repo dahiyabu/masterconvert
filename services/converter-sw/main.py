@@ -1,4 +1,4 @@
-import sys,os
+import sys,os,webbrowser
 if getattr(sys, 'frozen', False):
     # When frozen, use the temp folder where PyInstaller extracts
     sys.path.insert(0, sys._MEIPASS)
@@ -38,6 +38,16 @@ def initialize():
     #log.basicConfig(filename=logfile,format='%(asctime)s - %(name)s - %(process)d- %(levelname)s - %(message)s',level=log.DEBUG, force=True)
     converter.config.logpath = os.path.join(get_base_folder(),'converter.log')
 
+# Automatically open the web browser to the specified URL
+def open_browser(url):
+    """Automatically open the default web browser to a given URL."""
+    try:
+        print(f"Opening browser to {url}...")
+        webbrowser.open(url, new=2)  # 'new=2' opens the URL in a new tab if possible
+    except Exception as e:
+        print(f"Failed to open browser: {e}")
+        print("Please open your browser and visit:", url)
+
 if __name__ == '__main__':
     initialize()
     cleanup_files(get_base_folder())
@@ -47,6 +57,7 @@ if __name__ == '__main__':
     with open(ready_file, "w") as f:
         f.write("ready")
     setup()
+    open_browser("http://localhost:5000")
     print("Enjoy ExtConvert at http://localhost:5000 in your browser")
     print("To Exit, Close the window")
     app.run(debug=False,use_reloader=False, host='0.0.0.0', port=5000)
