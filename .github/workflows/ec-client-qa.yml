@@ -32,14 +32,14 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}  # Passphrase if your key is encrypted
           source: "/var/tmp/ecclient.tar"           # Path on the remote server
           target: "${{ github.workspace }}/ecclient.tar"              # Local path on the GitHub Actions runner (where it will be saved)
-          port: 22                             # SSH port
-          timeout: 30s                          # Timeout for the SCP connection
-          command_timeout: 10m                 # Timeout for the command execution
-          use_insecure_cipher: false           # Whether to use insecure ciphers
-          rm: false                            # Don't remove the file after copying (set to true to remove it remotely)
-          debug: true                           # Enable debug for troubleshooting
-          strip_components: 0
-          overwrite: true    
+          #port: 22                             # SSH port
+          #timeout: 30s                          # Timeout for the SCP connection
+          #command_timeout: 10m                 # Timeout for the command execution
+          #use_insecure_cipher: false           # Whether to use insecure ciphers
+          #rm: false                            # Don't remove the file after copying (set to true to remove it remotely)
+          #debug: true                           # Enable debug for troubleshooting
+          #strip_components: 0
+          #overwrite: true    
 
       - name: Delete temp docker image from dev Server
         uses: appleboy/ssh-action@v1.0.3
