@@ -31,7 +31,7 @@ jobs:
           key: ${{ secrets.DEPLOY_HOST_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           source: "/var/tmp/ecclient.tar"
-          target: "./ecclient.tar"
+          target: "/tmp/ecclient.tar"
           port: 22
           timeout: 30s
           command_timeout: 10m
@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER_PROD }}
           key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
           passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
-          source: "./ecclient.tar"
+          source: "/tmp/ecclient.tar"
           target: "/var/tmp/"
           port: 22
           timeout: 30s
