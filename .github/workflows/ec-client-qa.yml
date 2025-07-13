@@ -20,6 +20,7 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker save ecclient:latest -o /var/tmp/ecclient.tar
+            chmod 666 /var/tmp/ecclient.tar
             echo "Docker image saved successfully."
 
       - name: Copy Docker image from Dev Server to GitHub Actions
