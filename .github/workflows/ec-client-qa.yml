@@ -21,26 +21,25 @@ jobs:
           script: |
             docker save ecclient:latest -o /var/tmp/ecclient.tar
             chmod 666 /var/tmp/ecclient.tar
-            # Set up SSH key and agent for the target server with passphrase
-            mkdir -p ~/.ssh
-            echo "${{ secrets.DEPLOY_HOST_PROD_KEY }}" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-
-            # Start the SSH agent and add the private key with passphrase
-            eval $(ssh-agent -s)
-            ssh-add <(echo "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}")
-            
-            # Automatically add target server's SSH key to known hosts
-            ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
-
-            # Now SCP the tar file to the target server
-            scp -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLOY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
-
             echo "Docker image saved successfully."
-
-            rm -rf /var/tmp/ecclient.tar
-            echo "Removed Temperary Docker image from dev."
-
+      - name: Download Docker image from Source Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_HOST_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
+          source: "/var/tmp/ecclient.tar"
+          target: "./ecclient.tar"
+      - name: Upload Docker image to Target Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST_PROD }}
+          username: ${{ secrets.DEPLOY_USER_PROD }}
+          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
+          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
+          source: "./ecclient.tar"
+          target: "/tmp/ecclient.tar"
       - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
