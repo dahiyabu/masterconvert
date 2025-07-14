@@ -22,7 +22,7 @@ jobs:
             docker save ecclient:latest -o /var/tmp/ecclient.tar
             # Create the private key file for Server B
             echo "${{ secrets.DEPLOY_HOST_PROD_KEY }}" > ~/.ssh/id_rsa_target
-            chmod 600 ~/.ssh/id_rsa_target
+            chmod 600 /root/.ssh/id_rsa_target
   
             # Add Server B to known_hosts to prevent prompt
             ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
@@ -31,8 +31,8 @@ jobs:
             which expect || (sudo apt-get update && sudo apt-get install -y expect)
             eval "$(ssh-agent -s)"
             expect <<EOF
-              spawn ssh-add ~/.ssh/id_rsa_target  # Use absolute path
-              expect "Enter passphrase for ~/.ssh/id_rsa_target:"
+              spawn ssh-add /root/.ssh/id_rsa_target  # Use absolute path
+              expect "Enter passphrase for /root/.ssh/id_rsa_target:"
               send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"  # Provide passphrase here
               expect eof
             EOF
