@@ -20,8 +20,24 @@ jobs:
           passphrase: ${{ secrets.DEPLOY_HOST_KEY_PASSPHRASE }}
           script: |
             docker save ecclient:latest -o /var/tmp/ecclient.tar
-            base64 /var/tmp/ecclient.tar > /var/tmp/ecclient.tar.b64
-            cat /var/tmp/ecclient.tar.b64
+            # Create the private key file for Server B
+            echo "${{ secrets.TARGET_SSH_KEY }}" > ~/.ssh/id_rsa_target
+            chmod 600 ~/.ssh/id_rsa_target
+  
+            # Add Server B to known_hosts to prevent prompt
+            ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
+  
+            # Use expect to add passphrase-protected key to ssh-agent
+            which expect || (sudo apt-get update && sudo apt-get install -y expect)
+            eval "$(ssh-agent -s)"
+            expect << EOF
+            spawn ssh-add ~/.ssh/id_rsa_target
+            expect "Enter passphrase for ~/.ssh/id_rsa_target:"
+            send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"
+            expect eof
+            # Run SCP to Server B
+            scp -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
+
             #chmod 666 /var/tmp/ecclient.tar
             #echo "Docker image saved successfully."
       - name: Save base64 output to file
