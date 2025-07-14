@@ -35,6 +35,7 @@ jobs:
             expect "Enter passphrase for ~/.ssh/id_rsa_target:"
             send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"
             expect eof
+            END_EXPECT
             # Run SCP to Server B
             scp -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
 
