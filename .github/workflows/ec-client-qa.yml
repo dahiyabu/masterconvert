@@ -30,12 +30,12 @@ jobs:
             # Use expect to add passphrase-protected key to ssh-agent
             which expect || (sudo apt-get update && sudo apt-get install -y expect)
             eval "$(ssh-agent -s)"
-            expect << EOF
-            spawn ssh-add ~/.ssh/id_rsa_target
-            expect "Enter passphrase for ~/.ssh/id_rsa_target:"
-            send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"
-            expect eof
-            END_EXPECT
+            expect <<EOF
+              spawn ssh-add ~/.ssh/id_rsa_target  # Use absolute path
+              expect "Enter passphrase for ~/.ssh/id_rsa_target:"
+              send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"  # Provide passphrase here
+              expect eof
+            EOF
             # Run SCP to Server B
             scp -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
 
