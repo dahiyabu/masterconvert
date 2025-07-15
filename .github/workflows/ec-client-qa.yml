@@ -23,9 +23,38 @@ jobs:
             # Create the private key file for Server B
             echo "${{ secrets.DEPLOY_HOST_PROD_KEY }}" > ~/.ssh/id_rsa_target
             chmod 600 /root/.ssh/id_rsa_target
-  
+            cat <<'EOF' > /var/tmp/upload.sh
+            #!/usr/bin/env bash
+
+            # Step 1: Start ssh-agent
+            eval "\$(ssh-agent -s)"
+
+            # Step 2: Use expect to enter the passphrase
+            /usr/bin/expect <<'EOT'
+            set timeout 10
+            set passphrase "giloysqa"
+            spawn ssh-add /root/.ssh/id_rsa_target
+            expect {
+             -re "Enter passphrase.*:" {
+             send "\$passphrase\r"
+             exp_continue
+            }
+            eof
+            }
+            wait
+            EOT
+
+            # Step 3: Run your SCP command
+            scp /var/tmp/ecclient.tar {{ secrets.DEPLOY_HOST_PROD_USER }}@19mn239:/var/tmp/ecclient.tar
+
+            # Step 4: Kill the agent (optional)
+            ssh-agent -k > /dev/nullQ
+            EOF
+
+            chmod +x /var/tmp/upload.sh
+
             # Add Server B to known_hosts to prevent prompt
-            ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
+            #ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
   
             # Use expect to add passphrase-protected key to ssh-agent
             #  which expect || (sudo apt-get update && sudo apt-get install -y expect)
@@ -65,7 +94,7 @@ jobs:
             #   exit 1
             # fi
             # Run SCP to Server B
-            scp -i /root/.ssh/id_rsa_target -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
+            #scp -i /root/.ssh/id_rsa_target -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
 
             #chmod 666 /var/tmp/ecclient.tar
             #echo "Docker image saved successfully."
