@@ -37,6 +37,9 @@ jobs:
             # Debug: Show the key file
             echo "Private key file content:"
             cat /root/.ssh/id_rsa_target
+            echo "Manually adding key to ssh-agent..."
+            ssh-add /root/.ssh/id_rsa_target
+            ssh-add -l  # List keys loaded in the agent to verify
             # Use 'expect' to add passphrase-protected key to ssh-agent
             expect << EOF
               spawn ssh-add /root/.ssh/id_rsa_target  # Ensure the correct absolute path
