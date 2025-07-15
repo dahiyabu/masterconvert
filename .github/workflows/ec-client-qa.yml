@@ -39,7 +39,7 @@ jobs:
             cat /root/.ssh/id_rsa_target
             # Use 'expect' to add passphrase-protected key to ssh-agent
             expect <<EOF
-              spawn ssh-add /home/runner/.ssh/id_rsa_target  # Use absolute path
+              spawn ssh-add /root/.ssh/id_rsa_target  # Use absolute path
               expect {
                 "Enter passphrase for /root/.ssh/id_rsa_target:" {
                   send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"  # Provide the correct passphrase
