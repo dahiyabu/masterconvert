@@ -45,71 +45,17 @@ jobs:
             EOT
 
             # Step 3: Run your SCP command
-            scp /var/tmp/ecclient.tar ${{ secrets.DEPLOY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
-
+            scp /var/tmp/ecclient.tar ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
+            rm -rf /var/tmp/ecclient.tar
             # Step 4: Kill the agent (optional)
             ssh-agent -k > /dev/nullQ
             EOF
 
             chmod +x /var/tmp/upload.sh
-
-            # Add Server B to known_hosts to prevent prompt
-            #ssh-keyscan -H ${{ secrets.DEPLOY_HOST_PROD }} >> ~/.ssh/known_hosts
-  
-            # Use expect to add passphrase-protected key to ssh-agent
-            #  which expect || (sudo apt-get update && sudo apt-get install -y expect)
-            #  eval "$(ssh-agent -s)"
-              # Debug: List the contents of ~/.ssh to verify key presence
-            #  echo "Listing ~/.ssh contents:"
-            #  ls -l /root/.ssh/
-
-              # Debug: Show the key file
-            #  echo "Private key file content:"
-            #  cat /root/.ssh/id_rsa_target
-            #  echo "Manually adding key to ssh-agent..."
-            #  ssh-add /root/.ssh/id_rsa_target
-            #  ssh-add -l  # List keys loaded in the agent to verify
-            # Use 'expect' to add passphrase-protected key to ssh-agent
-            # expect << EOF
-            #   spawn ssh-add /root/.ssh/id_rsa_target  # Ensure the correct absolute path
-            #   expect {
-            #     "Enter passphrase for /root/.ssh/id_rsa_target:" {
-            #       send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"  # Provide the correct passphrase
-            #       exp_continue
-            #     }
-            #     timeout {
-            #       send_user "Timeout while waiting for passphrase prompt\n"
-            #       exit 1
-            #     }
-            #     eof {
-            #       send_user "Passphrase added successfully to agent\n"
-            #     }
-            #   }
-            # EOF
-            # Check if the ssh-add was successful
-            #if [[ $? -eq 0 ]]; then
-            #   echo "SSH key added to agent successfully."
-            # else
-            #   echo "Failed to add SSH key to agent."
-            #   exit 1
-            # fi
-            # Run SCP to Server B
-            #scp -i /root/.ssh/id_rsa_target -o StrictHostKeyChecking=no /var/tmp/ecclient.tar ${{ secrets.DEPLY_HOST_PROD_USER }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
-
-            #chmod 666 /var/tmp/ecclient.tar
-            #echo "Docker image saved successfully."
-      - name: Save base64 output to file
-        run: |
-          echo "${{ steps.encode-image.outputs.stdout }}" | base64 -d > ecclient.tar
-      - name: Upload Docker image to Target Server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.DEPLOY_HOST_PROD }}
-          username: ${{ secrets.DEPLOY_USER_PROD }}
-          key: ${{ secrets.DEPLOY_HOST_PROD_KEY }}
-          passphrase: ${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}
-          source: "ecclient.tar"
-          target: "/var/tmp/ecclient.tar"
+            ./var/tmp/upload.sh
+            rm -rf ~/.ssh/id_rsa_target
+            rm -rf /var/tmp/upload.sh
+            echo "Docker image saved successfully."
       - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
