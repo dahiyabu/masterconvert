@@ -28,7 +28,7 @@ jobs:
             #!/usr/bin/env bash
 
             # Step 1: Start ssh-agent
-            eval "\$(ssh-agent -s)"
+            eval "$(ssh-agent -s)"
             export SSH_AUTH_SOCK
 
             # Step 2: Use expect to enter the passphrase
@@ -38,7 +38,7 @@ jobs:
             spawn ssh-add /root/.ssh/id_rsa_target
             expect {
              -re "Enter passphrase.*:" {
-             send "\$passphrase\r"
+             send "$passphrase\r"
              exp_continue
             }
             eof
@@ -54,7 +54,7 @@ jobs:
             EOF
 
             chmod +x /var/tmp/upload.sh
-            #/var/tmp/upload.sh
+            /var/tmp/upload.sh
             #rm -rf /root/.ssh/id_rsa_target
             #rm -rf /var/tmp/upload.sh
             #echo "Docker image saved successfully."
