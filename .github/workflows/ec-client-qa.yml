@@ -48,7 +48,7 @@ jobs:
 
             # Step 3: Run your SCP command
             scp /var/tmp/ecclient.tar ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
-            rm -rf /var/tmp/ecclient.tar
+            #rm -rf /var/tmp/ecclient.tar
             # Step 4: Kill the agent (optional)
             ssh-agent -k > /dev/nullQ
             EOF
