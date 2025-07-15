@@ -38,14 +38,20 @@ jobs:
             echo "Private key file content:"
             cat /root/.ssh/id_rsa_target
             # Use 'expect' to add passphrase-protected key to ssh-agent
-            expect <<EOF
-              spawn ssh-add /root/.ssh/id_rsa_target  # Use absolute path
+            expect << EOF
+              spawn ssh-add /root/.ssh/id_rsa_target  # Ensure the correct absolute path
               expect {
                 "Enter passphrase for /root/.ssh/id_rsa_target:" {
                   send "${{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}\r"  # Provide the correct passphrase
                   exp_continue
                 }
-                eof
+                timeout {
+                  send_user "Timeout while waiting for passphrase prompt\n"
+                  exit 1
+                }
+                eof {
+                  send_user "Passphrase added successfully to agent\n"
+                }
               }
             EOF
             # Check if the ssh-add was successful
