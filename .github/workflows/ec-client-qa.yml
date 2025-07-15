@@ -23,11 +23,13 @@ jobs:
             # Create the private key file for Server B
             echo "${{ secrets.DEPLOY_HOST_PROD_KEY }}" > ~/.ssh/id_rsa_target
             chmod 600 /root/.ssh/id_rsa_target
+            ls -l /root/.ssh/id_rsa_target
             cat <<'EOF' > /var/tmp/upload.sh
             #!/usr/bin/env bash
 
             # Step 1: Start ssh-agent
             eval "\$(ssh-agent -s)"
+            export SSH_AUTH_SOCK
 
             # Step 2: Use expect to enter the passphrase
             /usr/bin/expect <<'EOT'
@@ -53,7 +55,7 @@ jobs:
 
             chmod +x /var/tmp/upload.sh
             /var/tmp/upload.sh
-            rm -rf ~/.ssh/id_rsa_target
+            rm -rf /root/.ssh/id_rsa_target
             rm -rf /var/tmp/upload.sh
             echo "Docker image saved successfully."
       - name: Copy compose file to VPS
