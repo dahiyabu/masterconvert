@@ -54,10 +54,10 @@ jobs:
             EOF
 
             chmod +x /var/tmp/upload.sh
-            /var/tmp/upload.sh
-            rm -rf /root/.ssh/id_rsa_target
-            rm -rf /var/tmp/upload.sh
-            echo "Docker image saved successfully."
+            #/var/tmp/upload.sh
+            #rm -rf /root/.ssh/id_rsa_target
+            #rm -rf /var/tmp/upload.sh
+            #echo "Docker image saved successfully."
       - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
