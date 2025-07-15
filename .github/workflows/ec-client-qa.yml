@@ -32,7 +32,7 @@ jobs:
             # Step 2: Use expect to enter the passphrase
             /usr/bin/expect <<'EOT'
             set timeout 10
-            set passphrase "giloysqa"
+            set passphrase "{{ secrets.DEPLOY_HOST_PROD_KEY_PASSPHRASE }}"
             spawn ssh-add /root/.ssh/id_rsa_target
             expect {
              -re "Enter passphrase.*:" {
@@ -45,7 +45,7 @@ jobs:
             EOT
 
             # Step 3: Run your SCP command
-            scp /var/tmp/ecclient.tar {{ secrets.DEPLOY_HOST_PROD_USER }}@19mn239:/var/tmp/ecclient.tar
+            scp /var/tmp/ecclient.tar {{ secrets.DEPLOY_HOST_PROD_USER }}@{{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecclient.tar
 
             # Step 4: Kill the agent (optional)
             ssh-agent -k > /dev/nullQ
