@@ -45,6 +45,12 @@ def get_curr_folder():
         return os.path.dirname(os.path.abspath(__file__))#app.root_path
 
 # Configuration
+BASIC_ALLOWED_EXTENSIONS = {
+    'pdf', 'docx', 'txt', 'rtf', 'odt','xlsx','xls','csv',  # Documents
+    'jpg', 'jpeg', 'png', 'webp', 'gif',  # Images
+    'mp4', 'mov', 'avi', 'webm', 'mkv',  # Video
+    'mp3', 'wav', 'ogg', 'flac', 'aac',  # Audio
+}
 ALLOWED_EXTENSIONS = {
     'pdf', 'docx', 'txt', 'rtf', 'odt','xlsx','xls','csv',  # Documents
     'jpg', 'jpeg', 'png', 'svg', 'webp', 'gif',  # Images
@@ -57,6 +63,52 @@ ALLOWED_EXTENSIONS = {
 # Generate a key for file encryption (in a production app, store this securely)
 #ENCRYPTION_KEY = Fernet.generate_key()
 #cipher_suite = Fernet(ENCRYPTION_KEY)
+
+BASIC_CONVERSIONS = {
+    # Document formats
+    'pdf': ['docx', 'txt', 'rtf', 'odt', 'pdf'],
+    'docx': ['pdf', 'txt', 'rtf', 'odt','docx'],
+    'txt': ['pdf', 'docx', 'rtf', 'odt','txt'],
+    'rtf': ['pdf', 'docx', 'txt', 'odt','rtf'],
+    'odt': ['pdf', 'docx', 'txt', 'rtf','odt'],
+    'xlsx': ['pdf', 'txt', 'rtf', 'odt','xls','xlsx'],
+    'xls': ['pdf', 'txt', 'rtf', 'odt','xlsx','xls'],
+    
+    # Image formats
+    'jpg': ['png', 'webp', 'gif', 'pdf','jpg'],
+    'jpeg': ['png', 'webp', 'gif','pdf','jpeg'],
+    'png': ['jpg', 'webp', 'gif', 'pdf','png'],
+    'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp'],
+    'webp': ['png', 'jpg', 'gif','webp'],
+    'gif': ['png', 'jpg', 'webp', 'ico','gif'],
+    
+    # Video formats
+    'mp4':  ['mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mp4'],
+    'mov':  ['mp4', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mov'],
+    'avi':  ['mp4', 'mov', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'avi'],
+    'webm': ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'webm'],
+    'mkv':  ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mkv'],
+    'flv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'flv'],
+    'wmv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'wmv'],
+    'mpeg': ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpg', 'm4v', '3gp', 'gif', 'mpeg'],
+    'mpg':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'm4v', '3gp', 'gif', 'mpg'],
+    'm4v':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', '3gp', 'gif', 'm4v'],
+    '3gp':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', 'gif', '3gp'],
+    'gif':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'],
+
+    # Audio formats
+    'mp3':  ['wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'mp3'],
+    'wav':  ['mp3', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'wav'],
+    'ogg':  ['mp3', 'wav', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'ogg'],
+    'flac': ['mp3', 'wav', 'ogg', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'flac'],
+    'aac':  ['mp3', 'wav', 'ogg', 'flac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'aac'],
+    'wma':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'wma'],
+    'm4a':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'alac', 'opus', 'amr', 'ac3', 'm4a'],
+    'alac': ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'opus', 'amr', 'ac3', 'alac'],
+    'opus': ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'amr', 'ac3', 'opus'],
+    'amr':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'ac3', 'amr'],
+    'ac3':  ['mp3', 'wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3'],
+}
 
 # Format compatibility mapping (same as frontend)
 FORMAT_COMPATIBILITY = {
@@ -173,7 +225,9 @@ def setup(path=None):
     # Create necessary folders
     os.makedirs(get_upload_folder(), exist_ok=True)
     os.makedirs(get_converted_folder(), exist_ok=True)
-
+def reinitialize():
+    cleanup_files(get_base_folder())
+    setup()
 # Register cleanup on normal interpreter exit
 atexit.register(cleanup_files)
 
@@ -185,25 +239,34 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
 signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
 
-def allowed_file(filename):
+def allowed_file(filename,conversion_type='full'):
     """Check if file has an allowed extension"""
+    if conversion_type == "basic":
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in BASIC_ALLOWED_EXTENSIONS    
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_file_extension(filename):
     """Extract extension from filename"""
     return filename.rsplit('.', 1)[1].lower() if '.' in filename else ""
 
-def is_conversion_supported(source_ext, target_ext):
+def is_conversion_supported(source_ext, target_ext,conversion_type='full'):
     """Check if conversion is supported"""
     source_ext = source_ext.lower()
     target_ext = target_ext.lower()
     
-    # If source extension is not in our compatibility mapping
-    if source_ext not in FORMAT_COMPATIBILITY:
-        return False
-    
-    # Check if target format is in the list of compatible formats
-    return target_ext in FORMAT_COMPATIBILITY[source_ext]
+    if conversion_type == "basic":
+        # Restrict to basic conversions
+        if source_ext in BASIC_CONVERSIONS:
+            return target_ext in BASIC_CONVERSIONS[source_ext]
+        else:
+            return False
+    else:
+        # If source extension is not in our compatibility mapping
+        if source_ext not in FORMAT_COMPATIBILITY:
+            return False
+        
+        # Check if target format is in the list of compatible formats
+        return target_ext in FORMAT_COMPATIBILITY[source_ext]
 
 def encrypt_pdf(input_path, output_path, password):
     """Encrypt a PDF file with a password"""
@@ -956,9 +1019,9 @@ def merge_file_handler(files,merge_type,password):
         logger.error(f"Error during merge: {e}")
         return jsonify({"error": "An error occurred while merging the files."}), 500
 
-def upload_file_handler(file):
+def upload_file_handler(file,conversion_type='full'):
         
-    if not allowed_file(file.filename):
+    if not allowed_file(file.filename,conversion_type):
         return jsonify({'error': 'File type not allowed'}), 400
     
     try:
@@ -972,6 +1035,8 @@ def upload_file_handler(file):
         file.save(file_path)
         # Get compatible formats
         compatible_formats = FORMAT_COMPATIBILITY.get(file_extension.lower(), [])
+        if conversion_type == "basic":
+            compatible_formats = BASIC_CONVERSIONS.get(file_extension.lower(), [])
         # Get file size and metadata
         file_size = os.path.getsize(file_path)
         file_category = FILE_CATEGORIES.get(file_extension.lower(), 'Unknown')
@@ -1003,6 +1068,7 @@ def file_conversion_handler(data):
         target_format = data['target_format'].lower()
         password = data.get('password', None)
         compress_rate = data.get('compress_rate',None)
+        conversion_type = data.get('conversion_type','full')
         options = data.get('options', {})
         
         # Validate file exists
@@ -1014,7 +1080,7 @@ def file_conversion_handler(data):
         source_format = file_id.split('.')[-1].lower()
         
         # Check if conversion is supported
-        if not is_conversion_supported(source_format, target_format):
+        if not is_conversion_supported(source_format, target_format,conversion_type):
             return jsonify({'error': 'Conversion not supported'}), 400
         
         # Generate output filename

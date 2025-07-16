@@ -1,4 +1,4 @@
-from converter.convertMaster import FORMAT_COMPATIBILITY,FILE_CATEGORIES,merge_file_handler,upload_file_handler,get_converted_folder
+from converter.convertMaster import FORMAT_COMPATIBILITY,BASIC_CONVERSIONS,FILE_CATEGORIES,merge_file_handler,upload_file_handler,get_converted_folder
 import logging as logger
 from converter.handlers import common_conversion_handler,common_merge_handler
 from flask import Blueprint,request,jsonify, send_file
@@ -15,9 +15,10 @@ if cli:
 
 @cm_bp.route('/api/formats', methods=['GET'])
 def get_formats():
+    conversion_type = request.values.get('conversion_type','full')
     """Get all supported formats and their compatibility"""
     return jsonify({
-        'format_compatibility': FORMAT_COMPATIBILITY,
+        'format_compatibility': BASIC_CONVERSIONS if conversion_type == 'basic' else FORMAT_COMPATIBILITY,
         'file_categories': FILE_CATEGORIES
     }), 200
 
@@ -38,6 +39,7 @@ def merge_files():
 @cm_bp.route('/api/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and return compatible formats"""
+    conversion_type = request.form.get('conversion_type', 'full')
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
         
@@ -45,7 +47,7 @@ def upload_file():
     
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
-    return upload_file_handler(file)
+    return upload_file_handler(file,conversion_type)
 
 @cm_bp.route('/api/convert', methods=['POST'])
 def convert_file():
