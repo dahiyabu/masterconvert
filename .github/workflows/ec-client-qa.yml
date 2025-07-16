@@ -56,8 +56,8 @@ jobs:
 
             chmod +x /var/tmp/upload.sh
             /var/tmp/upload.sh
-            rm -rf /root/.ssh/id_rsa_target
-            rm -rf /var/tmp/upload.sh
+            #rm -rf /root/.ssh/id_rsa_target
+            #rm -rf /var/tmp/upload.sh
             echo "Docker image saved successfully."
       - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -103,10 +103,10 @@ jobs:
             if [ $elapsed_time -ge 300 ]; then
               echo "Timeout reached! Container did not start after 300 seconds."
               rm -rf ~/services/client
-              rm -rf /var/tmp/image/ecclient.tar
+              #rm -rf /var/tmp/image/ecclient.tar
               exit 1  # Fail the job if the container did not start
             fi
             echo "Container is up and running!"
             
             rm -rf ~/services/client
-            rm -rf /var/tmp/image/ecclient.tar
+            #rm -rf /var/tmp/image/ecclient.tar
