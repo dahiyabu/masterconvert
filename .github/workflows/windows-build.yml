@@ -76,14 +76,14 @@ jobs:
           mkdir -p build_app
           cp -r services/converter build_app/converter
           cp -r services/converter-sw/* build_app/
-      
-      - name: Build app (Windows)
+
+      - name: Build app (Windows) full
         run: |
           cd build_app
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
-            --add-data "build;build" \
+            --add-data "build_full;build" \
             --add-data "../libreoffice;dependencies/libreoffice" \
             --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
             --add-data "../ffmpeg-bin/ffmpeg.exe;dependencies" \
@@ -91,10 +91,10 @@ jobs:
             --add-data "../7zip;dependencies/7zip" \
             --add-data "../cairosvg;dependencies/cairosvg" \
             --add-data "../rar;dependencies/rar" \
-            --distpath ../proc main.py
+            --distpath ../proc/full main.py
         shell: bash
       
-      - name: Build launcher exe
+      - name: Build launcher exe full
         shell: bash
         run: |
           cd build_app
@@ -102,8 +102,36 @@ jobs:
           --icon=resources/logo.ico \
           --version-file=resources/version.txt \
           --add-data "resources/logo.jpg;resources" \
-          --add-data "../proc/app.exe;." \
-          --distpath ../output/windows launcher.py
+          --add-data "../proc/full/app.exe;." \
+          --distpath ../output/windows/full/ launcher.py
+
+      - name: Build app (Windows) basic
+        run: |
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "build_basic;build" \
+            --add-data "../libreoffice;dependencies/libreoffice" \
+            --add-data "../tesseract-bin;dependencies/tesseract-ocr" \
+            --add-data "../ffmpeg-bin/ffmpeg.exe;dependencies" \
+            --add-data "../ghostscript;dependencies/ghostscript" \
+            --add-data "../7zip;dependencies/7zip" \
+            --add-data "../cairosvg;dependencies/cairosvg" \
+            --add-data "../rar;dependencies/rar" \
+            --distpath ../proc/basic main.py
+        shell: bash
+      
+      - name: Build launcher exe basic
+        shell: bash
+        run: |
+          cd build_app
+          pyinstaller --onefile --windowed  --name extconvert \
+          --icon=resources/logo.ico \
+          --version-file=resources/version.txt \
+          --add-data "resources/logo.jpg;resources" \
+          --add-data "../proc/basic/app.exe;." \
+          --distpath ../output/windows/basic/ launcher.py
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -114,7 +142,8 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/windows/extconvert.exe s3://convertmasterfiles/software/windows/extconvert.exe
+          aws s3 cp ./output/windows/basic/extconvert.exe s3://convertmasterfiles/software/windows/basic/extconvert.exe
+          aws s3 cp ./output/windows/full/extconvert.exe s3://convertmasterfiles/software/windows/full/extconvert.exe
         #--acl public-read
       
       #- name: Upload Windows build artifact

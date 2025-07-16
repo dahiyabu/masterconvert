@@ -48,29 +48,53 @@ jobs:
           cp -r services/converter build_app/converter
           cp -r services/converter-sw/* build_app/
 
-      - name: Build main app
+      - name: Build main app full
         shell: bash
         run: |
           cd build_app
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
-            --add-data "build:build" \
+            --add-data "build_full:build" \
             --add-data "/usr/lib/libreoffice:dependencies/libreoffice" \
             --add-data "/usr/share/tesseract-ocr:dependencies/tesseract-ocr" \
             --add-data "/usr/bin/ffmpeg:dependencies" \
             --add-data "/usr/bin/gs:dependencies/ghostscript" \
             --add-data "/usr/bin/7z:dependencies/7zip" \
-            --distpath ../proc main.py
+            --distpath ../proc/full main.py
 
-      - name: Build launcher
+      - name: Build launcher full
         run: |
           cd build_app
           pyinstaller --onefile --windowed --name extconvert \
             --icon=resources/logo.jpg \
             --add-data "resources/logo.jpg:resources" \
-            --add-data "../proc/app:." \
-            --distpath ../output/linux launcher.py
+            --add-data "../proc/full/app:." \
+            --distpath ../output/linux/full launcher.py
+
+      - name: Build main app basic
+        shell: bash
+        run: |
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "build_basic:build" \
+            --add-data "/usr/lib/libreoffice:dependencies/libreoffice" \
+            --add-data "/usr/share/tesseract-ocr:dependencies/tesseract-ocr" \
+            --add-data "/usr/bin/ffmpeg:dependencies" \
+            --add-data "/usr/bin/gs:dependencies/ghostscript" \
+            --add-data "/usr/bin/7z:dependencies/7zip" \
+            --distpath ../proc/basic main.py
+
+      - name: Build launcher basic
+        run: |
+          cd build_app
+          pyinstaller --onefile --windowed --name extconvert \
+            --icon=resources/logo.jpg \
+            --add-data "resources/logo.jpg:resources" \
+            --add-data "../proc/basic/app:." \
+            --distpath ../output/linux/basic launcher.py
 
 
       - name: Configure AWS Credentials
@@ -82,4 +106,5 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/linux/extconvert s3://convertmasterfiles/software/linux/extconvert
+          aws s3 cp ./output/linux/basic/extconvert s3://convertmasterfiles/software/linux/basic/extconvert
+          aws s3 cp ./output/linux/full/extconvert s3://convertmasterfiles/software/linux/full/extconvert

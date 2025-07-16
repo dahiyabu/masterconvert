@@ -39,19 +39,42 @@ jobs:
           cp -r services/converter build_app/converter
           cp -r services/converter-sw/* build_app/
 
-      - name: Build main app binary
+      - name: Build main app binary basic
         run: |
           cd build_app
           pyinstaller \
             --noconfirm --clean --console --name app \
             --onefile --log-level DEBUG \
-            --add-data "build:build" \
+            --add-data "build_basic:build" \
             --add-data "/Applications/LibreOffice.app:dependencies/libreoffice" \
             --add-data "/opt/homebrew/bin/tesseract:dependencies/tesseract" \
             --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
             --add-data "/opt/homebrew/bin/gs:dependencies/ghostscript" \
             --add-data "/opt/homebrew/bin/7z:dependencies/7zip" \
-            --distpath ../proc main.py
+            --distpath ../proc/basic main.py
+
+      - name: Build launcher app binary basic
+        run: |
+          cd build_app
+          pyinstaller --onefile --windowed --name extconvert \
+            --icon=resources/logo.jpg \
+            --add-data "resources/logo.jpg:resources" \
+            --add-data "../proc/basic/app:." \
+            --distpath ../output/macos/basic launcher.py
+
+      - name: Build main app binary full
+        run: |
+          cd build_app
+          pyinstaller \
+            --noconfirm --clean --console --name app \
+            --onefile --log-level DEBUG \
+            --add-data "build_full:build" \
+            --add-data "/Applications/LibreOffice.app:dependencies/libreoffice" \
+            --add-data "/opt/homebrew/bin/tesseract:dependencies/tesseract" \
+            --add-data "/opt/homebrew/bin/ffmpeg:dependencies" \
+            --add-data "/opt/homebrew/bin/gs:dependencies/ghostscript" \
+            --add-data "/opt/homebrew/bin/7z:dependencies/7zip" \
+            --distpath ../proc/full main.py
 
       - name: Build launcher app binary
         run: |
@@ -59,8 +82,8 @@ jobs:
           pyinstaller --onefile --windowed --name extconvert \
             --icon=resources/logo.jpg \
             --add-data "resources/logo.jpg:resources" \
-            --add-data "../proc/app:." \
-            --distpath ../output/macos launcher.py
+            --add-data "../proc/full/app:." \
+            --distpath ../output/macos/full launcher.py
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -71,4 +94,5 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./output/macos/extconvert s3://convertmasterfiles/software/macos/extconvert
+          aws s3 cp ./output/macos/basic/extconvert s3://convertmasterfiles/software/macos/basic/extconvert
+          aws s3 cp ./output/macos/full/extconvert s3://convertmasterfiles/software/macos/full/extconvert
