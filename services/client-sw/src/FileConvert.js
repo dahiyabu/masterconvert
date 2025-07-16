@@ -59,7 +59,7 @@ export default function FileConvertApp() {
                 <>
                   <ConvertSection API_URL={API_URL} />
                   <div style={{ marginTop: '3rem' }}>
-                    <FormatCompatibilityLookup />
+                    <FormatCompatibilityLookup API_URL={API_URL}/>
                   </div>
                 </>
               ) : (

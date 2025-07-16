@@ -42,7 +42,7 @@ export default function FormatCompatibilityLookup({ API_URL }) {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`${API_URL}/formats`);
+        const response = await fetch(`${API_URL}/formats?conversion_type=basic`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
