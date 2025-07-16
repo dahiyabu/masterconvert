@@ -29,8 +29,7 @@ jobs:
 
             # Step 1: Start ssh-agent
             eval "$(ssh-agent -s)"
-            export SSH_AUTH_SOCK
-
+            
             # Step 2: Use expect to enter the passphrase
             /usr/bin/expect <<'EOT'
             set timeout 10
@@ -56,7 +55,7 @@ jobs:
 
             chmod +x /var/tmp/upload.sh
             /var/tmp/upload.sh
-            #rm -rf /root/.ssh/id_rsa_target
+            rm -rf /root/.ssh/id_rsa_target
             #rm -rf /var/tmp/upload.sh
             echo "Docker image saved successfully."
       - name: Copy compose file to VPS
@@ -109,4 +108,4 @@ jobs:
             echo "Container is up and running!"
             
             rm -rf ~/services/client
-            #rm -rf /var/tmp/image/ecclient.tar
+            rm -rf /var/tmp/image/ecclient.tar
