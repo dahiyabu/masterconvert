@@ -24,7 +24,7 @@ const DownloadPage = ({API_URL}) => {
     const plan = urlParams.get('plan');
     const planType = urlParams.get('planType');
     const email = urlParams.get('email');
-    const period = urlParams.get('period');
+    let period = urlParams.get('period');
     
     if (!plan || !email || !planType) {
       setVerificationStatus('failed');
