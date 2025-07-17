@@ -31,7 +31,7 @@ def schedule_hourly_delete():
                 time.sleep(sleep_seconds)
             else:
                 logger.warning("[Scheduler] Negative sleep time, skipping sleep.")
-            reinitialize()
+            reinitialize(delete_log=False)
 
     thread = threading.Thread(target=hourly_task, daemon=True)
     thread.start()

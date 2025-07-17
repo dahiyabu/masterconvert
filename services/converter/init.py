@@ -35,8 +35,8 @@ def get_upload_folder():
 def get_converted_folder():
     return os.path.join(get_base_folder(), 'converted')
 
-def cleanup_files(parent_folder=get_base_folder(),log_path=None):
-    if log_path is None and hasattr(converter.config, 'logpath'):
+def cleanup_files(parent_folder=get_base_folder(),log_path=None,delete_log=True):
+    if delete_log and log_path is None and hasattr(converter.config, 'logpath'):
         log_path = converter.config.logpath
     temp_path=os.path.join(parent_folder,'uploads')
     if os.path.exists(temp_path):
@@ -52,7 +52,7 @@ def cleanup_files(parent_folder=get_base_folder(),log_path=None):
             logging.info(f"Deleted converted folder and all contents: {temp_path}")
         except Exception as e:
             logging.error(f"Failed to delete converted folder: {e}")
-    if log_path and os.path.exists(log_path):
+    if delete_log and log_path and os.path.exists(log_path):
         for handler in logging.root.handlers[:]:
             handler.close()
             logging.root.removeHandler(handler)

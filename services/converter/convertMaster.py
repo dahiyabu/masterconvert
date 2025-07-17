@@ -225,8 +225,9 @@ def setup(path=None):
     # Create necessary folders
     os.makedirs(get_upload_folder(), exist_ok=True)
     os.makedirs(get_converted_folder(), exist_ok=True)
-def reinitialize():
-    cleanup_files(get_base_folder())
+
+def reinitialize(delete_log=True):
+    cleanup_files(delete_log=delete_log)
     setup()
 # Register cleanup on normal interpreter exit
 atexit.register(cleanup_files)
