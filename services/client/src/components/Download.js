@@ -15,6 +15,7 @@ const DownloadPage = ({API_URL}) => {
   
   const [sessionId, setSessionId] = useState('');
   const [planName, setPlanName] = useState('');
+  const [period, setPeriod] = useState('');
   const [planType, setPlanType] = useState('');
   const [verificationError, setVerificationError] = useState('');
   
@@ -23,15 +24,20 @@ const DownloadPage = ({API_URL}) => {
     const plan = urlParams.get('plan');
     const planType = urlParams.get('planType');
     const email = urlParams.get('email');
+    const period = urlParams.get('period');
     
     if (!plan || !email || !planType) {
       setVerificationStatus('failed');
       setVerificationError('Plan or Email or PlanType are missing')
       return;
     }
+    if (!period) {
+      period = 'lifetime';
+    }
     setPlanName(plan);
     setPlanType(planType);
     setCustomerEmail(email);
+    setPeriod(period);
     verifyPayment(plan, planType, email);
   }, []);
 
@@ -530,6 +536,7 @@ Platform: ${platform}
       sessionId={sessionId}
       customerEmail={customerEmail}
       planName={planName}
+      period={period}
       API_URL={API_URL}
     />
   );

@@ -21,6 +21,8 @@ monthly_online_price_id=os.getenv('MONTHLY_ONLINE_PRICE_ID', None)
 yearly_online_price_id=os.getenv('YEARLY_ONLINE_PRICE_ID', None)
 monthly_offline_price_id=os.getenv('MONTHLY_OFFLINE_PRICE_ID', None)
 yearly_offline_price_id=os.getenv('YEARLY_OFFLINE_PRICE_ID', None)
+basic_price_id=os.getenv('BASIC_PRICE_ID', None)
+professional_price_id=os.getenv('PROFESSIONAL_PRICE_ID', None)
 daily_price_id=os.getenv('DAILY_PRICE_ID', None)
 
 
@@ -169,7 +171,9 @@ def create_checkout_session():
     price_id = {
         'monthly': { 'Online': monthly_online_price_id, 'Offline': monthly_offline_price_id},
         'yearly': {'Online': yearly_online_price_id, 'Offline': yearly_offline_price_id},
-        'daily': { 'Online': daily_price_id}
+        'daily': { 'Online': daily_price_id},
+        'basic': {'Offline': basic_price_id},
+        'professional': {'Offline': professional_price_id}
     }.get(plan, {}).get(plan_type)
     #logger.info("Using Stripe CA path:", stripe.ca_bundle_path)
     if not price_id:

@@ -133,11 +133,20 @@ const DownloadManager = (function() {
         }
     }
 
-    async function downloadSoftware(platform) {
+    async function downloadSoftware(platform,plan) {
         const s3Keys = {
-            windows: 'software/windows/extconvert.exe',
-            macos: 'software/macos/extconvert',
-            linux: 'software/linux/extconvert'
+            windows: {
+                'basic': 'software/windows/basic/extconvert.exe',
+                'professional': 'software/windows/full/extconvert.exe'
+            },
+            macos: {
+                'basic': 'software/macos/basic/extconvert',
+                'professional': 'software/macos/full/extconvert'
+            },
+            linux: {
+                'basic': 'software/linux/basic/extconvert',
+                'professional': 'software/linux/full/extconvert'
+            }
         };
 
         try {
@@ -147,7 +156,7 @@ const DownloadManager = (function() {
             const res = await fetch(`${API_URL}/get-download-link`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key: s3Keys[platform] })
+            body: JSON.stringify({ key: s3Keys[platform][plan] })
             });
 
             const data = await res.json();
@@ -407,9 +416,21 @@ const DownloadManager = (function() {
             // Step 1: Generate license and download software in parallel
             if (onProgress) onProgress(10);
             else updateProgress(10);
+            let durationInDays;
+
+            if (sessionData.period === 'per month') {
+                durationInDays = 30;  // 30 days for monthly plan
+            } else if (sessionData.period === 'per year') {
+                durationInDays = 365;  // 365 days for yearly plan
+            } else if (sessionData.period === 'lifetime') {
+                durationInDays = 36500;  // 100 years for lifetime plan
+            } else {
+                // Default to 30 days if the plan is not specified or is unknown
+                durationInDays = 30;
+            }
             const [licenseData, softwareBlob] = await Promise.all([
-                generateLicense(60 * 60 * 24 * 30,existingLicenseId,sessionData),
-                downloadSoftware(platform)
+                generateLicense(durationInDays,existingLicenseId,sessionData),
+                downloadSoftware(platform,sessionData.plan)
             ]);
         
             if (onProgress) onProgress(60)

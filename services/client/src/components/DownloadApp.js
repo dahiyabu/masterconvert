@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import './DownloadApp.css';
 import DownloadManager from './downloadManager';
 
-const DownloadApp = ({ sessionId, customerEmail, planName, API_URL }) => {
+const DownloadApp = ({ sessionId, customerEmail, planName, period, API_URL }) => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [downloadPath, setDownloadPath] = useState('');
   const [isConfirmEnabled, setIsConfirmEnabled] = useState(false);
@@ -214,6 +214,7 @@ const getPlatformInfo = useCallback(() => {
         sessionId,
         email: customerEmail,
         plan: planName,
+        period: period,
         os: selectedPlatform
       });
       // Update download tracking

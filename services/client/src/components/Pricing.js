@@ -66,8 +66,8 @@ const PricingPage = ({ isMobile, API_URL }) => {
       name: 'Yearly Plan',
       type: 'Online',
       description: 'Maximum savings for power users',
-      originalPrice: '$59.99',
-      currentPrice: '$29.99',
+      originalPrice: '$49.99',
+      currentPrice: '$24.99',
       period: 'per year',
       discount: 'Save 50%',
       features: [
@@ -110,50 +110,53 @@ const PricingPage = ({ isMobile, API_URL }) => {
       popular: false
     },
     {
-      id: 'monthly',
-      name: 'Monthly Plan',
+      id: 'basic',
+      name: 'Basic Plan',
       type: 'Offline',
       description: 'Best value for regular users',
-      originalPrice: '$6.99',
-      currentPrice: '$3.99',
-      period: 'per month',
-      discount: 'Save 43%',
+      originalPrice: '$29.99',
+      currentPrice: '$14.99',
+      period: 'lifetime',
+      discount: 'Save 50%',
       features: [
-        'Unlimited conversions & merges',
-        '200+ file formats supported',
+        'Unlimited conversions',
+        '150+ file formats supported',
         'Desktop app download',
         'Offline local processing',
-        'Advanced compression & encryption',
-        'Batch processing',
+        'Lifetime Plan',
+        'Single processing',
+        'No Compression and Merges',
         'Priority customer support',
         'No advertisements',
         'Free Upgrades'
       ],
-      buttonText: 'Start Monthly Plan',
+      buttonText: 'Start Basic Plan',
       buttonStyle: 'secondary',
       popular: false
     },
     {
-      id: 'yearly',
-      name: 'Yearly Plan',
+      id: 'professional',
+      name: 'Professional Plan',
       type: 'Offline',
       description: 'Maximum savings for power users',
       originalPrice: '$49.99',
       currentPrice: '$24.99',
-      period: 'per year',
+      period: 'lifetime',
       discount: 'Save 50%',
       features: [
         'Unlimited conversions & merges',
         '200+ file formats supported',
         'Desktop app download',
         'Offline local processing',
-        'Advanced compression & encryption',
+        'Advanced compression and conversions',
+        'Advanced image, audio and video conversions',
+        'Password Protection',
         'Batch processing',
         'Premium customer support',
         'No advertisements',
         'Free Upgrades'
       ],
-      buttonText: 'Get Yearly Plan',
+      buttonText: 'Get Professional Plan',
       buttonStyle: 'primary',
       popular: true
     }
@@ -555,12 +558,17 @@ const PricingPage = ({ isMobile, API_URL }) => {
             maxWidth: '80rem',
             margin: '0 auto'
           }}>
-            {[
-              { icon: Shield, title: '100% Secure', text: 'All processing happens locally on your device', color: 'linear-gradient(135deg, #3b82f6, #06b6d4)' },
-              { icon: Download, title: 'Offline Ready', text: 'Works without internet connection', color: 'linear-gradient(135deg, #8b5cf6, #6366f1)' },
-              { icon: Globe, title: '200+ Formats', text: 'Support for all major file types', color: 'linear-gradient(135deg, #10b981, #34d399)' },
-              { icon: Smartphone, title: 'Cross-Platform', text: 'Available on Windows, Mac, and Web', color: 'linear-gradient(135deg, #f97316, #ef4444)' }
-            ].map((feature, index) => (
+            {(activeTab === 'Online' ? [
+              { icon: Globe, title: 'No Installation Required', text: 'Use instantly in any browser – no setup needed', color: 'linear-gradient(135deg, #3b82f6, #06b6d4)' },
+              { icon: Shield, title: 'Secure Cloud Processing', text: 'Your files are encrypted and auto-deleted hourly', color: 'linear-gradient(135deg, #10b981, #34d399)' },
+              { icon: Smartphone, title: 'Cross-Device Compatible', text: 'Work seamlessly on mobile, tablet, and desktop', color: 'linear-gradient(135deg, #f97316, #ef4444)' },
+              { icon: Zap, title: 'Fast Conversion Speeds', text: 'Powerful cloud resources for lightning-fast results', color: 'linear-gradient(135deg, #8b5cf6, #6366f1)' },
+            ] : [
+              { icon: Download, title: 'Works Offline', text: 'Convert files even without an internet connection', color: 'linear-gradient(135deg, #8b5cf6, #6366f1)' },
+              { icon: Shield, title: '100% Local Security', text: 'Files stay on your device — perfect for privacy', color: 'linear-gradient(135deg, #3b82f6, #06b6d4)' },
+              { icon: Smartphone, title: 'Lifetime Access', text: 'Pay once and use it forever – no subscriptions', color: 'linear-gradient(135deg, #10b981, #34d399)' },
+              { icon: Globe, title: 'Cross-Platform Desktop', text: 'Runs on Windows, macOS and linux with native apps', color: 'linear-gradient(135deg, #f97316, #ef4444)' },
+            ]).map((feature, index) => (
               <div key={index} style={{
                 background: 'white',
                 borderRadius: '1rem',
