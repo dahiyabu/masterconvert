@@ -501,9 +501,10 @@ def get_download_records(session_id, email, plan,platform=None):
                     'sessionId':row[3],
                     'email': row[4],
                     'plan': row[5],
-                    'platform': row[6],
-                    'createdAt': row[7],
-                    'expiresAt': row[8]
+                    'planType': row[6],
+                    'platform': row[7],
+                    'createdAt': row[8],
+                    'expiresAt': row[9]
                 }
                 download_records.append(download_record)
             return download_records

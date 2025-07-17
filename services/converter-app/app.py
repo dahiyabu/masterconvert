@@ -141,17 +141,19 @@ def check_download_status():
         if download_records and isinstance(download_records, list) and all(isinstance(record, dict) for record in download_records):
             downloaded_platforms = [record['platform'] for record in download_records]
             license_id = download_records[0]['licenseId']
-            return jsonify({
+            return_code=jsonify({
                 'hasDownloaded': True,
                 'downloadedPlatforms': downloaded_platforms,
                 'licenseId': license_id
             })
         else:
-            return jsonify({
+            return_code = jsonify({
                 'hasDownloaded': False,
                 'downloadedPlatforms': [],
                 'licenseId': None
             })
+        logger.info(return_code.get_data(as_text=True))
+        return return_code,200
     
     except Exception as error:
         return jsonify({'error': str(error)}), 500
