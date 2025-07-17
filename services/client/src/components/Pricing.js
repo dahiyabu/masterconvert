@@ -152,6 +152,7 @@ const PricingPage = ({ isMobile, API_URL }) => {
         'Advanced image, audio and video conversions',
         'Password Protection',
         'Batch processing',
+        'Lifetime Plan',
         'Premium customer support',
         'No advertisements',
         'Free Upgrades'
@@ -427,7 +428,7 @@ const PricingPage = ({ isMobile, API_URL }) => {
                       textDecoration: 'line-through',
                       marginBottom: '0.5rem'
                     }}>
-                      {plan.originalPrice}{plan.id === 'daily' ? ' per day' : (plan.id === 'monthly' ? ' per month' : ' per year')}
+                      {plan.originalPrice}{plan.type === 'Online'? (plan.id === 'daily' ? ' per day' : (plan.id === 'monthly' ? ' per month' : ' per year')):' one time'}
                     </div>
                   )}
                   <div style={{
@@ -444,7 +445,7 @@ const PricingPage = ({ isMobile, API_URL }) => {
                     <span style={{
                       color: '#6b7280',
                       fontSize: '1.125rem'
-                    }}>{plan.period}</span>
+                    }}>{plan.period === 'lifetime'? ' one time':plan.period}</span>
                   </div>
                   {plan.discount && (
                     <div style={{
