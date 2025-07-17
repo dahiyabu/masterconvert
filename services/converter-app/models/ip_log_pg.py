@@ -76,7 +76,7 @@ def init_ip_log_db():
                 id SERIAL PRIMARY KEY,
                 ip_address TEXT NOT NULL,
                 email TEXT,
-                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly', 'basic', 'professional')) NOT NULL,
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
             )
@@ -88,7 +88,7 @@ def init_ip_log_db():
                 client_ip TEXT,
                 session_id TEXT NOT NULL UNIQUE,
                 email TEXT,
-                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly', 'basic', 'professional')) NOT NULL,
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 fingerprint TEXT,
                 client_reference_id TEXT,
@@ -108,7 +108,7 @@ def init_ip_log_db():
                 key_data TEXT NOT NULL,
                 session_id TEXT NOT NULL,
                 email TEXT,
-                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly')) NOT NULL,
+                plan TEXT CHECK(plan IN ('daily', 'monthly', 'yearly', 'basic', 'professional')) NOT NULL,
                 plan_type TEXT CHECK(plan_type IN ('Online', 'Offline')) NOT NULL,
                 platform TEXT CHECK(platform IN ('windows', 'macos', 'linux')) NOT NULL,
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
