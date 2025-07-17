@@ -537,6 +537,7 @@ Platform: ${platform}
       customerEmail={customerEmail}
       planName={planName}
       period={period}
+      planType={planType}
       API_URL={API_URL}
     />
   );

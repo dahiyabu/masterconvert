@@ -98,6 +98,7 @@ def generate_license():
     sessionId = data.get('sessionId')
     email = data.get('email')
     plan = data.get('plan')
+    planType = data.get('planType')
     platform = data.get('os')
     
     logger.info(f"Duration: {duration}, LicenseId: {license_id}, Redownload: {redownload}")
@@ -118,7 +119,7 @@ def generate_license():
                 }), 200
         lic = generate_license_file(expiry_days=duration)
         # Store the license for future redownloads
-        store_license(lic['license_id'], lic['key'],sessionId,email,plan,platform)
+        store_license(lic['license_id'], lic['key'],sessionId,email,plan,planType,platform)
         return jsonify({
             'key': lic['key'],
             'licenseId': lic['license_id']
@@ -137,22 +138,21 @@ def check_download_status():
         
         # Query your database for existing downloads
         download_records = get_download_records(session_id=session_id, email=email, plan=plan)
-        if isinstance(download_records, list) and all(isinstance(record, dict) for record in download_records):
-            if download_records:
-                downloaded_platforms = [record['platform'] for record in download_records]
-                license_id = download_records[0]['licenseId']
-                return jsonify({
-                    'hasDownloaded': True,
-                    'downloadedPlatforms': downloaded_platforms,
-                    'licenseId': license_id
-                })
-            else:
-                return jsonify({
-                    'hasDownloaded': False,
-                    'downloadedPlatforms': [],
-                    'licenseId': None
-                })
-        
+        if download_records and isinstance(download_records, list) and all(isinstance(record, dict) for record in download_records):
+            downloaded_platforms = [record['platform'] for record in download_records]
+            license_id = download_records[0]['licenseId']
+            return jsonify({
+                'hasDownloaded': True,
+                'downloadedPlatforms': downloaded_platforms,
+                'licenseId': license_id
+            })
+        else:
+            return jsonify({
+                'hasDownloaded': False,
+                'downloadedPlatforms': [],
+                'licenseId': None
+            })
+    
     except Exception as error:
         return jsonify({'error': str(error)}), 500
 

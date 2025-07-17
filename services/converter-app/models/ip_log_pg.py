@@ -447,21 +447,22 @@ def get_account_limits(fingerprint):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-def store_license(license_id, key,sessionId,email,plan,platform):
+def store_license(license_id, key,sessionId,email,plan,plan_type,platform):
     """Store license in database"""
     try:
         conn = get_db()
         cursor = conn.cursor()
         # Assuming you have a licenses table
         cursor.execute("""
-            INSERT INTO licenses (license_id, key_data, session_id,email,plan,platform,created_at, expires_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO licenses (license_id, key_data, session_id,email,plan,plan_type,platform,created_at, expires_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             license_id, 
             key,
             sessionId,
             email,
             plan,
+            plan_type,
             platform,
             datetime.now().isoformat(),
             (datetime.now() + timedelta(hours=24)).isoformat()

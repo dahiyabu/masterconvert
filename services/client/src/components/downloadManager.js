@@ -104,6 +104,7 @@ const DownloadManager = (function() {
                 requestBody.sessionId = sessionData.sessionId;
                 requestBody.email = sessionData.email;
                 requestBody.plan = sessionData.plan;
+                requestBody.planType = sessionData.planType;
                 requestBody.os = sessionData.os;
             }
             const response = await fetch(config.licenseApiEndpoint, {
