@@ -33,15 +33,27 @@ def convert_file_app():
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
         #logger.info(f"ipddress={ip_address}")
         # Get fingerprint from request (sent by the frontend)
-        fingerprint = request.json.get('fingerprint')
+        file_count = 1
+        if request.is_json:  # If it's JSON
+            try:
+                data = request.get_json()  # Get JSON data
+                fingerprint = data.get('fingerprint')
+            except Exception as e:
+                return jsonify({"error": "Failed to parse JSON", "details": str(e)}), 400
+        # If it's form data
+        elif request.form:  # If it's form data (either x-www-form-urlencoded or multipart/form-data)
+            fingerprint = request.form.get('fingerprint')
+            file_count = len(request.files.getlist('files'))
+        else:
+            return jsonify({"error": "Unsupported content type"}), 415 
 
         # Validate the fingerprint and usage limits
         if not fingerprint:
             return jsonify({'error': 'Fingerprint is required'}), 400
 
-        if not is_ip_under_limit(fingerprint):
+        if not is_ip_under_limit(fingerprint,file_count):
             return jsonify({'error': 'Daily usage limit exceeded'}), 429
-        log_ip_address(ip_address,fingerprint)
+        log_ip_address(ip_address,fingerprint,file_count)
     except Exception as e:
         logger.exception(f"Caught exception {e}")
         return jsonify({'error': 'Conversion process failed'}), 500

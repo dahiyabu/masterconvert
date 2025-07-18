@@ -20,6 +20,7 @@ function UploadFileButton({ handleFileChange }) {
       <input
         type="file"
         hidden
+        multiple
         id="upload"
         onChange={handleFileChange}
       />

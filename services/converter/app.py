@@ -1,4 +1,4 @@
-from converter.convertMaster import FORMAT_COMPATIBILITY,BASIC_CONVERSIONS,FILE_CATEGORIES,merge_file_handler,upload_file_handler,get_converted_folder
+from converter.convertMaster import FORMAT_COMPATIBILITY,BASIC_CONVERSIONS,FILE_CATEGORIES,COMPRESSED_QUALITY, ALLOWED_ENCRYPT_EXTENTIONS,ALLOWED_COMPRESS_EXTENTIONS,merge_file_handler,upload_file_handler,get_converted_folder
 import logging as logger
 from converter.handlers import common_conversion_handler,common_merge_handler
 from flask import Blueprint,request,jsonify, send_file
@@ -19,7 +19,10 @@ def get_formats():
     """Get all supported formats and their compatibility"""
     return jsonify({
         'format_compatibility': BASIC_CONVERSIONS if conversion_type == 'basic' else FORMAT_COMPATIBILITY,
-        'file_categories': FILE_CATEGORIES
+        'file_categories': FILE_CATEGORIES,
+        'compression_quality': {} if conversion_type == 'basic' else COMPRESSED_QUALITY,
+        'allowed_encrypt_extensions': {} if conversion_type == 'basic' else ALLOWED_ENCRYPT_EXTENTIONS,
+        'allowed_compress_extentions': {} if conversion_type == 'basic' else ALLOWED_COMPRESS_EXTENTIONS
     }), 200
 
 # Error handlers

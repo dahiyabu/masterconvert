@@ -370,7 +370,7 @@ const getPlatformInfo = useCallback(() => {
               </div>
               <div className="info-content">
                 <p>Your license.lic file is included in the download package and contains all necessary activation data.</p>
-                <p>Your subscription includes free updates and premium support based on your chosen plan (monthly or yearly).</p>
+                <p>Your subscription includes free updates and premium support based on your chosen plan (basic or professional).</p>
                 <p><strong>Important:</strong> Keep the license.lic file in the same directory as the ExtConvert executable.</p>
               </div>
             </div>

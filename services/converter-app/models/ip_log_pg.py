@@ -1,7 +1,7 @@
 import os
 import psycopg2
 import psycopg2.extras
-from psycopg2 import sql, OperationalError, Error
+from psycopg2 import  OperationalError, Error
 import logging as logger
 from datetime import datetime, timedelta
 from models.email_helper import create_email
@@ -155,7 +155,7 @@ def validate_online_user(lic,ip,identifier,email):
         return jsonify({"message":"Valid Account"}),200
     return jsonify({"message":"Invalid Account"}),400
 
-def log_ip_address(ip,identifier):
+def log_ip_address(ip,identifier,new_conversions):
     """Insert or update IP usage log for today."""
     try:
         today = date.today().isoformat()
@@ -168,11 +168,12 @@ def log_ip_address(ip,identifier):
         #else:
         #    cursor.execute('INSERT INTO ip_log (ip, log_date, request_count) VALUES (%s, %s, %s)', (ip, today, 1))
         if row:
-            cursor.execute('UPDATE ip_log SET request_count = request_count + 1 WHERE fingerprint = %s AND log_date = %s', (identifier, today))
+            cursor.execute('UPDATE ip_log SET request_count = request_count + %s WHERE fingerprint = %s AND log_date = %s', (new_conversions,identifier, today))
         else:
             cursor.execute('INSERT INTO ip_log (ip,fingerprint, log_date, request_count) VALUES (%s,%s, %s, %s)', (ip,identifier, today, 1))
         conn.commit()
     except Exception as e:
+        conn.rollback()
         logger.error(f"Error logging ip:{e}")
         
 def recreate_ip_log_db():
@@ -184,12 +185,11 @@ def recreate_ip_log_db():
     #logger.info("DELETED OLD RECORDS IN ip_log table")
     init_ip_log_db()
 
-def is_ip_under_limit(identifier):
+def is_ip_under_limit(identifier,new_requests=0):
     """Return True if Identifier/fingerprint has not exceeded daily usage."""
     today = date.today().isoformat()
     conn = get_db()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
     #cursor.execute('SELECT request_count, is_paid FROM ip_log WHERE ip = %s AND log_date = %s', (ip, today))
     cursor.execute('SELECT request_count, is_paid, log_date, expiry_time FROM ip_log WHERE fingerprint = %s', (identifier,))
     row = cursor.fetchone()
@@ -213,7 +213,7 @@ def is_ip_under_limit(identifier):
             ''', (today, identifier))
             conn.commit()
             return True
-        return'request_count' in row and row['request_count'] < MAX_DAILY_REQUESTS
+        return'request_count' in row and row['request_count'] + new_requests - 1 < MAX_DAILY_REQUESTS
     return True
 
 def change_max_allowed_request(max_request):
