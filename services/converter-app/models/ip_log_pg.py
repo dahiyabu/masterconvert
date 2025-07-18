@@ -11,7 +11,7 @@ from flask import g,jsonify
 # Environment-based PostgreSQL DSN (customize as needed)
 POSTGRES_DSN = os.getenv("POSTGRES_DSN",None)
 
-MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 3))
+MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 5))
 
 def get_db():
     """Return a persistent DB connection for the current request context."""

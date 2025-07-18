@@ -7,7 +7,7 @@ services:
     environment:
       - PORT=9081
       - TEMPPATH=/var/tmp/extconvert
-      - MAX_REQUESTS=3
+      - MAX_REQUESTS=5
       - APP_DOMAIN=APP_DOMAIN_VALUE
       - POSTGRES_DSN=POSTGRES_DSN_VALUE
       - MONTHLY_OFFLINE_PRICE_ID=MONTHLY_OFFLINE_PRICE_ID_VALUE
