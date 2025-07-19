@@ -134,9 +134,8 @@ const PricingPage = ({ isMobile, API_URL }) => {
         'Lifetime Plan',
         'Single File processing',
         'No Compression and Merges',
-        'Priority customer support',
-        'No advertisements',
-        'Free Upgrades'
+        'Customer support',
+        'No advertisements'
       ],
       buttonText: 'Start Basic Plan',
       buttonStyle: 'secondary',
@@ -163,7 +162,6 @@ const PricingPage = ({ isMobile, API_URL }) => {
         'Lifetime Plan',
         'Premium customer support',
         'No advertisements',
-        'Free Upgrades'
       ],
       buttonText: 'Get Professional Plan',
       buttonStyle: 'primary',

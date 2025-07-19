@@ -87,7 +87,7 @@ export default function ConvertSection({ API_URL }) {
     // Check if adding new files would exceed the limit
     const totalFiles = selectedFiles.length + files.length;
     if (totalFiles > MAX_FILES_LIMIT) {
-      setErrorMessage(`You can only convert a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${selectedFiles.length} files selected.`);
+      setErrorMessage(`You can only convert a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${selectedFiles.length} files selected and trying to add ${files.length} more.`);
       setConversionStatus('error');
       return;
     }
@@ -207,7 +207,7 @@ export default function ConvertSection({ API_URL }) {
                 </Typography>
         
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  Upgrade your plan to increase file size limit or conversions.
+                  Checkout new version of software to get additional features.
                 </Typography>
         
                 <Box display="flex" gap={1}>

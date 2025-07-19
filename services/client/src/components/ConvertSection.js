@@ -134,12 +134,12 @@ export default function ConvertSection({ API_URL }) {
     // Check if adding new files would exceed the limit
     const totalFiles = selectedFiles.length + files.length;
     if (totalFiles > MAX_FILES_LIMIT) {
-      setErrorMessage(`You can only convert a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${selectedFiles.length} files selected.`);
+      setErrorMessage(`You can only convert a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${selectedFiles.length} files selected and trying to add ${files.length} more.`);
       setConversionStatus('error');
       return;
     }
     if (totalFiles > conversionsLeft) {
-      setErrorMessage(`You can only convert a maximum of ${conversionsLeft} files. You currently have ${selectedFiles.length} files selected.`);
+      setErrorMessage(`You only have ${conversionsLeft} conversions left in your account. You currently have ${selectedFiles.length} files selected and trying to add ${files.length} more.`);
       setConversionStatus('error');
       return;
     }
