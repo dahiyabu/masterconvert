@@ -433,6 +433,7 @@ export default function ConvertSection({ API_URL }) {
     ))}
 
     {/* Add more files button */}
+    {conversionStatus !== 'converting' && (
     <Box sx={{ textAlign: 'center', mb: 2 }}>
       <input
         type="file"
@@ -451,6 +452,7 @@ export default function ConvertSection({ API_URL }) {
         </Button>
       </label>
     </Box>
+    )}
 
     {/* Reset and Convert buttons */}
     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
