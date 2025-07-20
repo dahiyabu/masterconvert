@@ -135,4 +135,4 @@ jobs:
             
             # Clean up
             rm -rf /var/tmp/ecappimage/extconvert.tar
-            rm -rf ~/services/convert-app
+            rm -rf ~/services/converter-app
