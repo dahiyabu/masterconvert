@@ -19,8 +19,8 @@ APP_DOMAIN = os.getenv("APP_DOMAIN",'http://localhost:3000')
 
 monthly_online_price_id=os.getenv('MONTHLY_ONLINE_PRICE_ID', None)
 yearly_online_price_id=os.getenv('YEARLY_ONLINE_PRICE_ID', None)
-monthly_offline_price_id=os.getenv('MONTHLY_OFFLINE_PRICE_ID', None)
-yearly_offline_price_id=os.getenv('YEARLY_OFFLINE_PRICE_ID', None)
+#monthly_offline_price_id=os.getenv('MONTHLY_OFFLINE_PRICE_ID', None)
+#yearly_offline_price_id=os.getenv('YEARLY_OFFLINE_PRICE_ID', None)
 basic_price_id=os.getenv('BASIC_PRICE_ID', None)
 professional_price_id=os.getenv('PROFESSIONAL_PRICE_ID', None)
 daily_price_id=os.getenv('DAILY_PRICE_ID', None)
@@ -178,13 +178,14 @@ def create_checkout_session():
     plan_type = data.get('plan_type')
     fingerprint = data.get('fingerprint')
     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if not monthly_online_price_id or not yearly_online_price_id or not monthly_offline_price_id or not yearly_offline_price_id or not daily_price_id:
+    #if not monthly_online_price_id or not yearly_online_price_id or not monthly_offline_price_id or not yearly_offline_price_id or not daily_price_id:
+    if not monthly_online_price_id or not yearly_online_price_id or not daily_price_id or not basic_price_id or not professional_price_id:        
         return jsonify({'error':'Invalid Plan'}),400 
     if not plan or not plan_type:
         return jsonify({'error':' Invalid Plan or PlanType'}),400
     price_id = {
-        'monthly': { 'Online': monthly_online_price_id, 'Offline': monthly_offline_price_id},
-        'yearly': {'Online': yearly_online_price_id, 'Offline': yearly_offline_price_id},
+        'monthly': { 'Online': monthly_online_price_id},#, 'Offline': monthly_offline_price_id},
+        'yearly': {'Online': yearly_online_price_id},# 'Offline': yearly_offline_price_id},
         'daily': { 'Online': daily_price_id},
         'basic': {'Offline': basic_price_id},
         'professional': {'Offline': professional_price_id}
