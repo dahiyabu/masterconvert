@@ -11,7 +11,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Copy running Docker image from Dev Server to GitHub Actions
+      - name: Copy running Docker image from Dev Server to PROD
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -69,7 +69,7 @@ jobs:
           source: "./services/converter-app/docker-compose.yml"
           target: "~/"
       
-      - name: Deploy Docker image on QA Server
+      - name: Deploy Docker image on PROD Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST_PROD }}
