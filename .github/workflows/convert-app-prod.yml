@@ -45,9 +45,9 @@ jobs:
             wait
             EOT
 
-            ssh ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }} "mkdir -p /var/tmp/image"
+            ssh ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }} "mkdir -p /var/tmp/ecappimage"
             # Step 3: Run your SCP command
-            scp /var/tmp/extconvert.tar ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/image/extconvert.tar
+            scp /var/tmp/extconvert.tar ${{ secrets.DEPLOY_USER_PROD }}@${{ secrets.DEPLOY_HOST_PROD }}:/var/tmp/ecappimage/extconvert.tar
             rm -rf /var/tmp/extconvert.tar
             # Step 4: Kill the agent (optional)
             ssh-agent -k > /dev/nullQ
@@ -91,7 +91,7 @@ jobs:
             docker rmi extconvert:latest || echo "No old image found to remove"
             
             # Load the Docker image from the tar file
-            docker load -i /var/tmp/image/extconvert.tar
+            docker load -i /var/tmp/ecappimage/extconvert.tar
 
             # Deploy the container using the existing docker-compose file
             mkdir -p /var/tmp/extconvert/logs
@@ -127,12 +127,12 @@ jobs:
             if [ $elapsed_time -ge 300 ]; then
               echo "Timeout reached! Container did not start after 300 seconds."
               rm -rf ~/services/converter-app
-              rm -rf /var/tmp/image/extconvert.tar
+              rm -rf /var/tmp/ecappimage/extconvert.tar
               exit 1
             fi
 
             echo "Container is up and running!"
             
             # Clean up
-            rm -rf /var/tmp/image/extconvert.tar
+            rm -rf /var/tmp/ecappimage/extconvert.tar
             rm -rf ~/services/convert-app
