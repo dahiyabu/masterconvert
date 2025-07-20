@@ -95,22 +95,22 @@ jobs:
 
             # Deploy the container using the existing docker-compose file
             mkdir -p /var/tmp/extconvert/logs
-            sed "s/POSTGRES_DSN_VALUE/${{ secrets.POSTGRES_DSN_PROD }}/g" ~/services/converter-app/docker-compose.yml | 
-            sed "s/MONTHLY_OFFLINE_PRICE_ID_VALUE/${{ secrets.MONTHLY_PROD_OFFLINE_PRICE_ID }}/g" | 
-            sed "s/YEARLY_OFFLINE_PRICE_ID_VALUE/${{ secrets.YEARLY_PROD_OFFLINE_PRICE_ID }}/g" | 
-            sed "s/MONTHLY_ONLINE_PRICE_ID_VALUE/${{ secrets.MONTHLY_PROD_ONLINE_PRICE_ID }}/g" | 
-            sed "s/YEARLY_ONLINE_PRICE_ID_VALUE/${{ secrets.YEARLY_PROD_ONLINE_PRICE_ID }}/g" | 
-            sed "s/DAILY_PRICE_ID_VALUE/${{ secrets.DAILY_PROD_PRICE_ID }}/g" | 
-            sed "s/BASIC_PRICE_ID_VALUE/${{ secrets.BASIC_PROD_PRICE_ID }}/g" | 
-            sed "s/PROFESSIONAL_PRICE_ID_VALUE/${{ secrets.PROFESSIONAL_PROD_PRICE_ID }}/g" | 
-            sed "s/STRIPE_KEY_VALUE/${{ secrets.STRIPE_KEY }}/g" | 
-            sed "s/STRIPE_ENDPOINT_SECRET_VALUE/${{ secrets.STRIPE_ENDPOINT_SECRET }}/g" | 
-            sed "s/AWS_ACCESS_KEY_VALUE/${{ secrets.AWS_ACCESS_KEY }}/g" | 
-            sed "s/AWS_REGION_VALUE/${{ secrets.AWS_REGION }}/g" | 
-            sed "s/AWS_BUCKET_VALUE/${{ secrets.AWS_CM_BUCKET }}/g" | 
-            sed "s/AWS_SECRET_ACCESS_KEY_VALUE/${{ secrets.AWS_SECRET_ACCESS_KEY }}/g" | 
-            sed "s/SENDER_EMAIL_VALUE/${{ secrets.SENDER_EMAIL }}/g" | 
-            sed "s/EMAIL_SECRET_VALUE/${{ secrets.EMAIL_SECRET }}/g" | 
+            sed "s#POSTGRES_DSN_VALUE#${{ secrets.POSTGRES_DSN_PROD }}#g" ~/services/converter-app/docker-compose.yml | \
+            sed "s#MONTHLY_OFFLINE_PRICE_ID_VALUE#${{ secrets.MONTHLY_PROD_OFFLINE_PRICE_ID }}#g" | \
+            sed "s#YEARLY_OFFLINE_PRICE_ID_VALUE#${{ secrets.YEARLY_PROD_OFFLINE_PRICE_ID }}#g" | \
+            sed "s#MONTHLY_ONLINE_PRICE_ID_VALUE#${{ secrets.MONTHLY_PROD_ONLINE_PRICE_ID }}#g" | \
+            sed "s#YEARLY_ONLINE_PRICE_ID_VALUE#${{ secrets.YEARLY_PROD_ONLINE_PRICE_ID }}#g" | \
+            sed "s#DAILY_PRICE_ID_VALUE#${{ secrets.DAILY_PROD_PRICE_ID }}#g" | \
+            sed "s#BASIC_PRICE_ID_VALUE#${{ secrets.BASIC_PROD_PRICE_ID }}#g" | \
+            sed "s#PROFESSIONAL_PRICE_ID_VALUE#${{ secrets.PROFESSIONAL_PROD_PRICE_ID }}#g" | \
+            sed "s#STRIPE_KEY_VALUE#${{ secrets.STRIPE_KEY }}#g" | \
+            sed "s#STRIPE_ENDPOINT_SECRET_VALUE#${{ secrets.STRIPE_ENDPOINT_SECRET }}#g" | \
+            sed "s#AWS_ACCESS_KEY_VALUE#${{ secrets.AWS_ACCESS_KEY }}#g" | \
+            sed "s#AWS_REGION_VALUE#${{ secrets.AWS_REGION }}#g" | \
+            sed "s#AWS_BUCKET_VALUE#${{ secrets.AWS_CM_BUCKET }}#g" | \
+            sed "s#AWS_SECRET_ACCESS_KEY_VALUE#${{ secrets.AWS_SECRET_ACCESS_KEY }}#g" | \
+            sed "s#SENDER_EMAIL_VALUE#${{ secrets.SENDER_EMAIL }}#g" | \
+            sed "s#EMAIL_SECRET_VALUE#${{ secrets.EMAIL_SECRET }}#g" | \
             sed "s#APP_DOMAIN_VALUE#https://extconvert.com#g" > ~/services/converter-app/compose.yml
 
             # Run the container in detached mode
