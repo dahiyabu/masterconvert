@@ -85,7 +85,7 @@ jobs:
             docker rmi ecclient:latest || echo "No old dev image found to remove"
             docker load -i /var/tmp/ecimage/ecclient.tar
             
-            sed "s#EC_APP_API_URL_VALUE#https://extconvert/api#g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
+            sed "s#EC_APP_API_URL_VALUE#https://extconvert.com/api#g" ~/services/client/docker-compose.yml > ~/services/client/compose.yml
             mkdir -p /var/tmp/extconvert/logs
 
             
