@@ -103,8 +103,8 @@ jobs:
             sed "s#DAILY_PRICE_ID_VALUE#${{ secrets.DAILY_PROD_PRICE_ID }}#g" | \
             sed "s#BASIC_PRICE_ID_VALUE#${{ secrets.BASIC_PROD_PRICE_ID }}#g" | \
             sed "s#PROFESSIONAL_PRICE_ID_VALUE#${{ secrets.PROFESSIONAL_PROD_PRICE_ID }}#g" | \
-            sed "s#STRIPE_KEY_VALUE#${{ secrets.STRIPE_KEY }}#g" | \
-            sed "s#STRIPE_ENDPOINT_SECRET_VALUE#${{ secrets.STRIPE_ENDPOINT_SECRET }}#g" | \
+            sed "s#STRIPE_KEY_VALUE#${{ secrets.STRIPE_KEY_PROD }}#g" | \
+            sed "s#STRIPE_ENDPOINT_SECRET_VALUE#${{ secrets.STRIPE_ENDPOINT_SECRET_PROD }}#g" | \
             sed "s#AWS_ACCESS_KEY_VALUE#${{ secrets.AWS_ACCESS_KEY }}#g" | \
             sed "s#AWS_REGION_VALUE#${{ secrets.AWS_REGION }}#g" | \
             sed "s#AWS_BUCKET_VALUE#${{ secrets.AWS_CM_BUCKET }}#g" | \
