@@ -1,4 +1,4 @@
-import React from 'react';
+import {useEffect, React} from 'react';
 import { RefreshCw, Merge } from 'lucide-react';
 
 const styles = {
@@ -69,6 +69,22 @@ export default function ModeSelector({ mode, setMode }) {
     }
   };
 
+  useEffect(() => {
+    // Ezoic ad loading script
+    const script = document.createElement('script');
+    script.innerHTML = `
+      ezstandalone.cmd.push(function () {
+        ezstandalone.showAds(101);
+      });
+    `;
+    document.body.appendChild(script);
+
+    // Cleanup script on component unmount
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>File Processing Studio</h1>
@@ -101,6 +117,8 @@ export default function ModeSelector({ mode, setMode }) {
           Merge Files
         </button>
       </div>
+      {/* Ezoic Ad Placeholder */}
+      <div id="ezoic-pub-ad-placeholder-101"></div>
     </div>
   );
 }
