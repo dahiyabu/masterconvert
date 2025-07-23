@@ -122,26 +122,26 @@ FORMAT_COMPATIBILITY = {
     'xls': ['pdf', 'txt', 'rtf', 'odt','xlsx','xls'],
     
     # Image formats
-    'jpg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpg'],
-    'jpeg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpeg'],
-    'png': ['jpg', 'webp', 'gif', 'svg','ico', 'pdf','png'],
+    'jpg': ['png', 'webp', 'gif', 'svg','ico','pdf','jpeg','jpg'],
+    'jpeg': ['png', 'webp', 'gif', 'svg','ico','jpg','pdf','jpeg'],
+    'png': ['jpg', 'webp', 'gif', 'svg','ico', 'jpeg','pdf','png'],
     'svg': ['png', 'jpg', 'jpeg','tiff','bmp','webp','ico','svg'],
-    'webp': ['png', 'jpg', 'gif','webp'],
-    'gif': ['png', 'jpg', 'webp', 'ico','gif'],
+    'webp': ['png', 'jpg', 'jpeg','gif','webp'],
+    'gif': ['png', 'jpg', 'jpeg', 'webp', 'ico','gif'],
     
     # Video formats
-    'mp4':  ['mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mp4'],
-    'mov':  ['mp4', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mov'],
-    'avi':  ['mp4', 'mov', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'avi'],
-    'webm': ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'webm'],
-    'mkv':  ['mp4', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mkv'],
-    'flv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'flv'],
-    'wmv':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'wmv'],
-    'mpeg': ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpg', 'm4v', '3gp', 'gif', 'mpeg'],
-    'mpg':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'm4v', '3gp', 'gif', 'mpg'],
-    'm4v':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', '3gp', 'gif', 'm4v'],
-    '3gp':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', 'gif', '3gp'],
-    'gif':  ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'],
+    'mp4':  ['mov', 'mp3', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mp4'],
+    'mov':  ['mp4', 'mp3', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mov'],
+    'avi':  ['mp4', 'mp3', 'mov', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'avi'],
+    'webm': ['mp4', 'mp3', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'webm'],
+    'mkv':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'mkv'],
+    'flv':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'flv'],
+    'wmv':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif', 'wmv'],
+    'mpeg': ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpg', 'm4v', '3gp', 'gif', 'mpeg'],
+    'mpg':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'm4v', '3gp', 'gif', 'mpg'],
+    'm4v':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', '3gp', 'gif', 'm4v'],
+    '3gp':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', 'gif', '3gp'],
+    'gif':  ['mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'],
 
     # Audio formats
     'mp3':  ['wav', 'ogg', 'flac', 'aac', 'wma', 'm4a', 'alac', 'opus', 'amr', 'ac3', 'mp3'],
@@ -614,33 +614,63 @@ def convert_image(input_path, output_path, source_format, target_format, options
 def convert_video(input_path, output_path, source_format, target_format, options=None):
     try:
         supported_formats = [
-            'mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'
+            'mp4', 'mp3', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp', 'gif'
         ]
 
-        if source_format in supported_formats and target_format in supported_formats:
-            quality = 'high' if options and options.get('quality') == 'high' else 'medium'
-            crf = '18' if quality == 'high' else '23'
+        if source_format not in supported_formats or target_format not in supported_formats:
+            raise ValueError(f"Unsupported source or target format: {source_format} to {target_format}")
+        
+        quality = 'high' if options and options.get('quality') == 'high' else 'medium'
+        crf = '18' if quality == 'high' else '23'
 
-            # Codec logic per format
-            video_codec = 'libx264'
-            audio_codec = 'aac'
+        # Codec logic per format
+        video_codec = 'libx264'
+        audio_codec = 'aac'
 
-            if target_format == 'webm':
-                video_codec = 'libvpx-vp9'
-                audio_codec = 'libopus'
-            elif target_format == 'gif':
-                # Special handling for GIF (no audio)
-                cmd = [
-                    config.FFMPEG_PATH, '-i', input_path,
-                    '-vf', 'fps=10,scale=320:-1:flags=lanczos',  # resize and fps for smaller gifs
-                    '-gifflags', '+transdiff',
-                    '-y',  # overwrite without asking
-                    output_path
-                ]
-                subprocess.run(cmd, check=True)
-                logger.info(f"GIF conversion successful! Saved at {output_path}")
-                return True
-
+        if target_format == 'webm':
+            video_codec = 'libvpx-vp9'
+            audio_codec = 'libopus'
+            # Additional WebM-specific parameters
+            cmd = [
+                config.FFMPEG_PATH, '-i', input_path,
+                '-c:v', video_codec,
+                '-crf', crf,  # Quality control for VP9
+                '-b:v', '1M',  # Set video bitrate to 1M (adjust as necessary)
+                '-c:a', audio_codec,
+                '-b:a', '192k',  # Set audio bitrate to 192 kbps for Opus
+                '-y',  # Overwrite output file
+                output_path
+            ]
+            
+            subprocess.run(cmd, check=True)
+            logger.info(f"WebM conversion successful! Saved at {output_path}")
+            return True
+        elif target_format == 'gif':
+            # Special handling for GIF (no audio)
+            cmd = [
+                config.FFMPEG_PATH, '-i', input_path,
+                '-vf', 'fps=10,scale=320:-1:flags=lanczos',  # resize and fps for smaller gifs
+                '-gifflags', '+transdiff',
+                '-y',  # overwrite without asking
+                output_path
+            ]
+            subprocess.run(cmd, check=True)
+            logger.info(f"GIF conversion successful! Saved at {output_path}")
+            return True
+        elif target_format == 'mp3':
+            # Audio-only conversion to MP3
+            cmd = [
+                config.FFMPEG_PATH, '-i', input_path,
+                '-vn',  # Ignore video
+                '-c:a', 'libmp3lame',  # Use MP3 codec
+                '-ab', '192k',  # Set bitrate to 192 kbps
+                '-y',  # Overwrite output file
+                output_path
+            ]
+            subprocess.run(cmd, check=True)
+            logger.info(f"MP3 conversion successful! Saved at {output_path}")
+            return True
+        else:
             # Standard video conversion
             cmd = [
                 config.FFMPEG_PATH, '-i', input_path,
@@ -654,9 +684,6 @@ def convert_video(input_path, output_path, source_format, target_format, options
             subprocess.run(cmd, check=True)
             logger.info(f"Video conversion successful! Saved at {output_path}")
             return True
-
-        else:
-            raise ValueError(f"Unsupported source or target format: {source_format} to {target_format}")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg conversion failed: {e}")
