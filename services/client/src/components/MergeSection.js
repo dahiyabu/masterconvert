@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Typography, Button, CircularProgress, FormControl, FormLabel,
-  RadioGroup, FormControlLabel, Radio, TextField, IconButton, Snackbar, Paper
+  RadioGroup, FormControlLabel, Radio, TextField, IconButton, Snackbar, Paper,Alert
 } from '@mui/material';
 import { ArrowRight, RotateCcw, Delete, Download } from 'lucide-react';
 import { Check } from '@mui/icons-material';
 import UploadFileButton from './UploadFileButton';
-import { Alert } from '@mui/material';
 import Box from '@mui/material/Box';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
@@ -26,7 +25,8 @@ export default function MergeSection({ API_URL }) {
   const [conversionsLeft, setConversionsLeft] = useState(null);
   const [fingerprint, setFingerprint] = useState(null);
 
-  const MAX_FILES_LIMIT = 5;
+  const MAX_FREE_FILES_LIMIT = 5;
+  const MAX_PAID_FILES_LIMIT = 75;
 
   //Effects
   const fetchAccountLimits = useCallback(async () => {
@@ -86,8 +86,13 @@ export default function MergeSection({ API_URL }) {
     
     const newFiles = Array.from(e.target.files);
     const newFilesToAdd = [];
-    if (conversionsLeft !== null && newFiles.length + files.length > MAX_FILES_LIMIT) {
-      setErrorMessage(`You can only merge a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
+    if (conversionsLeft !== null && newFiles.length + files.length > MAX_FREE_FILES_LIMIT) {
+      setErrorMessage(`You can only merge a maximum of ${MAX_FREE_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
+      setConversionStatus('error');
+      return;
+    }
+    if (conversionsLeft === null && newFiles.length + files.length > MAX_PAID_FILES_LIMIT) {
+      setErrorMessage(`You can only merge a maximum of ${MAX_PAID_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
       setConversionStatus('error');
       return;
     }

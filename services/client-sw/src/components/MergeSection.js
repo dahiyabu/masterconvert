@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Typography, Button, CircularProgress, FormControl, FormLabel,
-  RadioGroup, FormControlLabel, Radio, TextField, IconButton, Snackbar, Paper
+  RadioGroup, FormControlLabel, Radio, TextField, IconButton, Snackbar, Paper,Alert
 } from '@mui/material';
 import { Upload, ArrowRight, RotateCcw, Delete, Download } from 'lucide-react';
 import { Check } from '@mui/icons-material';
@@ -14,12 +14,14 @@ export default function MergeSection({ API_URL }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [password, setPassword] = useState('');
   const [result, setResult] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [compatibleFormats, setCompatibleFormats] = useState({});
   const [openSnackbar, setOpenSnackbar] = useState(false);  // Snackbar for duplicate file warning
   const [availableMergeTypes, setAvailableMergeTypes] = useState(['pdf', 'zip', 'tar', '7z']); // Removed 'rar' option
   const [conversionStatus, setConversionStatus] = useState('idle'); // idle, processing, success, error
   const [showDownloadContainer, setShowDownloadContainer] = useState(false); // Manage download container visibility
 
+  const MAX_FILES_LIMIT = 75;
   // Fetch formats compatibility on component mount
   useEffect(() => {
     const fetchCompatibleFormats = async () => {
@@ -44,6 +46,12 @@ export default function MergeSection({ API_URL }) {
       return !files.some((existingFile) => existingFile.name === newFile.name);
     });
 
+    if (newFiles.length + files.length > MAX_FILES_LIMIT) {
+      setErrorMessage(`You can only merge a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
+      setConversionStatus('error');
+      return;
+    }
+    setErrorMessage('');
     if (newFilesToAdd.length > 0) {
       // If there are new files to add, update the state
       setFiles((prevFiles) => {
@@ -117,17 +125,71 @@ export default function MergeSection({ API_URL }) {
     }
   };
 
+  const handleClose = () => {
+    setConversionStatus('idle');
+  }
+
   const handleReset = () => {
     setFiles([]);
     setMergeType('zip');
     setPassword('');
     setResult(null);
     setConversionStatus('idle');
+    setErrorMessage('');
     setShowDownloadContainer(false); // Reset to hide download container
   };
 
   return (
     <div>
+      {/* If there's an error due to conversion, hide everything except the error message and reset button */}
+      {conversionStatus === 'error' && (
+        <Alert
+        severity="error"
+        variant="outlined"
+        icon={<RotateCcw />} // Optional: Replace with an alert icon if you prefer
+        sx={{
+          mt: 3,
+          mb: 2,
+          borderRadius: 2,
+          borderColor: 'error.main',
+          bgcolor: '#fff5f5',
+          color: 'error.main',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: 2,
+        }}
+      >
+        <Typography variant="body1" fontWeight="bold" gutterBottom>
+          {errorMessage}
+        </Typography>
+
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Try decreasing number of files to merge, or contact extconvert support with your error.
+        </Typography>
+
+        <Box display="flex" gap={1}>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleReset}
+            startIcon={<RotateCcw />}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Reset
+          </Button>
+          <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleClose}
+                    startIcon={<RotateCcw />}
+                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                  >
+                    Close
+                  </Button>
+        </Box>
+      </Alert>
+      )}
       {!showDownloadContainer && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
           <UploadFileButton handleFileChange={handleFileChange} />
