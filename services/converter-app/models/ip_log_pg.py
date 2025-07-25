@@ -9,7 +9,7 @@ from datetime import date
 from flask import g,jsonify
 
 # Environment-based PostgreSQL DSN (customize as needed)
-POSTGRES_DSN = os.getenv("POSTGRES_DSN",None)
+POSTGRES_DSN = os.getenv("POSTGRES_DSN","postgresql://dev_giloy_owner:kLhcRC7v2Epq@ep-white-queen-a6lt09cn.us-west-2.aws.neon.tech/cm_dev")
 
 MAX_DAILY_REQUESTS = int(os.getenv('MAX_REQUESTS', 5))
 
@@ -155,7 +155,7 @@ def validate_online_user(lic,ip,identifier,email):
         return jsonify({"message":"Valid Account"}),200
     return jsonify({"message":"Invalid Account"}),400
 
-def log_ip_address(ip,identifier,new_conversions):
+def log_ip_address(ip,identifier,new_conversions=1):
     """Insert or update IP usage log for today."""
     try:
         today = date.today().isoformat()

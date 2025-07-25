@@ -26,6 +26,8 @@ export default function MergeSection({ API_URL }) {
   const [conversionsLeft, setConversionsLeft] = useState(null);
   const [fingerprint, setFingerprint] = useState(null);
 
+  const MAX_FILES_LIMIT = 5;
+
   //Effects
   const fetchAccountLimits = useCallback(async () => {
       try {
@@ -84,6 +86,11 @@ export default function MergeSection({ API_URL }) {
     
     const newFiles = Array.from(e.target.files);
     const newFilesToAdd = [];
+    if (newFiles.length > MAX_FILES_LIMIT) {
+      setErrorMessage(`You can only merge a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
+      setConversionStatus('error');
+      return;
+    }
 
     for (const newFile of newFiles) {
       const isDuplicate = files.some((existingFile) => existingFile.name === newFile.name);
