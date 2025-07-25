@@ -86,7 +86,7 @@ export default function MergeSection({ API_URL }) {
     
     const newFiles = Array.from(e.target.files);
     const newFilesToAdd = [];
-    if (newFiles.length > MAX_FILES_LIMIT) {
+    if (conversionsLeft !== null && newFiles.length + files.length > MAX_FILES_LIMIT) {
       setErrorMessage(`You can only merge a maximum of ${MAX_FILES_LIMIT} files at once. You currently have ${files.length} files selected and trying to add ${newFiles.length} more.`);
       setConversionStatus('error');
       return;
@@ -197,6 +197,10 @@ export default function MergeSection({ API_URL }) {
     }
   };
 
+  const handleClose = () => {
+    setConversionStatus('idle');
+  }
+
   const handleReset = () => {
     setFiles([]);
     setMergeType('zip');
@@ -254,6 +258,15 @@ export default function MergeSection({ API_URL }) {
           >
             Reset
           </Button>
+          <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleClose}
+                    startIcon={<RotateCcw />}
+                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                  >
+                    Close
+                  </Button>
         </Box>
       </Alert>
       )}
