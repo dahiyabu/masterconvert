@@ -20,8 +20,6 @@ function AppContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  
-  console.log("REACT_APP_URL in APP =");
   //console.log(window.env.REACT_APP_API_URL);
   const API_URL = window.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -649,10 +647,10 @@ function useIsMobile() {
             <div>
               {!showApp && (
                 <div className='desktop-buttons'>
-                  <a href="#try-free" className="btn btn-secondary" onClick={(e) => {e.preventDefault();setScrollTarget('#try-free');
+                  {/*<a href="#try-free" className="btn btn-secondary" onClick={(e) => {e.preventDefault();setScrollTarget('#try-free');
                     setShowApp(false);setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                     Try It Free
-                  </a>
+                  </a>*/}
                   <a href="#download" className="btn" onClick={(e) => {e.preventDefault();setScrollTarget('#download');setShowApp(false);
                     setFormats(false);setShowContact(false);setShowPricing(false);setIsMobileMenuOpen(false);}}>
                       Download Now
